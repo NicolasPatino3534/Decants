@@ -3,10 +3,10 @@ import Link from "next/link";
 import { cn } from "@/lib/format";
 
 const variants = {
-  primary: "bg-ink text-white [color:#ffffff] shadow-[0_14px_34px_rgba(11,13,15,0.16)] hover:bg-black",
-  secondary: "border border-ink bg-transparent text-ink hover:bg-ink hover:text-white",
-  subtle: "border border-line bg-white text-ink hover:border-[#b88939] hover:bg-[#fbfaf7]",
-  champagne: "bg-[#b88939] text-white shadow-[0_14px_30px_rgba(184,137,57,0.22)] hover:bg-[#9f742e]",
+  primary: "bg-[#afa466] text-[#151515] shadow-[0_14px_34px_rgba(0,0,0,0.24)] hover:bg-[#fcffcc]",
+  secondary: "border border-[#afa466] bg-transparent text-[#fcffcc] hover:bg-[#afa466] hover:text-[#151515]",
+  subtle: "border border-line bg-[#303030] text-[#fcffcc] hover:border-[#afa466] hover:bg-[#242424]",
+  champagne: "bg-[#afa466] text-[#151515] shadow-[0_14px_30px_rgba(0,0,0,0.24)] hover:bg-[#fcffcc]",
   danger: "bg-danger text-white hover:brightness-95",
 };
 

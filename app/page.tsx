@@ -70,7 +70,7 @@ export default async function HomePage() {
                   className="h-12 w-full rounded-md border border-transparent bg-mist pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-[#b88939]"
                 />
               </label>
-              <button className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-black">
+              <button className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#afa466] px-5 text-sm font-bold text-[#151515] transition hover:bg-[#fcffcc]">
                 Explorar decants <ArrowRight size={17} />
               </button>
             </form>
