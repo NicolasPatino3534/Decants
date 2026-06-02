@@ -66,7 +66,7 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Catalogo premium</p>
             <h1 className="font-display mt-2 text-5xl leading-tight text-ink sm:text-6xl">Encontrar tu proxima firma</h1>
             <p className="mt-4 max-w-xl leading-7 text-[#5f574c]">
-              Busca por nombre, nota o marca y compara tamanos antes de agregar al carrito.
+              Busca por nombre, nota o marca y compara tamaños antes de agregar al carrito.
             </p>
           </div>
           <div className="grid content-end gap-3 sm:grid-cols-3">
@@ -106,7 +106,7 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
                 { label: "Mas de $30.000", value: "over-30000" },
               ]}
             />
-            <FilterSelect label="Tamano" value={size} onChange={setSize} options={sizes.map((value) => ({ label: `${value}ml`, value: String(value) }))} />
+            <FilterSelect label="Tamaño" value={size} onChange={setSize} options={sizes.map((value) => ({ label: `${value}ml`, value: String(value) }))} />
             <label>
               <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-[#7b7164]">Orden</span>
               <select

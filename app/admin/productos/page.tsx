@@ -16,7 +16,7 @@ export default async function AdminProductsPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-black">Productos</h1>
-          <p className="mt-2 text-neutral-600">CRUD de catalogo, imagenes y variantes por tamano.</p>
+          <p className="mt-2 text-neutral-600">CRUD de catalogo, imagenes y variantes por tamaño.</p>
         </div>
       </div>
 
@@ -122,7 +122,7 @@ function ProductEditor({
             <form key={variant.id} action={upsertVariant} className="grid gap-3 p-4 md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto_auto]">
               <input type="hidden" name="id" value={variant.id} />
               <input type="hidden" name="productId" value={product.id} />
-              <Input name="sizeMl" label="Tamano ml" type="number" defaultValue={String(variant.sizeMl)} />
+              <Input name="sizeMl" label="Tamaño ml" type="number" defaultValue={String(variant.sizeMl)} />
               <Input name="sku" label="SKU" defaultValue={variant.sku} />
               <Input name="price" label="Precio" type="number" defaultValue={String(variant.priceCents / 100)} />
               <Input name="stock" label="Stock" type="number" defaultValue={String(variant.stockOnHand)} />
@@ -140,7 +140,7 @@ function ProductEditor({
           ))}
           <form action={upsertVariant} className="grid gap-3 p-4 md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
             <input type="hidden" name="productId" value={product.id} />
-            <Input name="sizeMl" label="Tamano ml" type="number" placeholder="2" />
+            <Input name="sizeMl" label="Tamaño ml" type="number" placeholder="2" />
             <Input name="sku" label="SKU" placeholder="SKU-2ML" />
             <Input name="price" label="Precio" type="number" placeholder="16000" />
             <Input name="stock" label="Stock" type="number" placeholder="10" />

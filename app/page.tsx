@@ -40,7 +40,7 @@ const packs = [
 
 const faqs = [
   { q: "Que es un decant?", a: "Una muestra fraccionada en atomizador para probar el perfume antes de comprar botella completa." },
-  { q: "Que tamano conviene?", a: "2ml para testear, 5ml para varios usos y 10ml para convivir con una fragancia antes de invertir." },
+  { q: "Que tamaño conviene?", a: "2ml para testear, 5ml para varios usos y 10ml para convivir con una fragancia antes de invertir." },
   { q: "Como se prepara el pedido?", a: "Cada variante se arma con stock controlado, rotulado y embalaje protegido para envio." },
 ];
 
@@ -77,7 +77,7 @@ export default async function HomePage() {
             <div className="mt-8 grid grid-cols-3 gap-3 border-y border-line py-5 text-sm text-[#5f574c]">
               <p><span className="block font-display text-3xl text-ink">+40</span> perfumes curados</p>
               <p><span className="block font-display text-3xl text-ink">24h</span> preparacion</p>
-              <p><span className="block font-display text-3xl text-ink">3</span> tamanos para probar</p>
+              <p><span className="block font-display text-3xl text-ink">3</span> tamaños para probar</p>
             </div>
           </div>
 
@@ -118,7 +118,7 @@ export default async function HomePage() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Seleccion boutique</p>
             <h2 className="font-display mt-2 text-4xl tracking-normal text-ink sm:text-5xl">Decants para decidir mejor</h2>
-            <p className="mt-3 max-w-2xl leading-7 text-[#5f574c]">Elige por familia olfativa, ocasion y tamano. Cada card esta pensada para comparar rapido sin perder detalle.</p>
+            <p className="mt-3 max-w-2xl leading-7 text-[#5f574c]">Elige por familia olfativa, ocasion y tamaño. Cada card esta pensada para comparar rapido sin perder detalle.</p>
           </div>
           <ButtonLink href="/catalogo" variant="secondary">
             Ver todo el catalogo <ArrowRight size={17} />
@@ -185,7 +185,7 @@ export default async function HomePage() {
             <h2 className="font-display mt-2 text-4xl text-ink sm:text-5xl">Probar antes de invertir</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Step icon={<SprayCan size={18} />} title="Elegis" text="Busca por nota, marca, genero, precio y tamano." />
+            <Step icon={<SprayCan size={18} />} title="Elegis" text="Busca por nota, marca, genero, precio y tamaño." />
             <Step icon={<Clock3 size={18} />} title="Preparamos" text="Armamos cada atomizador con rotulado y control." />
             <Step icon={<Truck size={18} />} title="Recibis" text="Pagas online y seguis el envio desde tu cuenta." />
           </div>
