@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+dist
+.env
+.env*.local
+next-dev.live.log
+next-dev.out.log
+next-dev.err.log
+next-prod.live.log
+*.tsbuildinfo
