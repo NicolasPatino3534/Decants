@@ -5,6 +5,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  if (demoProducts.length > 50) {
+    const product = demoProducts.find((item) => item.slug === slug) ?? null;
+    return product ? NextResponse.json({ product, source: "catalog" }) : NextResponse.json({ product: null }, { status: 404 });
+  }
+
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
@@ -14,10 +20,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
 
   const { product, error } = await fetchProductBySlugFromSupabase(supabase, slug);
   if (error) {
-    return NextResponse.json({ product: null, error: "No se pudo cargar el producto." }, { status: 500 });
+    const fallbackProduct = demoProducts.find((item) => item.slug === slug) ?? null;
+    return fallbackProduct
+      ? NextResponse.json({ product: fallbackProduct, source: "demo" })
+      : NextResponse.json({ product: null, error: "No se pudo cargar el producto." }, { status: 500 });
   }
   if (!product) {
-    return NextResponse.json({ product: null, error: "Producto no encontrado." }, { status: 404 });
+    const fallbackProduct = demoProducts.find((item) => item.slug === slug) ?? null;
+    return fallbackProduct
+      ? NextResponse.json({ product: fallbackProduct, source: "demo" })
+      : NextResponse.json({ product: null, error: "Producto no encontrado." }, { status: 404 });
   }
 
   return NextResponse.json({ product, source: "supabase" });

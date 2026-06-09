@@ -35,13 +35,11 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    const [{ data: profile }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", user.id),
-    ]);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    const profileRole = profile && "role" in profile ? String(profile.role) : "";
-    const hasAdminRole = profileRole === "admin" || roles?.some((row) => row.role === "admin");
+    const hasAdminRole = hasAdminClaim(getJwtAppMetadata(session?.access_token)) || hasAdminClaim(user.app_metadata) || isBootstrapAdmin(user.email);
 
     if (!hasAdminRole) {
       return NextResponse.redirect(redirectUrl);
@@ -49,4 +47,35 @@ export async function updateSession(request: NextRequest) {
   }
 
   return response;
+}
+
+function hasAdminClaim(appMetadata?: Record<string, unknown> | null) {
+  if (!appMetadata) return false;
+
+  const role = appMetadata.role ?? appMetadata.app_role;
+  if (role === "admin") return true;
+
+  const roles = appMetadata.roles;
+  if (Array.isArray(roles)) return roles.includes("admin");
+  if (typeof roles === "string") return roles.split(",").map((item) => item.trim()).includes("admin");
+
+  return false;
+}
+
+function isBootstrapAdmin(email?: string) {
+  return Boolean(email && env.adminBootstrapEmails.includes(email.toLowerCase()));
+}
+
+function getJwtAppMetadata(accessToken?: string) {
+  const payload = accessToken?.split(".")[1];
+  if (!payload) return null;
+
+  try {
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    const claims = JSON.parse(atob(padded)) as { app_metadata?: Record<string, unknown> };
+    return claims.app_metadata ?? null;
+  } catch {
+    return null;
+  }
 }

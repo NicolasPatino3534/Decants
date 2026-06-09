@@ -3,10 +3,14 @@ import { filterProducts, type ProductFilters, type ProductSort } from "@/lib/cat
 import { fetchProductsFromSupabase } from "@/lib/data/products";
 import { demoProducts } from "@/lib/demo-data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { Product } from "@/lib/types";
 
 export async function GET(request: Request) {
   const filters = parseProductFilters(new URL(request.url).searchParams);
+
+  if (demoProducts.length > 50) {
+    return NextResponse.json({ products: filterProducts(demoProducts, filters), source: "catalog" });
+  }
+
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
@@ -15,10 +19,11 @@ export async function GET(request: Request) {
 
   const { products, error } = await fetchProductsFromSupabase(supabase, filters);
   if (error) {
-    return NextResponse.json(
-      { products: [] as Product[], error: "No se pudieron cargar los productos." },
-      { status: 500 },
-    );
+    return NextResponse.json({ products: filterProducts(demoProducts, filters), source: "demo" });
+  }
+
+  if (products.length === 0) {
+    return NextResponse.json({ products: filterProducts(demoProducts, filters), source: "demo" });
   }
 
   return NextResponse.json({ products, source: "supabase" });

@@ -14,6 +14,12 @@ type OrderItemStockRow = {
   quantity: number;
 };
 
+type StockTableConfig = {
+  table: "decant_variants" | "product_variants";
+  stockColumn: "stock_on_hand" | "stock";
+  rpcName: "increment_decant_variant_stock" | "increment_variant_stock";
+};
+
 export async function POST(request: Request) {
   const stripe = getStripe();
   const admin = createSupabaseAdminClient();
@@ -129,13 +135,23 @@ async function releaseReservedStockForOrder(admin: AdminClient, orderId: string,
   const { data: items, error } = await admin.from("order_items").select("variant_id,quantity").eq("order_id", orderId);
   if (error || !items) return;
 
+  const { data: claimedOrders, error: claimError } = await admin
+    .from("orders")
+    .update({ status: "cancelled", payment_status: "failed" })
+    .eq("id", orderId)
+    .neq("payment_status", "paid")
+    .neq("status", "cancelled")
+    .select("id");
+
+  if (claimError) throw claimError;
+  if (!claimedOrders?.length) return;
+
   for (const item of items as OrderItemStockRow[]) {
     if (!item.variant_id) continue;
     const released = await releaseLegacyVariantStock(admin, item.variant_id, item.quantity);
     if (!released) await releaseModernVariantStock(admin, item.variant_id, item.quantity);
   }
 
-  await admin.from("orders").update({ status: "cancelled", payment_status: "failed" }).eq("id", orderId);
   await admin.from("payments").update({ status: "failed" }).eq("order_id", orderId);
   await insertReleaseMovements(admin, orderId, items as OrderItemStockRow[], note);
 }
@@ -164,23 +180,45 @@ async function markPaymentFailedByIntent(admin: AdminClient, paymentIntentId: st
 }
 
 async function releaseLegacyVariantStock(admin: AdminClient, variantId: string, quantity: number) {
-  const { data } = await admin.from("decant_variants").select("stock_on_hand").eq("id", variantId).maybeSingle();
-  if (!data) return false;
-  await admin
-    .from("decant_variants")
-    .update({ stock_on_hand: Number(data.stock_on_hand ?? 0) + quantity })
-    .eq("id", variantId);
-  return true;
+  return incrementVariantStock(admin, variantId, quantity, {
+    table: "decant_variants",
+    stockColumn: "stock_on_hand",
+    rpcName: "increment_decant_variant_stock",
+  });
 }
 
 async function releaseModernVariantStock(admin: AdminClient, variantId: string, quantity: number) {
-  const { data } = await admin.from("product_variants").select("stock").eq("id", variantId).maybeSingle();
-  if (!data) return false;
-  await admin
-    .from("product_variants")
-    .update({ stock: Number(data.stock ?? 0) + quantity })
+  return incrementVariantStock(admin, variantId, quantity, {
+    table: "product_variants",
+    stockColumn: "stock",
+    rpcName: "increment_variant_stock",
+  });
+}
+
+async function incrementVariantStock(admin: AdminClient, variantId: string, quantity: number, config: StockTableConfig) {
+  const { data, error } = await admin.rpc(config.rpcName, { p_variant_id: variantId, p_quantity: quantity });
+
+  if (!error && data !== false) return true;
+  if (error && !isMissingRpcError(error)) {
+    console.error("stripe_webhook_stock_release_rpc_error", error);
+    return false;
+  }
+
+  const { data: current, error: selectError } = await admin
+    .from(config.table)
+    .select(config.stockColumn)
+    .eq("id", variantId)
+    .maybeSingle();
+
+  if (selectError || !current) return false;
+
+  const currentStock = Number((current as Record<string, unknown>)[config.stockColumn] ?? 0);
+  const { error: updateError } = await admin
+    .from(config.table)
+    .update({ [config.stockColumn]: currentStock + quantity })
     .eq("id", variantId);
-  return true;
+
+  return !updateError;
 }
 
 async function insertReleaseMovements(admin: AdminClient, orderId: string, items: OrderItemStockRow[], note: string) {
@@ -206,4 +244,8 @@ async function insertReleaseMovements(admin: AdminClient, orderId: string, items
       note: `${note}: ${orderId}`,
     }));
   await admin.from("inventory_movements").insert(legacyPayload);
+}
+
+function isMissingRpcError(error: { code?: string; message?: string }) {
+  return error.code === "PGRST202" || /function .* does not exist|could not find the function/i.test(error.message ?? "");
 }

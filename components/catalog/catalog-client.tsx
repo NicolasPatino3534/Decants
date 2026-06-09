@@ -78,22 +78,22 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="rounded-md border border-line bg-white p-4 shadow-[0_18px_50px_rgba(11,13,15,0.06)]">
-          <div className="grid gap-3 lg:grid-cols-[1.6fr_repeat(3,1fr)]">
-            <label className="relative lg:col-span-2">
+        <div className="rounded-md border border-line bg-white p-4 shadow-[0_18px_46px_rgba(21,21,21,0.07)] sm:p-5">
+          <div className="grid gap-3">
+            <label className="relative">
               <span className="sr-only">Buscar</span>
               <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#81786b]" size={18} />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar por nombre, nota o marca"
-                className="h-12 w-full rounded-md border border-line bg-mist pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-[#b88939]"
+                className="h-12 w-full rounded-md border border-line bg-[#f8f8f6] pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-[#b88939] focus:bg-white"
               />
             </label>
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]">
             <FilterSelect label="Marca" value={brand} onChange={setBrand} options={brands} />
             <FilterSelect label="Familia" value={family} onChange={setFamily} options={families} />
-          </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(5,1fr)_auto]">
             <FilterSelect label="Categoria" value={category} onChange={setCategory} options={categories} />
             <FilterSelect label="Genero" value={gender} onChange={setGender} options={genders.map((value) => ({ label: value, value }))} />
             <FilterSelect

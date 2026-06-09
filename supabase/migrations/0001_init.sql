@@ -185,6 +185,7 @@ create table public.email_events (
 create or replace function public.touch_updated_at()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -228,16 +229,83 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_user();
 
-create or replace function public.has_role(required_role public.app_role)
-returns boolean
-language sql
+create or replace function public.custom_access_token_hook(event jsonb)
+returns jsonb
+language plpgsql
 stable
 security definer
 set search_path = public
 as $$
-  select exists (
-    select 1 from public.user_roles
-    where user_id = auth.uid() and role = required_role
+declare
+  claims jsonb;
+  profile_role text;
+  table_roles text[];
+  roles text[] := array[]::text[];
+  selected_role text := 'customer';
+begin
+  if event->>'user_id' is null then
+    return event;
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'role'
+  ) then
+    execute 'select role::text from public.profiles where id = $1'
+    into profile_role
+    using (event->>'user_id')::uuid;
+    if profile_role is not null then
+      roles := roles || profile_role;
+    end if;
+  end if;
+
+  if to_regclass('public.user_roles') is not null then
+    execute 'select coalesce(array_agg(role::text), array[]::text[]) from public.user_roles where user_id = $1'
+    into table_roles
+    using (event->>'user_id')::uuid;
+    roles := roles || coalesce(table_roles, array[]::text[]);
+  end if;
+
+  select array_agg(distinct role_value)
+  into roles
+  from unnest(roles || array['customer']) as role_value
+  where role_value is not null and role_value <> '';
+
+  if 'owner' = any(roles) then
+    selected_role := 'owner';
+  elsif 'admin' = any(roles) then
+    selected_role := 'admin';
+  elsif 'staff' = any(roles) then
+    selected_role := 'staff';
+  end if;
+
+  claims := coalesce(event->'claims', '{}'::jsonb);
+  claims := jsonb_set(claims, '{app_metadata}', coalesce(claims->'app_metadata', '{}'::jsonb), true);
+  claims := jsonb_set(claims, '{app_metadata,role}', to_jsonb(selected_role), true);
+  claims := jsonb_set(claims, '{app_metadata,roles}', to_jsonb(roles), true);
+
+  return jsonb_set(event, '{claims}', claims, true);
+end;
+$$;
+
+grant usage on schema public to supabase_auth_admin;
+grant execute on function public.custom_access_token_hook(jsonb) to supabase_auth_admin;
+revoke execute on function public.custom_access_token_hook(jsonb) from authenticated, anon, public;
+
+create or replace function public.has_role(required_role public.app_role)
+returns boolean
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  select coalesce(
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb -> 'app_metadata' ->> 'role') = required_role::text
+    or (nullif(current_setting('request.jwt.claims', true), '')::jsonb -> 'app_metadata' -> 'roles') ? required_role::text,
+    false
   );
 $$;
 
@@ -245,12 +313,13 @@ create or replace function public.is_staff()
 returns boolean
 language sql
 stable
-security definer
-set search_path = public
+security invoker
+set search_path = ''
 as $$
-  select exists (
-    select 1 from public.user_roles
-    where user_id = auth.uid() and role in ('staff', 'admin', 'owner')
+  select coalesce(
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb -> 'app_metadata' ->> 'role') in ('staff', 'admin', 'owner')
+    or (nullif(current_setting('request.jwt.claims', true), '')::jsonb -> 'app_metadata' -> 'roles') ?| array['staff', 'admin', 'owner'],
+    false
   );
 $$;
 
@@ -304,6 +373,135 @@ end;
 $$;
 
 revoke all on function public.confirm_paid_order(uuid, text, jsonb) from public;
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+revoke execute on function public.confirm_paid_order(uuid, text, jsonb) from anon, authenticated;
+
+create or replace function public.increment_variant_stock(p_variant_id uuid, p_quantity integer)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  affected_rows integer;
+begin
+  if p_quantity is null or p_quantity <= 0 then
+    raise exception 'La cantidad a incrementar debe ser positiva';
+  end if;
+
+  update public.product_variants
+  set stock = stock + p_quantity,
+      updated_at = now()
+  where id = p_variant_id;
+
+  get diagnostics affected_rows = row_count;
+  return affected_rows > 0;
+end;
+$$;
+
+create or replace function public.increment_decant_variant_stock(p_variant_id uuid, p_quantity integer)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  affected_rows integer;
+begin
+  if p_quantity is null or p_quantity <= 0 then
+    raise exception 'La cantidad a incrementar debe ser positiva';
+  end if;
+
+  update public.decant_variants
+  set stock_on_hand = stock_on_hand + p_quantity,
+      updated_at = now()
+  where id = p_variant_id;
+
+  get diagnostics affected_rows = row_count;
+  return affected_rows > 0;
+end;
+$$;
+
+create or replace function public.reserve_checkout_stock(p_items jsonb)
+returns table (
+  variant_id uuid,
+  variant_table text,
+  previous_stock integer,
+  next_stock integer
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  item jsonb;
+  item_variant_id uuid;
+  item_table text;
+  item_quantity integer;
+  updated_previous_stock integer;
+  updated_next_stock integer;
+begin
+  if p_items is null or jsonb_typeof(p_items) <> 'array' then
+    raise exception 'Los items de stock deben ser un array JSON';
+  end if;
+
+  for item in select value from jsonb_array_elements(p_items)
+  loop
+    item_variant_id := (item ->> 'variant_id')::uuid;
+    item_table := item ->> 'table_name';
+    item_quantity := (item ->> 'quantity')::integer;
+    updated_previous_stock := null;
+    updated_next_stock := null;
+
+    if item_quantity is null or item_quantity <= 0 then
+      raise exception 'La cantidad de reserva debe ser positiva';
+    end if;
+
+    if item_table = 'product_variants' then
+      update public.product_variants
+      set stock = stock - item_quantity,
+          updated_at = now()
+      where id = item_variant_id
+        and active = true
+        and stock >= item_quantity
+      returning stock + item_quantity, stock
+      into updated_previous_stock, updated_next_stock;
+    elsif item_table = 'decant_variants' then
+      update public.decant_variants
+      set stock_on_hand = stock_on_hand - item_quantity,
+          updated_at = now()
+      where id = item_variant_id
+        and is_active = true
+        and stock_on_hand >= item_quantity
+      returning stock_on_hand + item_quantity, stock_on_hand
+      into updated_previous_stock, updated_next_stock;
+    else
+      raise exception 'Tabla de variante no soportada: %', item_table;
+    end if;
+
+    if updated_previous_stock is null then
+      raise exception 'Stock insuficiente para la variante %', item_variant_id;
+    end if;
+
+    variant_id := item_variant_id;
+    variant_table := item_table;
+    previous_stock := updated_previous_stock;
+    next_stock := updated_next_stock;
+    return next;
+  end loop;
+end;
+$$;
+
+revoke all on function public.increment_variant_stock(uuid, integer) from public;
+revoke all on function public.increment_decant_variant_stock(uuid, integer) from public;
+revoke all on function public.reserve_checkout_stock(jsonb) from public;
+revoke execute on function public.increment_variant_stock(uuid, integer) from anon, authenticated;
+revoke execute on function public.increment_decant_variant_stock(uuid, integer) from anon, authenticated;
+revoke execute on function public.reserve_checkout_stock(jsonb) from anon, authenticated;
+
+grant execute on function public.increment_variant_stock(uuid, integer) to service_role;
+grant execute on function public.increment_decant_variant_stock(uuid, integer) to service_role;
+grant execute on function public.reserve_checkout_stock(jsonb) to service_role;
 
 alter table public.profiles enable row level security;
 alter table public.user_roles enable row level security;

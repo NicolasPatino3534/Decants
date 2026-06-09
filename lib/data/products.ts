@@ -102,21 +102,26 @@ const legacyProductSelect = `
 `;
 
 export async function getProducts(filters: ProductFilters = {}) {
+  if (demoProducts.length > 50) return filterProducts(demoProducts, filters);
+
   const supabase = await createSupabaseServerClient();
   if (!supabase) return filterProducts(demoProducts, filters);
 
   const { products, error } = await fetchProductsFromSupabase(supabase, filters);
   if (error) return filterProducts(demoProducts, filters);
+  if (products.length === 0) return filterProducts(demoProducts, filters);
   return products;
 }
 
 export async function getProductBySlug(slug: string) {
+  if (demoProducts.length > 50) return demoProducts.find((product) => product.slug === slug) ?? null;
+
   const supabase = await createSupabaseServerClient();
   if (!supabase) return demoProducts.find((product) => product.slug === slug) ?? null;
 
   const { product, error } = await fetchProductBySlugFromSupabase(supabase, slug);
   if (error) return demoProducts.find((item) => item.slug === slug) ?? null;
-  return product;
+  return product ?? demoProducts.find((item) => item.slug === slug) ?? null;
 }
 
 export async function getAdminProducts() {

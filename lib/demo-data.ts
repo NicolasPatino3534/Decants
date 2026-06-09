@@ -1,8 +1,9 @@
 import type { Order, Product } from "@/lib/types";
+import { catalogProducts } from "@/lib/catalog-data";
 
 const hero = "/images/hero-decants.png";
 
-export const demoProducts: Product[] = [
+const fallbackProducts: Product[] = [
   {
     id: "prod_citrus_woods",
     name: "Citrus Woods",
@@ -96,6 +97,8 @@ export const demoProducts: Product[] = [
     ],
   },
 ];
+
+export const demoProducts: Product[] = catalogProducts.length > 0 ? catalogProducts : fallbackProducts;
 
 export const demoOrders: Order[] = [
   {
