@@ -6,11 +6,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  if (demoProducts.length > 50) {
-    const product = demoProducts.find((item) => item.slug === slug) ?? null;
-    return product ? NextResponse.json({ product, source: "catalog" }) : NextResponse.json({ product: null }, { status: 404 });
-  }
-
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {

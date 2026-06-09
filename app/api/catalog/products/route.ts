@@ -7,10 +7,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const filters = parseProductFilters(new URL(request.url).searchParams);
 
-  if (demoProducts.length > 50) {
-    return NextResponse.json({ products: filterProducts(demoProducts, filters), source: "catalog" });
-  }
-
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {

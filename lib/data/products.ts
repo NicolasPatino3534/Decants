@@ -102,8 +102,6 @@ const legacyProductSelect = `
 `;
 
 export async function getProducts(filters: ProductFilters = {}) {
-  if (demoProducts.length > 50) return filterProducts(demoProducts, filters);
-
   const supabase = await createSupabaseServerClient();
   if (!supabase) return filterProducts(demoProducts, filters);
 
@@ -114,8 +112,6 @@ export async function getProducts(filters: ProductFilters = {}) {
 }
 
 export async function getProductBySlug(slug: string) {
-  if (demoProducts.length > 50) return demoProducts.find((product) => product.slug === slug) ?? null;
-
   const supabase = await createSupabaseServerClient();
   if (!supabase) return demoProducts.find((product) => product.slug === slug) ?? null;
 
