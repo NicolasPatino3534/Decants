@@ -1,12 +1,12 @@
 insert into public.fragrance_families (name, slug) values
-  ('Amaderada + Citrica', 'amaderada-citrica'),
-  ('Ambar + Especiada', 'ambar-especiada'),
+  ('Amaderada + Cítrica', 'amaderada-citrica'),
+  ('Ámbar + Especiada', 'ambar-especiada'),
   ('Floral + Almizclada', 'floral-almizclada'),
   ('Oud + Cuero', 'oud-cuero')
 on conflict (slug) do nothing;
 
 insert into public.brands (name, slug, country) values
-  ('Aurum Atelier', 'aurum-atelier', 'AR'),
+  ('DecantsCBA', 'decantscba', 'AR'),
   ('Maison Nube', 'maison-nube', 'FR'),
   ('Terra Lab', 'terra-lab', 'IT')
 on conflict (slug) do nothing;
@@ -25,10 +25,10 @@ with data as (
     v.gender
   from (
     values
-      ('Aurum Atelier', 'Amaderada + Citrica', 'Citrus Woods', 'citrus-woods', 'Eau de Parfum', 'Bergamota, lima y maderas secas para probar un fresco con presencia.', array['Bergamota','Lima','Pimienta rosa'], array['Cedro','Neroli','Vetiver'], array['Sandalwood','Musk','Amber'], 'unisex'),
-      ('Aurum Atelier', 'Ambar + Especiada', 'Amber Spice', 'amber-spice', 'Eau de Parfum', 'Ambar resinoso, canela y maderas cremosas para noches elegantes.', array['Canela','Cardamomo'], array['Resina','Iris'], array['Ambar','Vainilla','Patchouli'], 'unisex'),
-      ('Maison Nube', 'Floral + Almizclada', 'Fleur Blanche', 'fleur-blanche', 'Eau de Parfum', 'Flor blanca transparente, musk limpio y fondo suave.', array['Mandarina','Pera'], array['Jazmin','Azahar','Iris'], array['Musk','Cedro blanco'], 'feminine'),
-      ('Terra Lab', 'Oud + Cuero', 'Oud Noir', 'oud-noir', 'Extrait de Parfum', 'Oud seco, cuero y humo suave para comparar rendimiento.', array['Azafran','Pimienta negra'], array['Oud','Cuero'], array['Incienso','Ambar gris'], 'masculine')
+      ('DecantsCBA', 'Amaderada + Cítrica', 'Citrus Woods', 'citrus-woods', 'Eau de Parfum', 'Bergamota, lima y maderas secas para probar un fresco con presencia.', array['Bergamota','Lima','Pimienta rosa'], array['Cedro','Neroli','Vetiver'], array['Sándalo','Musk','Ámbar'], 'unisex'),
+      ('DecantsCBA', 'Ámbar + Especiada', 'Amber Spice', 'amber-spice', 'Eau de Parfum', 'Ámbar resinoso, canela y maderas cremosas para noches elegantes.', array['Canela','Cardamomo'], array['Resina','Iris'], array['Ámbar','Vainilla','Patchouli'], 'unisex'),
+      ('Maison Nube', 'Floral + Almizclada', 'Fleur Blanche', 'fleur-blanche', 'Eau de Parfum', 'Flor blanca transparente, musk limpio y fondo suave.', array['Mandarina','Pera'], array['Jazmín','Azahar','Iris'], array['Musk','Cedro blanco'], 'feminine'),
+      ('Terra Lab', 'Oud + Cuero', 'Oud Noir', 'oud-noir', 'Extrait de Parfum', 'Oud seco, cuero y humo suave para comparar rendimiento.', array['Azafrán','Pimienta negra'], array['Oud','Cuero'], array['Incienso','Ámbar gris'], 'masculine')
   ) as v(brand_name, family_name, name, slug, concentration, description, notes_top, notes_heart, notes_base, gender)
   join public.brands b on b.name = v.brand_name
   join public.fragrance_families f on f.name = v.family_name
@@ -51,7 +51,7 @@ from data
 on conflict (slug) do nothing;
 
 insert into public.product_images (product_id, storage_path, alt, sort_order)
-select id, '/images/hero-decants.png', name || ' decant', 0
+select id, 'https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png', name || ' decant', 0
 from public.products
 on conflict do nothing;
 

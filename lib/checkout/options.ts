@@ -64,14 +64,14 @@ export async function resolveCouponDiscount({
     .eq("active", true)
     .maybeSingle();
 
-  if (error) return { discountCents: 0, couponId: null, error: "No se pudo validar el cupon." };
-  if (!data) return { discountCents: 0, couponId: null, error: "El cupon no existe o no esta activo." };
+  if (error) return { discountCents: 0, couponId: null, error: "No se pudo validar el cupón." };
+  if (!data) return { discountCents: 0, couponId: null, error: "El cupón no existe o no está activo." };
 
   const coupon = data as CouponRow;
-  if (coupon.starts_at && new Date(coupon.starts_at) > now) return { discountCents: 0, couponId: null, error: "El cupon todavia no esta vigente." };
-  if (coupon.ends_at && new Date(coupon.ends_at) < now) return { discountCents: 0, couponId: null, error: "El cupon esta vencido." };
-  if (coupon.usage_limit != null && coupon.used_count >= coupon.usage_limit) return { discountCents: 0, couponId: null, error: "El cupon ya alcanzo su limite de uso." };
-  if (subtotalCents < coupon.min_order_cents) return { discountCents: 0, couponId: null, error: "El pedido no alcanza el minimo del cupon." };
+  if (coupon.starts_at && new Date(coupon.starts_at) > now) return { discountCents: 0, couponId: null, error: "El cupón todavía no está vigente." };
+  if (coupon.ends_at && new Date(coupon.ends_at) < now) return { discountCents: 0, couponId: null, error: "El cupón está vencido." };
+  if (coupon.usage_limit != null && coupon.used_count >= coupon.usage_limit) return { discountCents: 0, couponId: null, error: "El cupón ya alcanzó su límite de uso." };
+  if (subtotalCents < coupon.min_order_cents) return { discountCents: 0, couponId: null, error: "El pedido no alcanza el mínimo del cupón." };
 
   const rawDiscount =
     coupon.discount_type === "percentage"

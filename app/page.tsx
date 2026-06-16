@@ -7,7 +7,6 @@ import {
   LockKeyhole,
   PackageCheck,
   Search,
-  ShieldCheck,
   Sparkles,
   SprayCan,
   Star,
@@ -15,50 +14,58 @@ import {
 } from "lucide-react";
 import { ProductCard } from "@/components/catalog/product-card";
 import { ButtonLink } from "@/components/ui/button";
+import { brand } from "@/lib/brand";
 import { getProducts } from "@/lib/data/products";
 
 const reviews = [
   {
     name: "Camila R.",
-    text: "Compre tres decants para comparar notas florales. Llegaron prolijos, rotulados y con tracking claro.",
+    text: "Compré tres decants para comparar notas florales. Llegaron prolijos, rotulados y con seguimiento claro.",
   },
   {
-    name: "Andres M.",
-    text: "Me evito comprar una botella completa a ciegas. El selector de ml hace muy facil probar primero.",
+    name: "Andrés M.",
+    text: "Me evitó comprar una botella completa a ciegas. El selector de ml hace muy fácil probar primero.",
   },
   {
     name: "Valentina P.",
-    text: "La experiencia se siente cuidada: stock visible, pago simple y el pedido llego perfecto.",
+    text: "La experiencia se siente cuidada: stock visible, atención rápida y el pedido llegó perfecto.",
   },
 ];
 
 const packs = [
-  { title: "Fresh office set", text: "Citrico, limpio y elegante para uso diario.", notes: "Bergamota / neroli / musk" },
-  { title: "Night signature set", text: "Ambar, cuero y especias para salidas.", notes: "Canela / oud / vainilla" },
-  { title: "Soft floral set", text: "Flores blancas y almizcles faciles de usar.", notes: "Jazmin / iris / cedro" },
+  { title: "Fresh office set", text: "Cítrico, limpio y elegante para uso diario.", notes: "Bergamota / neroli / musk" },
+  { title: "Night signature set", text: "Ámbar, cuero y especias para salidas.", notes: "Canela / oud / vainilla" },
+  { title: "Soft floral set", text: "Flores blancas y almizcles fáciles de usar.", notes: "Jazmín / iris / cedro" },
 ];
 
 const faqs = [
-  { q: "Que es un decant?", a: "Una muestra fraccionada en atomizador para probar el perfume antes de comprar botella completa." },
-  { q: "Que tamaño conviene?", a: "2ml para testear, 5ml para varios usos y 10ml para convivir con una fragancia antes de invertir." },
-  { q: "Como se prepara el pedido?", a: "Cada variante se arma con stock controlado, rotulado y embalaje protegido para envio." },
+  { q: "¿Qué es un decant?", a: "Una muestra fraccionada en atomizador para probar el perfume antes de comprar una botella completa." },
+  { q: "¿Qué tamaño conviene?", a: "2ml para testear, 5ml para varios usos y 10ml para convivir con una fragancia antes de invertir." },
+  { q: "¿Cómo se prepara el pedido?", a: "Cada variante se arma con stock controlado, rotulado y embalaje protegido para envío." },
 ];
 
 export default async function HomePage() {
   const products = await getProducts();
   const featuredProducts = (products.filter((product) => product.featured).length ? products.filter((product) => product.featured) : products).slice(0, 3);
   const brands = Array.from(new Set(products.map((product) => product.brand.name))).slice(0, 6);
+  const heroImage = featuredProducts[0]?.imageUrl ?? brand.logoUrl;
 
   return (
     <main className="premium-shell">
       <section className="overflow-hidden border-b border-line bg-white">
         <div className="mx-auto grid min-h-[calc(100svh-64px)] max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 lg:min-h-[690px] lg:grid-cols-[0.86fr_1.14fr] lg:px-8">
           <div className="max-w-2xl">
+            <div className="mb-7 flex items-center gap-3">
+              <span className="relative h-14 w-14 overflow-hidden rounded-md border border-line bg-white">
+                <Image src={brand.logoUrl} alt="" fill sizes="56px" className="object-contain p-1" />
+              </span>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#8c682b]">{brand.tagline}</p>
+            </div>
             <h1 className="font-display text-6xl leading-[0.94] tracking-normal text-ink sm:text-7xl lg:text-8xl">
-              Aurum Decants
+              {brand.displayName}
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-[#514a40] sm:text-xl">
-              Descubri tu proxima firma sin comprar a ciegas: decants premium de 2ml, 5ml y 10ml, stock visible y checkout seguro.
+              Descubrí tu próxima firma sin comprar a ciegas: decants originales de tus perfumes favoritos, stock visible y atención por WhatsApp.
             </p>
             <form action="/catalogo" className="mt-8 grid gap-3 rounded-md border border-line bg-white p-2 shadow-[0_20px_54px_rgba(11,13,15,0.08)] sm:grid-cols-[1fr_auto]">
               <label className="relative">
@@ -71,20 +78,20 @@ export default async function HomePage() {
                 />
               </label>
               <button className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#afa466] px-5 text-sm font-bold text-[#151515] transition hover:bg-[#fcffcc]">
-                Explorar decants <ArrowRight size={17} />
+                Explorar catálogo <ArrowRight size={17} />
               </button>
             </form>
             <div className="mt-8 grid grid-cols-3 gap-3 border-y border-line py-5 text-sm text-[#5f574c]">
               <p><span className="block font-display text-3xl text-ink">+40</span> perfumes curados</p>
-              <p><span className="block font-display text-3xl text-ink">24h</span> preparacion</p>
+              <p><span className="block font-display text-3xl text-ink">24h</span> preparación</p>
               <p><span className="block font-display text-3xl text-ink">3</span> tamaños para probar</p>
             </div>
           </div>
 
           <div className="relative min-h-[420px] overflow-hidden rounded-md border border-line bg-mist shadow-[0_30px_90px_rgba(11,13,15,0.12)] sm:min-h-[560px]">
             <Image
-              src="/images/hero-decants.png"
-              alt="Decants y perfumes Aurum"
+              src={heroImage}
+              alt="Decants originales de perfumes"
               fill
               priority
               loading="eager"
@@ -93,8 +100,8 @@ export default async function HomePage() {
             />
             <div className="absolute inset-x-4 bottom-4 grid gap-3 rounded-md border border-white/70 bg-white/88 p-4 backdrop-blur sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8c682b]">Discovery set recomendado</p>
-                <p className="mt-1 font-semibold text-ink">Citrus Woods, Amber Spice y Fleur Blanche</p>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8c682b]">Selección recomendada</p>
+                <p className="mt-1 font-semibold text-ink">Aromas frescos, intensos y limpios para comparar.</p>
               </div>
               <ButtonLink href="/catalogo" variant="champagne" className="h-10 whitespace-nowrap">
                 Armar set <ChevronRight size={16} />
@@ -107,21 +114,21 @@ export default async function HomePage() {
       <section id="confianza" className="border-b border-line bg-[#f8f8f6] py-6">
         <div className="mx-auto grid max-w-7xl gap-3 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
           <Proof icon={<BadgeCheck size={19} />} title="Originalidad verificada" text="Productos curados, rotulados y preparados con control." />
-          <Proof icon={<LockKeyhole size={19} />} title="Checkout seguro" text="Pago protegido y datos de compra claros antes de confirmar." />
+          <Proof icon={<LockKeyhole size={19} />} title="Compra cuidada" text="Datos claros, stock visible y confirmación antes de avanzar." />
           <Proof icon={<PackageCheck size={19} />} title="Stock visible" text="Variantes por ml, disponibilidad y bajo stock a la vista." />
-          <Proof icon={<Truck size={19} />} title="Envio con tracking" text="Seguimiento cuando el pedido pasa a preparacion." />
+          <Proof icon={<Truck size={19} />} title="Envío coordinado" text="Seguimiento cuando el pedido pasa a preparación." />
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Seleccion boutique</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Selección boutique</p>
             <h2 className="font-display mt-2 text-4xl tracking-normal text-ink sm:text-5xl">Decants para decidir mejor</h2>
-            <p className="mt-3 max-w-2xl leading-7 text-[#5f574c]">Elige por familia olfativa, ocasion y tamaño. Cada card esta pensada para comparar rapido sin perder detalle.</p>
+            <p className="mt-3 max-w-2xl leading-7 text-[#5f574c]">Elegí por familia olfativa, ocasión y tamaño. Cada tarjeta está pensada para comparar rápido sin perder detalle.</p>
           </div>
           <ButtonLink href="/catalogo" variant="secondary">
-            Ver todo el catalogo <ArrowRight size={17} />
+            Ver todo el catálogo <ArrowRight size={17} />
           </ButtonLink>
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -137,7 +144,7 @@ export default async function HomePage() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Packs de descubrimiento</p>
             <h2 className="font-display mt-2 text-4xl leading-tight text-ink sm:text-5xl">Menos duda, mejor compra.</h2>
             <p className="mt-4 leading-7 text-[#5f574c]">
-              Los packs agrupan perfiles que se comparan bien entre si: fresco diario, noche intensa y floral limpio.
+              Los packs agrupan perfiles que se comparan bien entre sí: fresco diario, noche intensa y floral limpio.
             </p>
             <ButtonLink href="/catalogo" className="mt-7">
               Armar discovery set <ArrowRight size={17} />
@@ -165,12 +172,12 @@ export default async function HomePage() {
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d7b779]">Marcas destacadas</p>
               <h2 className="font-display mt-2 text-4xl sm:text-5xl">Casas para explorar por perfil</h2>
             </div>
-            <p className="max-w-md text-sm leading-6 text-white/66">Una seleccion corta transmite curaduria. El catalogo completo mantiene filtros para profundizar.</p>
+            <p className="max-w-md text-sm leading-6 text-white/66">Una selección corta transmite curaduría. El catálogo completo mantiene filtros simples para profundizar.</p>
           </div>
           <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {(brands.length ? brands : ["Aurum Atelier", "Maison Nube", "Terra Lab"]).map((brand) => (
-              <a key={brand} href="/catalogo" className="flex items-center justify-between rounded-md border border-white/14 bg-white/[0.04] p-5 transition hover:bg-white/[0.08]">
-                <span className="font-display text-2xl">{brand}</span>
+            {(brands.length ? brands : ["Al Haramain", "Armaf", "Lattafa"]).map((brandName) => (
+              <a key={brandName} href="/catalogo" className="flex items-center justify-between rounded-md border border-white/14 bg-white/[0.04] p-5 transition hover:bg-white/[0.08]">
+                <span className="font-display text-2xl">{brandName}</span>
                 <ArrowRight size={18} />
               </a>
             ))}
@@ -181,13 +188,13 @@ export default async function HomePage() {
       <section id="como-funciona" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Como funciona</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Cómo funciona</p>
             <h2 className="font-display mt-2 text-4xl text-ink sm:text-5xl">Probar antes de invertir</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Step icon={<SprayCan size={18} />} title="Elegis" text="Busca por nota, marca, genero, precio y tamaño." />
+            <Step icon={<SprayCan size={18} />} title="Elegís" text="Buscá por nota, marca, género y tamaño." />
             <Step icon={<Clock3 size={18} />} title="Preparamos" text="Armamos cada atomizador con rotulado y control." />
-            <Step icon={<Truck size={18} />} title="Recibis" text="Pagas online y seguis el envio desde tu cuenta." />
+            <Step icon={<Truck size={18} />} title="Recibís" text="Seguís el estado del pedido desde tu cuenta." />
           </div>
         </div>
       </section>
@@ -197,7 +204,7 @@ export default async function HomePage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Reviews verificadas</p>
-              <h2 className="font-display mt-2 text-4xl text-ink sm:text-5xl">Confianza antes del checkout</h2>
+              <h2 className="font-display mt-2 text-4xl text-ink sm:text-5xl">Confianza antes de confirmar</h2>
             </div>
             <div className="flex gap-1 text-[#b88939]" aria-label="5 estrellas">
               {Array.from({ length: 5 }).map((_, index) => (

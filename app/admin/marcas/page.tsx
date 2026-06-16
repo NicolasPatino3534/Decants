@@ -8,13 +8,13 @@ export default async function AdminBrandsPage() {
   return (
     <div>
       <h1 className="text-3xl font-black">Marcas</h1>
-      <p className="mt-2 text-neutral-600">Gestion de casas perfumistas y marcas del catalogo.</p>
+      <p className="mt-2 text-neutral-600">Gestión de casas perfumistas y marcas del catálogo.</p>
 
       <section className="mt-6 rounded-md border border-line bg-white p-5">
         <h2 className="text-lg font-black">Nueva marca</h2>
         <form action={createBrand} className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
           <Input name="name" label="Nombre" required />
-          <Input name="country" label="Pais" />
+          <Input name="country" label="País" />
           <Button className="self-end">Crear</Button>
         </form>
       </section>
@@ -26,7 +26,7 @@ export default async function AdminBrandsPage() {
             <form key={brand.id} action={updateBrand} className="grid gap-3 py-4 md:grid-cols-[1fr_1fr_auto_auto]">
               <input type="hidden" name="id" value={brand.id} />
               <Input name="name" label="Nombre" defaultValue={brand.name} required />
-              <Input name="country" label="Pais" defaultValue={brand.country ?? ""} />
+              <Input name="country" label="País" defaultValue={brand.country ?? ""} />
               <Button variant="secondary" className="self-end">Guardar</Button>
               <button formAction={deleteBrand} className="self-end rounded-md border border-red-200 px-3 py-2 text-sm font-bold text-danger">
                 Eliminar

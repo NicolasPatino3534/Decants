@@ -16,8 +16,8 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   if (!hasSupabaseConfig()) {
     return {
       id: "demo-owner",
-      email: "owner@aurum.local",
-      fullName: "Aurum Owner",
+      email: "owner@decantscba.local",
+      fullName: "DecantsCBA Owner",
       phone: "",
       roles: ["owner", "admin", "staff", "customer"],
     };

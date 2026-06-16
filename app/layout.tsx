@@ -3,30 +3,31 @@ import "./globals.css";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { brand } from "@/lib/brand";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.siteUrl),
   title: {
-    default: "Aurum Decants",
-    template: "%s | Aurum Decants",
+    default: brand.name,
+    template: `%s | ${brand.name}`,
   },
-  description: "Tienda online de decants premium, muestras originales y perfumes boutique.",
+  description: brand.description,
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Aurum Decants",
-    description: "Descubri perfumes premium en decants de 2ml, 5ml y 10ml.",
+    title: brand.name,
+    description: "Descubrí perfumes premium en decants de 2ml, 5ml y 10ml.",
     url: "/",
-    siteName: "Aurum Decants",
+    siteName: brand.name,
     locale: "es_AR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aurum Decants",
-    description: "Decants premium para descubrir tu proxima firma.",
+    title: brand.name,
+    description: "Decants premium para descubrir tu próxima firma.",
   },
   icons: {
     icon: "/icon.svg",

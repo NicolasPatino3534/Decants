@@ -7,11 +7,11 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-black">Categorias</h1>
-      <p className="mt-2 text-neutral-600">Familias olfativas y categorias usadas por el catalogo.</p>
+      <h1 className="text-3xl font-black">Categorías</h1>
+      <p className="mt-2 text-neutral-600">Familias olfativas y categorías usadas por el catálogo.</p>
 
       <section className="mt-6 rounded-md border border-line bg-white p-5">
-        <h2 className="text-lg font-black">Nueva categoria</h2>
+        <h2 className="text-lg font-black">Nueva categoría</h2>
         <form action={createCategory} className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
           <Input name="name" label="Nombre" required />
           <Button className="self-end">Crear</Button>

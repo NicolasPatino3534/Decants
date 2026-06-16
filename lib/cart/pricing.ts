@@ -3,7 +3,7 @@ import type { CartLine, CartTotals, ShippingMethod } from "@/lib/types";
 export const fallbackShippingMethods: ShippingMethod[] = [
   {
     id: "standard",
-    name: "Envio estandar",
+    name: "Envío estándar",
     description: "Entrega a domicilio con seguimiento.",
     carrier: "Correo",
     basePriceCents: 250000,
@@ -12,9 +12,9 @@ export const fallbackShippingMethods: ShippingMethod[] = [
   },
   {
     id: "express",
-    name: "Envio express",
-    description: "Prioridad de preparacion y despacho.",
-    carrier: "Mensajeria",
+    name: "Envío express",
+    description: "Prioridad de preparación y despacho.",
+    carrier: "Mensajería",
     basePriceCents: 450000,
     estimatedDaysMin: 1,
     estimatedDaysMax: 2,

@@ -193,12 +193,12 @@ async function buildProductVariantCartLines(supabase: SupabaseClient, items: Car
 
 function resolveLegacyImageUrl(images: NonNullable<LegacyVariantRow["products"]>["product_images"] | undefined) {
   const image = [...(images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
-  return image?.storage_path ?? "/images/hero-decants.png";
+  return image?.storage_path ?? "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
 }
 
 function resolveProductImageUrl(images: NonNullable<ProductVariantRow["products"]>["product_images"] | undefined, supabase: SupabaseClient) {
   const image = [...(images ?? [])].sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order)[0];
-  if (!image) return "/images/hero-decants.png";
+  if (!image) return "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
   if (image.public_url) return image.public_url;
   if (image.storage_path.startsWith("http") || image.storage_path.startsWith("/")) return image.storage_path;
   return supabase.storage.from(productImagesBucket).getPublicUrl(image.storage_path).data.publicUrl;

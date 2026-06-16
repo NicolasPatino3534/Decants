@@ -35,7 +35,7 @@ export function buildCheckoutLines<TVariant extends CheckoutStockVariant>(
   const variantMap = new Map(variants.map((variant) => [variant.id, variant]));
   return normalizedItems.map((item) => {
     const variant = variantMap.get(item.variantId);
-    if (!variant) throw new CheckoutStockError("Uno o mas productos ya no estan disponibles.");
+    if (!variant) throw new CheckoutStockError("Uno o más productos ya no están disponibles.");
     if (variant.stockOnHand < item.quantity) {
       throw new CheckoutStockError(`${variant.productName} ${variant.sizeMl}ml no tiene stock suficiente.`);
     }

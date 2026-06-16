@@ -1,8 +1,10 @@
 import { updateOrderNotes, updateOrderStatus, updateShipmentStatus } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { whatsappUrl } from "@/lib/brand";
 import { getAdminOrdersDetailed } from "@/lib/data/admin";
 import { formatMoney } from "@/lib/format";
+import { MessageCircle } from "lucide-react";
 
 const statuses = ["pending_payment", "payment_review", "paid", "preparing", "ready_to_ship", "shipped", "delivered", "cancelled", "rejected"];
 const shipmentStatuses = ["pending", "preparing", "ready_to_ship", "shipped", "delivered", "delayed"];
@@ -13,7 +15,7 @@ export default async function AdminOrdersPage() {
   return (
     <div>
       <h1 className="text-3xl font-black">Pedidos</h1>
-      <p className="mt-2 text-neutral-600">Vista operativa de pedidos, cliente, direccion y notas internas.</p>
+      <p className="mt-2 text-neutral-600">Vista operativa de pedidos, cliente, dirección y notas internas.</p>
 
       <section className="mt-6 grid gap-5">
         {orders.map((order) => (
@@ -36,16 +38,28 @@ export default async function AdminOrdersPage() {
                 <h3 className="font-black">Cliente</h3>
                 <p className="mt-2 text-sm font-semibold">{order.customerName}</p>
                 <p className="text-sm text-neutral-500">{order.customerEmail}</p>
+                {order.shippingAddress.phone ? (
+                  <a
+                    href={adminWhatsappUrl(order.shippingAddress.phone, order.orderNumber)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex h-9 items-center gap-2 rounded-md border border-line px-3 text-sm font-bold text-[#47624f] transition hover:bg-[#f5faf6]"
+                  >
+                    <MessageCircle size={15} />
+                    WhatsApp
+                  </a>
+                ) : null}
               </section>
 
               <section>
-                <h3 className="font-black">Direccion de envio</h3>
+                <h3 className="font-black">Dirección de envío</h3>
                 <div className="mt-2 space-y-1 text-sm text-neutral-600">
-                  <p>{order.shippingAddress.street ?? "Sin direccion"}</p>
+                  <p>{order.shippingAddress.street ?? "Sin dirección"}</p>
                   <p>
                     {[order.shippingAddress.city, order.shippingAddress.state, order.shippingAddress.postalCode].filter(Boolean).join(", ")}
                   </p>
                   <p>{order.shippingAddress.country ?? ""}</p>
+                  {order.shippingAddress.reference ? <p>Referencia: {order.shippingAddress.reference}</p> : null}
                 </div>
               </section>
 
@@ -81,7 +95,7 @@ export default async function AdminOrdersPage() {
               <form action={updateShipmentStatus} className="rounded-md border border-line p-4">
                 <input type="hidden" name="orderId" value={order.id} />
                 <label>
-                  <span className="mb-1 block text-sm font-bold">Estado de envio</span>
+                  <span className="mb-1 block text-sm font-bold">Estado de envío</span>
                   <select name="shipmentStatus" defaultValue={order.shipmentStatus} className="h-10 w-full rounded-md border border-line px-2 text-sm">
                     {shipmentStatuses.map((status) => (
                       <option key={status} value={status}>{status}</option>
@@ -102,8 +116,17 @@ export default async function AdminOrdersPage() {
             </div>
           </article>
         ))}
-        {orders.length === 0 ? <p className="rounded-md border border-line bg-white p-6 text-sm text-neutral-500">Todavia no hay pedidos.</p> : null}
+        {orders.length === 0 ? <p className="rounded-md border border-line bg-white p-6 text-sm text-neutral-500">Todavía no hay pedidos.</p> : null}
       </section>
     </div>
   );
+}
+
+function adminWhatsappUrl(phone: string, orderNumber: string) {
+  const cleanPhone = phone.replace(/[^\d]/g, "");
+  if (cleanPhone.length >= 8) {
+    const international = cleanPhone.startsWith("54") ? cleanPhone : `549${cleanPhone}`;
+    return `https://wa.me/${international}?text=${encodeURIComponent(`Hola, te escribimos de DecantsCBA por tu pedido #${orderNumber}.`)}`;
+  }
+  return whatsappUrl(`Hola, te escribimos de DecantsCBA por el pedido #${orderNumber}.`);
 }

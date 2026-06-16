@@ -16,7 +16,7 @@ export default async function AccountOrderPage({ params }: { params: Promise<{ i
       <h1 className="mt-2 text-4xl font-black">Seguimiento</h1>
       <div className="mt-5 flex flex-wrap gap-2">
         <StatusBadge tone={order.paymentStatus === "paid" ? "green" : "amber"}>Pago {order.paymentStatus}</StatusBadge>
-        <StatusBadge tone={order.shipmentStatus === "delivered" ? "green" : "amber"}>Envio {order.shipmentStatus}</StatusBadge>
+        <StatusBadge tone={order.shipmentStatus === "delivered" ? "green" : "amber"}>Envío {order.shipmentStatus}</StatusBadge>
       </div>
       <section className="mt-7 rounded-md border border-line bg-white p-5">
         <h2 className="text-lg font-black">Items</h2>
