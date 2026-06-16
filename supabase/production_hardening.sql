@@ -61,8 +61,8 @@ stable
 set search_path = ''
 as $$
   select coalesce(
-    (nullif(current_setting('request.jwt.claims', true), '')::jsonb -> 'app_metadata' ->> 'role') = 'admin'
-    or (nullif(current_setting('request.jwt.claims', true), '')::jsonb -> 'app_metadata' -> 'roles') ? 'admin',
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb -> 'app_metadata' ->> 'role') in ('owner', 'admin', 'staff')
+    or (nullif(current_setting('request.jwt.claims', true), '')::jsonb -> 'app_metadata' -> 'roles') ?| array['owner', 'admin', 'staff'],
     false
   );
 $$;

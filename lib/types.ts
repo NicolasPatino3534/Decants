@@ -2,18 +2,24 @@ export type AppRole = "customer" | "staff" | "admin" | "owner";
 
 export type ProductStatus = "draft" | "active" | "archived";
 export type OrderStatus =
+  | "pending_payment"
+  | "payment_review"
   | "pending"
   | "paid"
   | "preparing"
+  | "ready_to_ship"
   | "shipped"
   | "delivered"
   | "cancelled"
+  | "rejected"
   | "refunded";
-export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type PaymentStatus = "pending" | "payment_review" | "paid" | "failed" | "rejected" | "cancelled" | "refunded";
 export type ShipmentStatus =
   | "pending"
   | "preparing"
+  | "ready_to_ship"
   | "in_transit"
+  | "shipped"
   | "delivered"
   | "delayed";
 

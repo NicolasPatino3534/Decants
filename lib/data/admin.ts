@@ -249,7 +249,7 @@ export async function getInventoryMovements(limit = 80) {
 export async function getAdminDashboard() {
   const [orders, products] = await Promise.all([getAdminOrdersDetailed(), getAdminCatalog()]);
   const revenue = orders.filter((order) => order.paymentStatus === "paid").reduce((sum, order) => sum + order.totalCents, 0);
-  const pendingOrders = orders.filter((order) => order.status === "pending").length;
+  const pendingOrders = orders.filter((order) => order.status === "pending" || order.status === "pending_payment" || order.status === "payment_review").length;
   const lowStock = products.flatMap((product) =>
     product.variants
       .filter((variant) => variant.stockOnHand <= variant.lowStockThreshold)

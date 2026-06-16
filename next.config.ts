@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const supabaseImageHostname = getSupabaseImageHostname(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
   images: {
     remotePatterns: [
       ...(supabaseImageHostname ? [{ protocol: "https" as const, hostname: supabaseImageHostname }] : []),
