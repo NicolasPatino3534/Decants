@@ -72,13 +72,29 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  if (!user) {
+    return NextResponse.json({ error: "Necesitas iniciar sesion para comprar." }, { status: 401 });
+  }
 
-  const existing = await findExistingOrderByIdempotencyKey(admin, parsed.data);
+  const { data: profile } = supabase
+    ? await supabase.from("profiles").select("email,full_name,phone").eq("id", user.id).maybeSingle()
+    : { data: null };
+  const checkoutInput: CheckoutInput = {
+    ...parsed.data,
+    customer: {
+      ...parsed.data.customer,
+      email: (profile?.email ?? user.email ?? parsed.data.customer.email).toLowerCase(),
+      name: parsed.data.customer.name || profile?.full_name || "",
+      phone: parsed.data.customer.phone || profile?.phone || "",
+    },
+  };
+
+  const existing = await findExistingOrderByIdempotencyKey(admin, checkoutInput);
   if (existing) {
     return NextResponse.json({ url: `${env.siteUrl}/checkout/success?order=${existing.id}`, orderId: existing.id, duplicate: true });
   }
 
-  const items = normalizeCheckoutItems(parsed.data.items);
+  const items = normalizeCheckoutItems(checkoutInput.items);
   const variants = await fetchCheckoutVariants(admin, items.map((item) => item.variantId));
   let lines: Array<{ variant: CheckoutVariant; quantity: number; totalCents: number }>;
   try {
@@ -93,10 +109,10 @@ export async function POST(request: Request) {
 
   const subtotalCents = lines.reduce((sum, line) => sum + line.totalCents, 0);
   const [shippingMethod, coupon] = await Promise.all([
-    resolveShippingMethod(admin, parsed.data.shippingMethodId),
+    resolveShippingMethod(admin, checkoutInput.shippingMethodId),
     resolveCouponDiscount({
       supabase: admin,
-      couponCode: parsed.data.couponCode,
+      couponCode: checkoutInput.couponCode,
       subtotalCents,
     }),
   ]);
@@ -129,8 +145,8 @@ export async function POST(request: Request) {
 
   try {
     const order = await createOrder(admin, {
-      input: parsed.data,
-      userId: user?.id ?? null,
+      input: checkoutInput,
+      userId: user.id,
       shippingMethodId: isUuid(shippingMethod.id) ? shippingMethod.id : null,
       couponId: coupon.couponId,
       totals,
@@ -140,7 +156,7 @@ export async function POST(request: Request) {
     await createOrderItems(admin, order.id, lines);
     await createInventoryReservationMovements(admin, order.id, lines);
     await incrementCouponUsage(admin, coupon.couponId);
-    if (user && supabase) await clearPersistedCart(supabase, user.id);
+    if (supabase) await clearPersistedCart(supabase, user.id);
 
     const stripe = getStripe();
     if (!stripe) {
@@ -158,16 +174,16 @@ export async function POST(request: Request) {
       const discounts = await createStripeDiscounts(stripe, {
         orderId: order.id,
         discountCents: totals.discountCents,
-        couponCode: parsed.data.couponCode,
+        couponCode: checkoutInput.couponCode,
       });
 
       session = await stripe.checkout.sessions.create(
         {
           mode: "payment",
-          customer_email: parsed.data.customer.email,
+          customer_email: checkoutInput.customer.email,
           success_url: `${env.siteUrl}/checkout/success?order=${order.id}`,
           cancel_url: `${env.siteUrl}/checkout`,
-          metadata: { orderId: order.id, idempotencyKey: parsed.data.idempotencyKey },
+          metadata: { orderId: order.id, idempotencyKey: checkoutInput.idempotencyKey },
           ...(discounts.length > 0 ? { discounts } : {}),
           line_items: [
             ...lines.map((line) => ({
@@ -415,7 +431,7 @@ async function createOrder(
   const insertPayload = {
     user_id: userId,
     order_number: orderNumber,
-    status: "pending",
+    status: "pending_payment",
     payment_status: "pending",
     shipment_status: "pending",
     shipping_method_id: shippingMethodId,

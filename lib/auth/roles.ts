@@ -8,6 +8,7 @@ export type CurrentProfile = {
   id: string;
   email: string;
   fullName: string;
+  phone: string;
   roles: AppRole[];
 };
 
@@ -17,6 +18,7 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
       id: "demo-owner",
       email: "owner@aurum.local",
       fullName: "Aurum Owner",
+      phone: "",
       roles: ["owner", "admin", "staff", "customer"],
     };
   }
@@ -31,7 +33,7 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   if (!user) return null;
 
   const [{ data: profile }, { data: roles }] = await Promise.all([
-    supabase.from("profiles").select("id,email,full_name,role").eq("id", user.id).single(),
+    supabase.from("profiles").select("id,email,full_name,phone,role").eq("id", user.id).single(),
     supabase.from("user_roles").select("role").eq("user_id", user.id),
   ]);
 
@@ -43,12 +45,13 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
     id: user.id,
     email: profile?.email ?? user.email ?? "",
     fullName: profile?.full_name ?? user.user_metadata?.full_name ?? "",
+    phone: profile?.phone ?? "",
     roles: mergedRoles.length > 0 ? mergedRoles : ["customer"],
   };
 }
 
 export function canAccessAdmin(roles: AppRole[]) {
-  return roles.includes("admin");
+  return roles.some((role) => role === "owner" || role === "admin" || role === "staff");
 }
 
 export async function requireAdmin() {
@@ -61,10 +64,10 @@ export async function requireAdmin() {
 
 export const requireStaff = requireAdmin;
 
-export async function requireCustomer() {
+export async function requireCustomer(nextPath = "/cuenta") {
   const profile = await getCurrentProfile();
   if (!profile) {
-    redirect("/auth?next=/cuenta");
+    redirect(`/auth?next=${encodeURIComponent(nextPath)}`);
   }
   return profile;
 }

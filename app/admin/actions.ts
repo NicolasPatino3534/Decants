@@ -5,8 +5,8 @@ import { requireAdmin } from "@/lib/auth/roles";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const productStatuses = ["draft", "active", "archived"] as const;
-const orderStatuses = ["pending", "paid", "preparing", "shipped", "delivered", "cancelled"] as const;
-const shipmentStatuses = ["pending", "preparing", "in_transit", "delivered", "delayed"] as const;
+const orderStatuses = ["pending_payment", "payment_review", "paid", "preparing", "ready_to_ship", "shipped", "delivered", "cancelled", "rejected"] as const;
+const shipmentStatuses = ["pending", "preparing", "ready_to_ship", "shipped", "delivered", "delayed"] as const;
 
 export async function createBrand(formData: FormData) {
   await requireAdmin();
@@ -254,7 +254,7 @@ export async function updateOrderStatus(formData: FormData) {
   if (!admin) return;
 
   const orderId = readString(formData, "orderId");
-  const status = normalizeOption(readString(formData, "status"), orderStatuses, "pending");
+  const status = normalizeOption(readString(formData, "status"), orderStatuses, "pending_payment");
   if (!orderId) return;
 
   await admin.from("orders").update({ status }).eq("id", orderId);

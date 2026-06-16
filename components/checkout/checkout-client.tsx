@@ -8,7 +8,13 @@ import { calculateCartTotals, fallbackShippingMethods } from "@/lib/cart/pricing
 import { formatMoney } from "@/lib/format";
 import type { ShippingMethod } from "@/lib/types";
 
-export function CheckoutClient() {
+type CheckoutCustomer = {
+  name: string;
+  email: string;
+  phone: string;
+};
+
+export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutCustomer }) {
   const { lines, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,9 +120,9 @@ export function CheckoutClient() {
                 <BadgeCheck size={18} className="text-[#5f7d69]" /> Tus datos
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <Field name="name" label="Nombre completo" autoComplete="name" required />
-              <Field name="email" label="Email" type="email" autoComplete="email" required />
-              <Field name="phone" label="Telefono" type="tel" autoComplete="tel" required />
+              <Field name="name" label="Nombre completo" autoComplete="name" defaultValue={initialCustomer.name} required />
+              <Field name="email" label="Email" type="email" autoComplete="email" defaultValue={initialCustomer.email} required readOnly />
+              <Field name="phone" label="Telefono" type="tel" autoComplete="tel" defaultValue={initialCustomer.phone} required />
               </div>
             </section>
 
@@ -227,6 +233,8 @@ function Field({
   className = "",
   required = false,
   autoComplete,
+  defaultValue,
+  readOnly = false,
 }: {
   label: string;
   name: string;
@@ -234,6 +242,8 @@ function Field({
   className?: string;
   required?: boolean;
   autoComplete?: string;
+  defaultValue?: string;
+  readOnly?: boolean;
 }) {
   return (
     <label className={className}>
@@ -243,6 +253,8 @@ function Field({
         type={type}
         required={required}
         autoComplete={autoComplete}
+        defaultValue={defaultValue}
+        readOnly={readOnly}
         className="h-11 w-full rounded-md border border-line bg-white px-3 text-sm font-semibold outline-none focus:border-[#b88939]"
       />
     </label>

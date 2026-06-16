@@ -4,8 +4,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminOrdersDetailed } from "@/lib/data/admin";
 import { formatMoney } from "@/lib/format";
 
-const statuses = ["pending", "paid", "preparing", "shipped", "delivered", "cancelled"];
-const shipmentStatuses = ["pending", "preparing", "in_transit", "delivered", "delayed"];
+const statuses = ["pending_payment", "payment_review", "paid", "preparing", "ready_to_ship", "shipped", "delivered", "cancelled", "rejected"];
+const shipmentStatuses = ["pending", "preparing", "ready_to_ship", "shipped", "delivered", "delayed"];
 
 export default async function AdminOrdersPage() {
   const orders = await getAdminOrdersDetailed();
