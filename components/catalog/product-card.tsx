@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Plus, ShieldCheck, SprayCan } from "lucide-react";
+import { ArrowUpRight, Check, Plus, ShieldCheck, SprayCan } from "lucide-react";
+import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/format";
@@ -10,6 +11,7 @@ import type { Product } from "@/lib/types";
 
 export function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const { addItem } = useCart();
+  const [justAdded, setJustAdded] = useState(false);
   const availableVariants = product.variants.filter((variant) => variant.stockOnHand > 0);
   const firstVariant = availableVariants[0] ?? product.variants[0];
   const lastVariant = product.variants[product.variants.length - 1] ?? firstVariant;
@@ -30,7 +32,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
           className="object-cover object-center transition duration-500 group-hover:scale-105"
         />
         <span className="absolute left-3 top-3 rounded-md bg-ink/92 px-3 py-1 text-xs font-bold text-white backdrop-blur">
-          {isSoldOut ? "Agotado" : lowStock ? "Ultimas unidades" : `${firstVariant?.sizeMl ?? 2}ml disponible`}
+          {isSoldOut ? "Agotado" : lowStock ? "Últimas unidades" : `${firstVariant?.sizeMl ?? 2}ml disponible`}
         </span>
         <span className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-md border border-white/70 bg-white/92 text-ink">
           <ArrowUpRight size={18} />
@@ -79,11 +81,16 @@ export function ProductCard({ product, priority = false }: { product: Product; p
             variant="champagne"
             className="h-11 w-full"
             disabled={!firstVariant || isSoldOut}
-            onClick={() => firstVariant && addItem(product, firstVariant)}
+            onClick={() => {
+              if (!firstVariant) return;
+              addItem(product, firstVariant);
+              setJustAdded(true);
+              window.setTimeout(() => setJustAdded(false), 1200);
+            }}
             aria-label={`Agregar ${product.name} al carrito`}
           >
-            <Plus size={17} />
-            Agregar desde {firstVariant ? `${firstVariant.sizeMl}ml` : ""}
+            {justAdded ? <Check size={17} /> : <Plus size={17} />}
+            {justAdded ? "Agregado" : `Agregar desde ${firstVariant ? `${firstVariant.sizeMl}ml` : ""}`}
           </Button>
         </div>
       </div>

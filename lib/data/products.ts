@@ -34,6 +34,10 @@ type ProductRow = {
   heart_notes: string[] | null;
   base_notes: string[] | null;
   gender: Product["gender"];
+  duration_estimate: string | null;
+  projection_estimate: string | null;
+  recommended_occasion: string | null;
+  recommended_season: string | null;
   active: boolean;
   featured: boolean;
   perfume_brands: (Brand & { active?: boolean }) | null;
@@ -52,6 +56,10 @@ type LegacyProductRow = {
   notes_heart: string[] | null;
   notes_base: string[] | null;
   gender: Product["gender"];
+  duration_estimate: string | null;
+  projection_estimate: string | null;
+  recommended_occasion: string | null;
+  recommended_season: string | null;
   status: Product["status"];
   brands: Brand | null;
   fragrance_families: Category | null;
@@ -76,6 +84,10 @@ const productSelect = `
   heart_notes,
   base_notes,
   gender,
+  duration_estimate,
+  projection_estimate,
+  recommended_occasion,
+  recommended_season,
   active,
   featured,
   perfume_brands!inner ( id, name, slug, country, active ),
@@ -94,6 +106,10 @@ const legacyProductSelect = `
   notes_heart,
   notes_base,
   gender,
+  duration_estimate,
+  projection_estimate,
+  recommended_occasion,
+  recommended_season,
   status,
   brands ( id, name, slug ),
   fragrance_families ( id, name, slug ),
@@ -231,6 +247,10 @@ function mapProduct(row: ProductRow, supabase: SupabaseClient): Product {
     notesHeart: row.heart_notes ?? [],
     notesBase: row.base_notes ?? [],
     gender: row.gender,
+    durationEstimate: row.duration_estimate,
+    projectionEstimate: row.projection_estimate,
+    recommendedOccasion: row.recommended_occasion,
+    recommendedSeason: row.recommended_season,
     status: row.active ? "active" : "archived",
     featured: row.featured,
     imageUrl: resolveProductImageUrl(row.product_images, supabase),
@@ -254,6 +274,10 @@ function mapLegacyProduct(row: LegacyProductRow, supabase: SupabaseClient): Prod
     notesHeart: row.notes_heart ?? [],
     notesBase: row.notes_base ?? [],
     gender: row.gender,
+    durationEstimate: row.duration_estimate,
+    projectionEstimate: row.projection_estimate,
+    recommendedOccasion: row.recommended_occasion,
+    recommendedSeason: row.recommended_season,
     status: row.status,
     featured: false,
     imageUrl: resolveLegacyProductImageUrl(row.product_images, supabase),
@@ -288,7 +312,7 @@ function mapVariants(variants: ProductVariantRow[] | null): ProductVariant[] {
 
 function resolveProductImageUrl(images: ProductImageRow[] | null, supabase: SupabaseClient) {
   const image = [...(images ?? [])].sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order)[0];
-  if (!image) return "/images/hero-decants.png";
+  if (!image) return "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
   if (image.public_url) return image.public_url;
   if (image.storage_path.startsWith("http") || image.storage_path.startsWith("/")) return image.storage_path;
   return supabase.storage.from(productImagesBucket).getPublicUrl(image.storage_path).data.publicUrl;
@@ -296,7 +320,7 @@ function resolveProductImageUrl(images: ProductImageRow[] | null, supabase: Supa
 
 function resolveLegacyProductImageUrl(images: LegacyProductRow["product_images"], supabase: SupabaseClient) {
   const image = [...(images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
-  if (!image) return "/images/hero-decants.png";
+  if (!image) return "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
   if (image.storage_path.startsWith("http") || image.storage_path.startsWith("/")) return image.storage_path;
   return supabase.storage.from(productImagesBucket).getPublicUrl(image.storage_path).data.publicUrl;
 }

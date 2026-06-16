@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, LockKeyhole, Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from "lucide-react";
+import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { calculateCartTotals, fallbackShippingMethods } from "@/lib/cart/pricing";
@@ -10,10 +11,27 @@ import { formatMoney } from "@/lib/format";
 
 export function CartPageClient() {
   const { lines, updateQuantity, removeItem, clearCart } = useCart();
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [removingVariantId, setRemovingVariantId] = useState<string | null>(null);
+  const [changedVariantId, setChangedVariantId] = useState<string | null>(null);
   const totals = calculateCartTotals({
     lines,
     shippingCents: lines.length > 0 ? fallbackShippingMethods[0].basePriceCents : 0,
   });
+
+  function animateQuantity(variantId: string, nextQuantity: number) {
+    setChangedVariantId(variantId);
+    updateQuantity(variantId, nextQuantity);
+    window.setTimeout(() => setChangedVariantId(null), 240);
+  }
+
+  function animateRemove(variantId: string) {
+    setRemovingVariantId(variantId);
+    window.setTimeout(() => {
+      removeItem(variantId);
+      setRemovingVariantId(null);
+    }, 180);
+  }
 
   if (lines.length === 0) {
     return (
@@ -22,12 +40,12 @@ export function CartPageClient() {
           <div className="mx-auto grid h-12 w-12 place-items-center rounded-md bg-[#edf2ee] text-[#5f7d69]">
             <ShoppingBag size={20} />
           </div>
-          <h1 className="font-display mt-5 text-4xl text-ink">Tu carrito esta vacio</h1>
+          <h1 className="font-display mt-5 text-4xl text-ink">Tu carrito está vacío</h1>
           <p className="mt-3 text-sm leading-6 text-[#6f6658]">
-            Elegi tus decants favoritos y arma un set para probarlos antes de comprar botella completa.
+            Elegí tus decants favoritos y armá un set para probarlos antes de comprar botella completa.
           </p>
           <ButtonLink href="/catalogo" className="mt-6">
-            Explorar catalogo
+            Explorar catálogo
           </ButtonLink>
         </div>
       </main>
@@ -40,19 +58,41 @@ export function CartPageClient() {
         <section>
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#8c682b]">Carrito</p>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <h1 className="font-display text-5xl text-ink">Tu seleccion</h1>
-            <Button variant="secondary" className="w-fit" onClick={clearCart}>
-              Vaciar carrito
-            </Button>
+            <h1 className="font-display text-5xl text-ink">Tu selección</h1>
+            {!confirmClear ? (
+              <Button variant="secondary" className="w-fit" onClick={() => setConfirmClear(true)}>
+                Vaciar carrito
+              </Button>
+            ) : (
+              <div className="cart-confirm flex flex-wrap items-center gap-2 rounded-md border border-line bg-white p-2">
+                <span className="px-2 text-sm font-semibold text-[#afa466]">¿Vaciar todo?</span>
+                <Button
+                  variant="danger"
+                  className="h-9"
+                  onClick={() => {
+                    clearCart();
+                    setConfirmClear(false);
+                  }}
+                >
+                  Confirmar
+                </Button>
+                <Button variant="subtle" className="h-9" onClick={() => setConfirmClear(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            )}
           </div>
           <div className="mt-5 grid gap-2 rounded-md border border-[#dfe8df] bg-[#f5faf6] p-3 text-sm font-semibold text-[#47624f] sm:grid-cols-3">
             <span className="flex items-center gap-2"><ShieldCheck size={16} /> Compra segura</span>
-            <span className="flex items-center gap-2"><BadgeCheck size={16} /> Stock reservado al pagar</span>
-            <span className="flex items-center gap-2"><Truck size={16} /> Envio con tracking</span>
+            <span className="flex items-center gap-2"><BadgeCheck size={16} /> Stock validado</span>
+            <span className="flex items-center gap-2"><Truck size={16} /> Envío con tracking</span>
           </div>
           <div className="mt-6 divide-y divide-line rounded-md border border-line bg-white">
             {lines.map((line, index) => (
-              <div key={line.variantId} className="grid gap-4 p-4 sm:grid-cols-[120px_1fr_auto]">
+              <div
+                key={line.variantId}
+                className={`cart-line grid gap-4 p-4 sm:grid-cols-[120px_1fr_auto] ${removingVariantId === line.variantId ? "cart-line-removing" : ""}`}
+              >
                 <div className="relative aspect-square overflow-hidden rounded-md bg-mist">
                   <Image
                     src={line.imageUrl}
@@ -77,17 +117,19 @@ export function CartPageClient() {
                     variant="subtle"
                     className="h-10 w-10 px-0 text-ink"
                     aria-label={`Restar ${line.productName}`}
-                    onClick={() => updateQuantity(line.variantId, line.quantity - 1)}
+                    onClick={() => animateQuantity(line.variantId, line.quantity - 1)}
                   >
                     <Minus size={18} strokeWidth={2.4} />
                   </Button>
-                  <span className="grid h-9 w-10 place-items-center rounded-md border border-line bg-white text-sm font-bold">{line.quantity}</span>
+                  <span className={`grid h-9 w-10 place-items-center rounded-md border border-line bg-white text-sm font-bold ${changedVariantId === line.variantId ? "cart-quantity-pop" : ""}`}>
+                    {line.quantity}
+                  </span>
                   <Button
                     variant="subtle"
                     className="h-10 w-10 px-0 text-ink"
                     aria-label={`Sumar ${line.productName}`}
                     disabled={line.stockOnHand != null && line.quantity >= line.stockOnHand}
-                    onClick={() => updateQuantity(line.variantId, line.quantity + 1)}
+                    onClick={() => animateQuantity(line.variantId, line.quantity + 1)}
                   >
                     <Plus size={18} strokeWidth={2.4} />
                   </Button>
@@ -95,7 +137,7 @@ export function CartPageClient() {
                     variant="subtle"
                     className="h-10 w-10 px-0 text-ink"
                     aria-label={`Eliminar ${line.productName}`}
-                    onClick={() => removeItem(line.variantId)}
+                    onClick={() => animateRemove(line.variantId)}
                   >
                     <Trash2 size={18} strokeWidth={2.2} />
                   </Button>
@@ -115,7 +157,7 @@ export function CartPageClient() {
           <div className="mt-5 space-y-3 text-sm">
             <SummaryRow label="Subtotal" value={formatMoney(totals.subtotalCents)} />
             <SummaryRow label="Descuento" value={`-${formatMoney(totals.discountCents)}`} />
-            <SummaryRow label="Envio" value={formatMoney(totals.shippingCents)} />
+            <SummaryRow label="Envío" value={formatMoney(totals.shippingCents)} />
             <div className="border-t border-line pt-3">
               <div className="flex justify-between text-base">
                 <span className="font-bold">Total</span>
@@ -124,10 +166,10 @@ export function CartPageClient() {
             </div>
           </div>
           <p className="mt-4 rounded-md bg-mist p-3 text-xs leading-5 text-[#5f574c]">
-            El envio exacto y los datos de entrega se confirman en el siguiente paso antes de pagar.
+            El envío exacto y los datos de entrega se confirman en el siguiente paso.
           </p>
           <ButtonLink href="/checkout" className="mt-5 h-12 w-full">
-            Checkout seguro <ArrowRight size={17} />
+            Continuar pedido <ArrowRight size={17} />
           </ButtonLink>
         </aside>
       </div>

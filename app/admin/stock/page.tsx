@@ -80,7 +80,7 @@ export default async function AdminStockPage() {
               ))}
             </tbody>
           </table>
-          {movements.length === 0 ? <p className="py-4 text-sm text-neutral-500">Todavia no hay movimientos registrados.</p> : null}
+          {movements.length === 0 ? <p className="py-4 text-sm text-neutral-500">Todavía no hay movimientos registrados.</p> : null}
         </div>
       </section>
     </div>

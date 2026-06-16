@@ -1,4 +1,4 @@
--- Production hardening for Aurum Decants.
+-- Production hardening for DecantsCBA.
 -- Run after the main schema/migrations in Supabase SQL Editor.
 
 create extension if not exists pgcrypto;

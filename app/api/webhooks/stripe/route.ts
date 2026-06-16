@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, env.stripeWebhookSecret);
   } catch {
-    return NextResponse.json({ error: "Firma invalida." }, { status: 400 });
+    return NextResponse.json({ error: "Firma inválida." }, { status: 400 });
   }
 
   try {
@@ -95,7 +95,7 @@ async function handleCheckoutPaid(admin: AdminClient, event: Stripe.Event) {
       to: order.customer_email,
       subject: `Pedido #${order.order_number} confirmado`,
       template: "order_paid",
-      html: `<p>Hola ${customerName}, recibimos tu pago del pedido #${orderNumber}. Te avisamos cuando el envio este en camino.</p>`,
+      html: `<p>Hola ${customerName}, recibimos tu pago del pedido #${orderNumber}. Te avisamos cuando el envío esté en camino.</p>`,
     });
   }
 }
@@ -110,7 +110,7 @@ async function handleCheckoutFailed(admin: AdminClient, event: Stripe.Event) {
   const session = event.data.object as Stripe.Checkout.Session;
   const orderId = session.metadata?.orderId;
   if (!orderId) return;
-  await releaseReservedStockForOrder(admin, orderId, "Checkout expirado o pago asincronico fallido");
+  await releaseReservedStockForOrder(admin, orderId, "Checkout expirado o pago asincrónico fallido");
 }
 
 async function handlePaymentIntentFailed(admin: AdminClient, event: Stripe.Event) {

@@ -31,11 +31,11 @@ export async function GET() {
 export async function PUT(request: Request) {
   const parsed = cartSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: "Carrito invalido." }, { status: 400 });
+    return NextResponse.json({ error: "Carrito inválido." }, { status: 400 });
   }
 
   const supabase = await createSupabaseServerClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase no esta configurado." }, { status: 503 });
+  if (!supabase) return NextResponse.json({ error: "Supabase no está configurado." }, { status: 503 });
 
   const {
     data: { user },

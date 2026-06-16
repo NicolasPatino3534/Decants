@@ -12,27 +12,27 @@ export default async function AdminDashboardPage() {
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Operacion</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Operación</p>
           <h1 className="font-display mt-2 text-4xl text-ink">Panel de control</h1>
         </div>
         <p className="max-w-md text-sm leading-6 text-[#5f574c]">
-          Vista rapida para priorizar pedidos, ingresos, stock critico y envios del dia.
+          Vista rápida para priorizar pedidos, ingresos, stock crítico y envíos del día.
         </p>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Kpi icon={<TrendingUp size={19} />} label="Ventas totales" value={formatMoney(revenue)} helper="Ingresos registrados" />
         <Kpi icon={<ClipboardList size={19} />} label="Pedidos pendientes" value={String(pendingOrders)} helper={`${paidOrders} pagos confirmados`} />
-        <Kpi icon={<AlertTriangle size={19} />} label="Bajo stock" value={String(lowStock.length)} helper="Requiere reposicion" tone="amber" />
-        <Kpi icon={<Truck size={19} />} label="Envios a preparar" value={String(shippingQueue)} helper="Prioridad operativa" tone="green" />
+        <Kpi icon={<AlertTriangle size={19} />} label="Bajo stock" value={String(lowStock.length)} helper="Requiere reposición" tone="amber" />
+        <Kpi icon={<Truck size={19} />} label="Envíos a preparar" value={String(shippingQueue)} helper="Prioridad operativa" tone="green" />
       </div>
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[1.45fr_0.85fr]">
         <section className="rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.05)]">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-black text-ink">Ultimos pedidos</h2>
-              <p className="mt-1 text-sm text-[#6f6658]">Gestiona primero pagos confirmados y envios pendientes.</p>
+              <h2 className="text-lg font-black text-ink">Últimos pedidos</h2>
+              <p className="mt-1 text-sm text-[#6f6658]">Gestioná primero pedidos confirmados y envíos pendientes.</p>
             </div>
             <ArrowUpRight size={18} />
           </div>
@@ -45,7 +45,7 @@ export default async function AdminDashboardPage() {
                   <th className="py-3 font-bold">Total</th>
                   <th className="py-3 font-bold">Pago</th>
                   <th className="py-3 font-bold">Estado</th>
-                  <th className="py-3 font-bold">Envio</th>
+                  <th className="py-3 font-bold">Envío</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -76,7 +76,7 @@ export default async function AdminDashboardPage() {
         <section className="rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.05)]">
           <div className="flex items-center gap-2">
             <PackageSearch className="text-[#8c682b]" size={19} />
-            <h2 className="text-lg font-black text-ink">Stock critico</h2>
+            <h2 className="text-lg font-black text-ink">Stock crítico</h2>
           </div>
           <p className="mt-1 text-sm text-[#6f6658]">Variantes que pueden bloquear ventas si no se reponen.</p>
           <div className="mt-4 divide-y divide-line">

@@ -42,11 +42,14 @@ export type AdminOrder = {
 };
 
 export type AdminShippingAddress = {
+  fullName?: string;
+  phone?: string;
   street?: string;
   city?: string;
   state?: string;
   postalCode?: string;
   country?: string;
+  reference?: string;
 };
 
 export type InventoryMovement = {
@@ -70,6 +73,10 @@ type LegacyAdminProductRow = {
   notes_heart: string[] | null;
   notes_base: string[] | null;
   gender: Product["gender"];
+  duration_estimate: string | null;
+  projection_estimate: string | null;
+  recommended_occasion: string | null;
+  recommended_season: string | null;
   status: Product["status"];
   brands: AdminBrand | null;
   fragrance_families: AdminCategory | null;
@@ -136,6 +143,10 @@ const legacyProductSelect = `
   notes_heart,
   notes_base,
   gender,
+  duration_estimate,
+  projection_estimate,
+  recommended_occasion,
+  recommended_season,
   status,
   brands ( id, name, slug, country ),
   fragrance_families ( id, name, slug ),
@@ -274,9 +285,13 @@ function mapLegacyAdminProduct(row: LegacyAdminProductRow): Product {
     notesHeart: row.notes_heart ?? [],
     notesBase: row.notes_base ?? [],
     gender: row.gender,
+    durationEstimate: row.duration_estimate,
+    projectionEstimate: row.projection_estimate,
+    recommendedOccasion: row.recommended_occasion,
+    recommendedSeason: row.recommended_season,
     status: row.status,
     featured: row.status === "active",
-    imageUrl: [...(row.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.storage_path ?? "/images/hero-decants.png",
+    imageUrl: [...(row.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.storage_path ?? "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png",
     variants: (row.decant_variants ?? []).map(mapVariant).sort((a, b) => a.sizeMl - b.sizeMl),
   };
 }

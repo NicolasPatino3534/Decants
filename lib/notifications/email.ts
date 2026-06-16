@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { brand } from "@/lib/brand";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 type SendOrderEmailInput = {
@@ -32,7 +33,7 @@ export async function sendOrderEmail(input: SendOrderEmailInput) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Aurum Decants <pedidos@aurumdecants.com>",
+      from: `${brand.displayName} <${env.resendFromEmail}>`,
       to: input.to,
       subject: input.subject,
       html: input.html,

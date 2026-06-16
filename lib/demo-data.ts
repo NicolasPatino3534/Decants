@@ -1,22 +1,22 @@
 import type { Order, Product } from "@/lib/types";
 import { catalogProducts } from "@/lib/catalog-data";
 
-const hero = "/images/hero-decants.png";
+const hero = "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
 
 const fallbackProducts: Product[] = [
   {
     id: "prod_citrus_woods",
     name: "Citrus Woods",
     slug: "citrus-woods",
-    brand: { id: "brand_aurum", name: "Aurum Atelier", slug: "aurum-atelier" },
-    category: { id: "fam_woody", name: "Amaderada + Citrica", slug: "amaderada-citrica" },
-    family: { id: "fam_woody", name: "Amaderada + Citrica", slug: "amaderada-citrica" },
+    brand: { id: "brand_decantscba", name: "DecantsCBA", slug: "decantscba" },
+    category: { id: "fam_woody", name: "Amaderada + Cítrica", slug: "amaderada-citrica" },
+    family: { id: "fam_woody", name: "Amaderada + Cítrica", slug: "amaderada-citrica" },
     concentration: "Eau de Parfum",
     description:
       "Una salida luminosa de bergamota y lima sobre maderas secas. Ideal para probar un perfil fresco con presencia.",
     notesTop: ["Bergamota", "Lima", "Pimienta rosa"],
     notesHeart: ["Cedro", "Neroli", "Vetiver"],
-    notesBase: ["Sandalwood", "Musk", "Amber"],
+    notesBase: ["Sándalo", "Musk", "Ámbar"],
     gender: "unisex",
     status: "active",
     featured: true,
@@ -31,15 +31,15 @@ const fallbackProducts: Product[] = [
     id: "prod_amber_spice",
     name: "Amber Spice",
     slug: "amber-spice",
-    brand: { id: "brand_aurum", name: "Aurum Atelier", slug: "aurum-atelier" },
-    category: { id: "fam_amber", name: "Ambar + Especiada", slug: "ambar-especiada" },
-    family: { id: "fam_amber", name: "Ambar + Especiada", slug: "ambar-especiada" },
+    brand: { id: "brand_decantscba", name: "DecantsCBA", slug: "decantscba" },
+    category: { id: "fam_amber", name: "Ámbar + Especiada", slug: "ambar-especiada" },
+    family: { id: "fam_amber", name: "Ámbar + Especiada", slug: "ambar-especiada" },
     concentration: "Eau de Parfum",
     description:
-      "Ambar resinoso, canela y maderas cremosas. Un decant pensado para noches frias y salidas elegantes.",
+      "Ámbar resinoso, canela y maderas cremosas. Un decant pensado para noches frías y salidas elegantes.",
     notesTop: ["Canela", "Cardamomo"],
     notesHeart: ["Resina", "Iris"],
-    notesBase: ["Ambar", "Vainilla", "Patchouli"],
+    notesBase: ["Ámbar", "Vainilla", "Patchouli"],
     gender: "unisex",
     status: "active",
     featured: true,
@@ -61,7 +61,7 @@ const fallbackProducts: Product[] = [
     description:
       "Flor blanca transparente, musk limpio y un fondo suave. Para descubrir una firma pulida y diaria.",
     notesTop: ["Mandarina", "Pera"],
-    notesHeart: ["Jazmin", "Azahar", "Iris"],
+    notesHeart: ["Jazmín", "Azahar", "Iris"],
     notesBase: ["Musk", "Cedro blanco"],
     gender: "feminine",
     status: "active",
@@ -83,9 +83,9 @@ const fallbackProducts: Product[] = [
     concentration: "Extrait de Parfum",
     description:
       "Oud seco, cuero y humo suave. Una muestra intensa para comparar rendimiento antes de comprar botella.",
-    notesTop: ["Azafran", "Pimienta negra"],
+    notesTop: ["Azafrán", "Pimienta negra"],
     notesHeart: ["Oud", "Cuero"],
-    notesBase: ["Incienso", "Ambar gris"],
+    notesBase: ["Incienso", "Ámbar gris"],
     gender: "masculine",
     status: "active",
     featured: false,
@@ -118,7 +118,7 @@ export const demoOrders: Order[] = [
   {
     id: "ord_10023",
     orderNumber: "10023",
-    customerName: "Andres M.",
+    customerName: "Andrés M.",
     customerEmail: "andres@example.com",
     status: "shipped",
     paymentStatus: "paid",

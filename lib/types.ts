@@ -64,6 +64,10 @@ export type Product = {
   notesHeart: string[];
   notesBase: string[];
   gender: "unisex" | "feminine" | "masculine";
+  durationEstimate?: string | null;
+  projectionEstimate?: string | null;
+  recommendedOccasion?: string | null;
+  recommendedSeason?: string | null;
   status: ProductStatus;
   featured: boolean;
   imageUrl: string;

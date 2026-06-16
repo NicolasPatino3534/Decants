@@ -16,7 +16,7 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const storageKey = "aurum-decants-cart-v1";
+const storageKey = "decantscba-cart-v1";
 
 function readStoredCart() {
   if (typeof window === "undefined") return [];

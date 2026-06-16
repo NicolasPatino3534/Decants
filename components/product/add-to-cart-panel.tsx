@@ -21,7 +21,7 @@ export function AddToCartPanel({ product }: { product: Product }) {
   if (!variant) {
     return (
       <div className="rounded-md border border-line bg-white p-5 text-sm text-[#6f6658]">
-        Este producto todavia no tiene variantes disponibles.
+        Este producto todavía no tiene variantes disponibles.
       </div>
     );
   }
@@ -29,7 +29,7 @@ export function AddToCartPanel({ product }: { product: Product }) {
   const quantity = Math.min(Math.max(requestedQuantity, 1), Math.max(variant.stockOnHand, 1));
 
   return (
-    <div className="rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.08)]">
+    <div className={`rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.08)] transition duration-300 ${added ? "scale-[1.015] border-[#afa466] shadow-[0_24px_70px_rgba(175,164,102,0.18)]" : ""}`}>
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8c682b]">Elegir decant</p>
@@ -66,7 +66,7 @@ export function AddToCartPanel({ product }: { product: Product }) {
             {variant.stockOnHand <= 0
               ? "Sin stock"
               : variant.stockOnHand <= variant.lowStockThreshold
-                ? "Ultimas unidades"
+                ? "Últimas unidades"
                 : `${variant.stockOnHand} disponibles`}
           </p>
         </div>
@@ -110,7 +110,7 @@ export function AddToCartPanel({ product }: { product: Product }) {
       ) : null}
       <div className="mt-4 grid gap-2 text-xs font-semibold text-[#5f665d] sm:grid-cols-3">
         <span className="flex items-center gap-1.5 rounded-md bg-mist p-2"><ShieldCheck size={14} /> Compra segura</span>
-        <span className="flex items-center gap-1.5 rounded-md bg-mist p-2"><CreditCard size={14} /> Pago online</span>
+        <span className="flex items-center gap-1.5 rounded-md bg-mist p-2"><CreditCard size={14} /> Confirmación clara</span>
         <span className="flex items-center gap-1.5 rounded-md bg-mist p-2"><BadgeCheck size={14} /> Stock real</span>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { ButtonLink } from "@/components/ui/button";
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ demo?: string; order?: string }>;
+  searchParams: Promise<{ demo?: string; order?: string; pending?: string }>;
 }) {
   const params = await searchParams;
 
@@ -15,8 +15,10 @@ export default async function CheckoutSuccessPage({
         <h1 className="mt-5 text-4xl font-black">Pedido confirmado</h1>
         <p className="mt-3 text-neutral-600">
           {params.demo
-            ? "Modo demo: el flujo completo quedo validado sin cobrar."
-            : "Recibimos el pago y te vamos a enviar las novedades del envio."}
+            ? "Modo demo: el flujo completo quedó validado sin cobrar."
+            : params.pending
+              ? "Recibimos el pedido. Te vamos a contactar por WhatsApp para coordinar la confirmación."
+              : "Recibimos el pedido y te vamos a enviar las novedades del envío."}
         </p>
         <div className="mt-7 flex justify-center gap-3">
           <ButtonLink href="/cuenta">Ver pedidos</ButtonLink>

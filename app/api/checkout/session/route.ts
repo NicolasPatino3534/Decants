@@ -60,12 +60,12 @@ type ReserveCheckoutStockRow = {
 export async function POST(request: Request) {
   const parsed = checkoutSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Datos de checkout invalidos." }, { status: 400 });
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Datos de checkout inválidos." }, { status: 400 });
   }
 
   const admin = createSupabaseAdminClient();
   if (!admin) {
-    return NextResponse.json({ error: "Supabase admin no esta configurado para crear pedidos." }, { status: 503 });
+    return NextResponse.json({ error: "Supabase admin no está configurado para crear pedidos." }, { status: 503 });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     data: { user },
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
   if (!user) {
-    return NextResponse.json({ error: "Necesitas iniciar sesion para comprar." }, { status: 401 });
+    return NextResponse.json({ error: "Necesitás iniciar sesión para comprar." }, { status: 401 });
   }
 
   const { data: profile } = supabase
@@ -210,11 +210,11 @@ export async function POST(request: Request) {
       );
     } catch (caught) {
       console.error("stripe_checkout_session_error", caught);
-      throw new CheckoutError("El proveedor de pagos no esta disponible. Intenta nuevamente en unos minutos.", 502);
+      throw new CheckoutError("El proveedor de pagos no está disponible. Intentá nuevamente en unos minutos.", 502);
     }
 
     if (!session.url) {
-      throw new CheckoutError("Stripe no devolvio una URL de checkout.", 502);
+      throw new CheckoutError("Stripe no devolvió una URL de checkout.", 502);
     }
 
     await createPayment(admin, {
@@ -314,7 +314,7 @@ async function reserveStock(
   if (error && !isMissingRpcError(error)) {
     return {
       ok: false as const,
-      error: error.message || "El stock cambio. Revisa el carrito.",
+      error: error.message || "El stock cambió. Revisá el carrito.",
       reserved: [],
     };
   }
@@ -339,7 +339,7 @@ async function reserveStockOptimistic(
 
     if (error || !data || data.length === 0) {
       await releaseStock(admin, reserved);
-      return { ok: false as const, error: `El stock de ${line.variant.productName} cambio. Revisa el carrito.`, reserved: [] };
+      return { ok: false as const, error: `El stock de ${line.variant.productName} cambió. Revisá el carrito.`, reserved: [] };
     }
 
     reserved.push({ variant: line.variant, quantity: line.quantity, previousStock: line.variant.stockOnHand, nextStock });
@@ -442,7 +442,11 @@ async function createOrder(
     total_cents: totals.totalCents,
     customer_email: input.customer.email,
     customer_name: input.customer.name,
-    shipping_address: input.shippingAddress,
+    shipping_address: {
+      ...input.shippingAddress,
+      fullName: input.customer.name,
+      phone: input.customer.phone,
+    },
     checkout_idempotency_key: input.idempotencyKey,
     notes: `checkout:${input.idempotencyKey}`,
   };
