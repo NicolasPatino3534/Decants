@@ -1,5 +1,7 @@
+import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { env } from "@/lib/env";
 import { sendOrderEmail } from "@/lib/notifications/email";
 
 const schema = z.object({
@@ -11,11 +13,27 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!env.notificationWebhookSecret) {
+    return NextResponse.json({ error: "Endpoint de notificaciones no configurado." }, { status: 503 });
+  }
+
+  const secret = request.headers.get("x-internal-secret");
+  if (!secret || !secretsMatch(secret, env.notificationWebhookSecret)) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
   const parsed = schema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: "Payload inválido." }, { status: 400 });
+    return NextResponse.json({ error: "Payload invalido." }, { status: 400 });
   }
 
   const result = await sendOrderEmail(parsed.data);
   return NextResponse.json(result, { status: result.ok ? 200 : 502 });
+}
+
+function secretsMatch(received: string, expected: string) {
+  const receivedBytes = new TextEncoder().encode(received);
+  const expectedBytes = new TextEncoder().encode(expected);
+  if (receivedBytes.length !== expectedBytes.length) return false;
+  return timingSafeEqual(receivedBytes, expectedBytes);
 }

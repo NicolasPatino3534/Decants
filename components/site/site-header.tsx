@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { Menu, Search, ShieldCheck, ShoppingCart, Truck, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
@@ -13,7 +13,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   const navItems = [
-    { href: "/catalogo", label: "Catálogo" },
+    { href: "/catalogo", label: "Catalogo" },
     { href: "/#discovery-sets", label: "Discovery sets" },
     { href: "/#confianza", label: "Confianza" },
     { href: "/#faq", label: "FAQ" },
@@ -21,13 +21,13 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur-xl">
-      <div className="hidden border-b border-line bg-ink text-white md:block">
-        <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-6 text-xs">
-          <span className="flex items-center gap-2 text-white/78">
+      <div className="hidden border-b border-line bg-[#fbf7ed] lg:block">
+        <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-6 text-xs font-semibold text-[#6f5522]">
+          <span className="flex items-center gap-2">
             <ShieldCheck size={14} /> Decants originales y stock visible
           </span>
-          <span className="flex items-center gap-2 text-white/78">
-            <Truck size={14} /> Envíos a todo el país y retiro en Córdoba
+          <span className="flex items-center gap-2">
+            <Truck size={14} /> Envios a todo el pais y retiro en Cordoba
           </span>
         </div>
       </div>
@@ -41,31 +41,35 @@ export function SiteHeader() {
             <span className="mt-1 hidden text-[11px] font-bold uppercase tracking-[0.18em] text-[#7b7164] sm:block">Perfumes originales</span>
           </span>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm font-bold text-[#433d34] md:flex">
+        <nav className="hidden items-center gap-7 text-sm font-bold text-[#433d34] lg:flex">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-ink">
+            <Link key={item.href} href={item.href} className="hover:text-[#9a6f24]">
               {item.label}
             </Link>
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <ButtonLink href="/catalogo" variant="subtle" className="hidden h-10 px-3 sm:inline-flex" aria-label="Buscar perfumes">
-            <Search size={18} />
-          </ButtonLink>
-          <ButtonLink href="/auth" variant="subtle" className="hidden h-10 px-3 sm:inline-flex" aria-label="Cuenta">
-            <UserRound size={18} />
-          </ButtonLink>
+          <span className="hidden lg:inline-flex">
+            <ButtonLink href="/catalogo" variant="subtle" className="h-10 px-3" aria-label="Buscar perfumes">
+              <Search size={18} />
+            </ButtonLink>
+          </span>
+          <span className="hidden lg:inline-flex">
+            <ButtonLink href="/auth" variant="subtle" className="h-10 px-3" aria-label="Cuenta">
+              <UserRound size={18} />
+            </ButtonLink>
+          </span>
           <ButtonLink href="/carrito" variant="secondary" className="relative h-10 px-3" aria-label="Carrito">
             <ShoppingCart size={18} />
             {count > 0 ? (
-              <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-[#b88939] px-1 text-[11px] font-bold text-white">
+              <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-[#b8872f] px-1 text-[11px] font-bold text-white">
                 {count}
               </span>
             ) : null}
           </ButtonLink>
           <button
             type="button"
-            className="inline-grid h-10 w-10 place-items-center rounded-md border border-line bg-white text-ink md:hidden"
+            className="inline-grid h-10 w-10 place-items-center rounded-md border border-line bg-white text-ink lg:hidden"
             aria-label="Abrir menu"
             aria-expanded={open}
             onClick={() => setOpen((current) => !current)}
@@ -75,7 +79,7 @@ export function SiteHeader() {
         </div>
       </div>
       {open ? (
-        <div className="border-t border-line bg-white px-4 pb-4 shadow-[0_18px_44px_rgba(11,13,15,0.10)] md:hidden">
+        <div className="border-t border-line bg-white px-4 pb-4 shadow-[0_18px_44px_rgba(24,20,14,0.10)] lg:hidden">
           <nav className="grid gap-1 py-3 text-sm font-bold text-ink">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href} className="rounded-md px-3 py-3 hover:bg-mist" onClick={() => setOpen(false)}>
@@ -86,9 +90,9 @@ export function SiteHeader() {
               Mi cuenta
             </Link>
           </nav>
-          <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-[#5f665d]">
-            <span className="rounded-md bg-mist p-3">Compra segura</span>
-            <span className="rounded-md bg-mist p-3">Tracking en envíos</span>
+          <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-[#6f5522]">
+            <span className="rounded-md bg-[#fbf7ed] p-3">Compra segura</span>
+            <span className="rounded-md bg-[#fbf7ed] p-3">Tracking en envios</span>
           </div>
         </div>
       ) : null}

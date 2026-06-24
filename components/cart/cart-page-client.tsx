@@ -37,7 +37,7 @@ export function CartPageClient() {
     return (
       <main className="premium-shell mx-auto grid min-h-[70vh] place-items-center px-4 py-16 text-center">
         <div className="max-w-md rounded-md border border-line bg-white p-8 shadow-[0_18px_50px_rgba(11,13,15,0.08)]">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-md bg-[#edf2ee] text-[#5f7d69]">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-md bg-[#f6edda] text-[#8a611c]">
             <ShoppingBag size={20} />
           </div>
           <h1 className="font-display mt-5 text-4xl text-ink">Tu carrito está vacío</h1>
@@ -65,7 +65,7 @@ export function CartPageClient() {
               </Button>
             ) : (
               <div className="cart-confirm flex flex-wrap items-center gap-2 rounded-md border border-line bg-white p-2">
-                <span className="px-2 text-sm font-semibold text-[#afa466]">¿Vaciar todo?</span>
+                <span className="px-2 text-sm font-semibold text-[#8a611c]">¿Vaciar todo?</span>
                 <Button
                   variant="danger"
                   className="h-9"
@@ -82,7 +82,7 @@ export function CartPageClient() {
               </div>
             )}
           </div>
-          <div className="mt-5 grid gap-2 rounded-md border border-[#dfe8df] bg-[#f5faf6] p-3 text-sm font-semibold text-[#47624f] sm:grid-cols-3">
+          <div className="mt-5 grid gap-2 rounded-md border border-[#e6dcc6] bg-[#fbf7ed] p-3 text-sm font-semibold text-[#7a5a20] sm:grid-cols-3">
             <span className="flex items-center gap-2"><ShieldCheck size={16} /> Compra segura</span>
             <span className="flex items-center gap-2"><BadgeCheck size={16} /> Stock validado</span>
             <span className="flex items-center gap-2"><Truck size={16} /> Envío con tracking</span>
@@ -152,7 +152,7 @@ export function CartPageClient() {
         <aside className="h-fit rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.08)] lg:sticky lg:top-28">
           <div className="flex items-center justify-between gap-4">
             <h2 className="font-display text-2xl text-ink">Resumen</h2>
-            <LockKeyhole className="text-[#5f7d69]" size={20} />
+            <LockKeyhole className="text-[#8a611c]" size={20} />
           </div>
           <div className="mt-5 space-y-3 text-sm">
             <SummaryRow label="Subtotal" value={formatMoney(totals.subtotalCents)} />

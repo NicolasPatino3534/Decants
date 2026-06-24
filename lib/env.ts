@@ -9,6 +9,7 @@ export const env = {
   stripePublishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   resendApiKey: process.env.RESEND_API_KEY,
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "pedidos@decantscba.com",
+  notificationWebhookSecret: process.env.NOTIFICATION_WEBHOOK_SECRET,
   adminBootstrapEmails: (process.env.ADMIN_BOOTSTRAP_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())

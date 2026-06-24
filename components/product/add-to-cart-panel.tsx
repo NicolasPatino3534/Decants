@@ -29,7 +29,7 @@ export function AddToCartPanel({ product }: { product: Product }) {
   const quantity = Math.min(Math.max(requestedQuantity, 1), Math.max(variant.stockOnHand, 1));
 
   return (
-    <div className={`rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.08)] transition duration-300 ${added ? "scale-[1.015] border-[#afa466] shadow-[0_24px_70px_rgba(175,164,102,0.18)]" : ""}`}>
+    <div className={`rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(24,20,14,0.08)] transition duration-300 ${added ? "scale-[1.015] border-[#b8872f] shadow-[0_24px_70px_rgba(184,135,47,0.18)]" : ""}`}>
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8c682b]">Elegir decant</p>
@@ -46,8 +46,8 @@ export function AddToCartPanel({ product }: { product: Product }) {
             onClick={() => setVariantId(item.id)}
             className={`rounded-md border px-3 py-3 text-left text-sm transition ${
               item.id === variant.id
-                ? "border-ink bg-ink text-white"
-                : "border-line bg-white text-ink hover:border-[#b88939]"
+                ? "border-[#b8872f] bg-[#b8872f] text-white"
+                : "border-line bg-white text-ink hover:border-[#b8872f]"
             } disabled:cursor-not-allowed disabled:opacity-45`}
           >
             <span className="block font-semibold">{item.sizeMl}ml</span>

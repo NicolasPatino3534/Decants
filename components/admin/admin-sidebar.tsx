@@ -1,48 +1,43 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, ClipboardList, LayoutDashboard, Package, Send, Tags, Users } from "lucide-react";
+import { ClipboardList, Package, WalletCards } from "lucide-react";
 import { brand } from "@/lib/brand";
 
 const items = [
-  { href: "/admin", label: "Resumen", icon: LayoutDashboard },
+  { href: "/admin", label: "Balance", icon: WalletCards },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
-  { href: "/admin/productos", label: "Productos", icon: Package },
-  { href: "/admin/marcas", label: "Marcas", icon: Tags },
-  { href: "/admin/categorias", label: "Categorías", icon: Tags },
-  { href: "/admin/stock", label: "Stock", icon: Boxes },
-  { href: "/admin/envios", label: "Envíos", icon: Send },
-  { href: "/admin/clientes", label: "Clientes", icon: Users },
+  { href: "/admin/catalogo", label: "Catalogo", icon: Package },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="border-r border-[#202326] bg-ink text-white lg:min-h-screen">
-      <div className="border-b border-white/10 p-5">
+    <aside className="border-b border-line bg-white lg:min-h-screen lg:border-b-0 lg:border-r">
+      <div className="border-b border-line p-5">
         <Link href="/" className="flex items-center gap-3">
-          <span className="relative h-10 w-10 overflow-hidden rounded-md bg-white">
+          <span className="relative h-10 w-10 overflow-hidden rounded-md border border-line bg-white">
             <Image src={brand.logoUrl} alt="" fill sizes="40px" className="object-contain p-1" />
           </span>
           <span>
-            <span className="block font-display text-xl leading-none">{brand.displayName}</span>
-            <span className="mt-1 block text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">Admin</span>
+            <span className="block font-display text-xl leading-none text-ink">{brand.displayName}</span>
+            <span className="mt-1 block text-[11px] font-bold uppercase tracking-[0.18em] text-[#8a6a2f]">Admin</span>
           </span>
         </Link>
       </div>
-      <nav className="grid gap-1 px-3 py-4 text-sm">
+      <nav className="flex gap-2 overflow-x-auto px-3 py-3 text-sm lg:grid lg:overflow-visible lg:py-4">
         {items.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 rounded-md px-3 py-3 font-bold transition ${
-                active ? "bg-white text-ink" : "text-white/68 hover:bg-white/10 hover:text-white"
+              className={`flex min-w-fit items-center gap-3 rounded-md px-3 py-3 font-bold transition ${
+                active ? "bg-[#b8872f] text-white" : "text-[#665d50] hover:bg-[#f8f1e3] hover:text-ink"
               }`}
             >
               <Icon size={17} />
@@ -51,8 +46,8 @@ export function AdminSidebar() {
           );
         })}
       </nav>
-      <div className="mx-3 mt-3 rounded-md border border-white/10 bg-white/[0.04] p-4 text-xs leading-5 text-white/58">
-        Priorizá pedidos confirmados, bajo stock y envíos con demora para proteger la experiencia y la recompra.
+      <div className="mx-3 mb-4 hidden rounded-md border border-line bg-[#fbf7ed] p-4 text-xs leading-5 text-[#665d50] lg:block">
+        Panel reducido a pedidos, catalogo y balance para operar sin ruido mientras se prepara autenticacion real.
       </div>
     </aside>
   );

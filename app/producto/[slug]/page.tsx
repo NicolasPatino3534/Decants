@@ -77,7 +77,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <ProfileFact icon={<CalendarDays size={17} />} label="Ocasión" value={profile.occasion} />
           </div>
 
-          <div className="mt-5 grid gap-2 rounded-md border border-[#dfe8df] bg-[#f5faf6] p-4 text-sm font-semibold text-[#47624f] sm:grid-cols-3">
+          <div className="mt-5 grid gap-2 rounded-md border border-[#e6dcc6] bg-[#fbf7ed] p-4 text-sm font-semibold text-[#7a5a20] sm:grid-cols-3">
             <span className="flex items-center gap-2"><BadgeCheck size={16} /> Originalidad verificada</span>
             <span className="flex items-center gap-2"><ShieldCheck size={16} /> Compra segura</span>
             <span className="flex items-center gap-2"><Truck size={16} /> Envío con tracking</span>
@@ -141,12 +141,12 @@ function ProfileMeter({ icon, label, value, percent }: { icon: React.ReactNode; 
   return (
     <div className="rounded-md border border-line bg-white p-4">
       <div className="flex items-center gap-2 text-sm font-black text-ink">
-        <span className="text-[#5f7d69]">{icon}</span>
+        <span className="text-[#8a611c]">{icon}</span>
         {label}
       </div>
       <p className="mt-2 text-sm text-[#5f574c]">{value}</p>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-mist">
-        <div className="h-full rounded-full bg-[#5f7d69]" style={{ width: `${percent}%` }} />
+        <div className="h-full rounded-full bg-[#b8872f]" style={{ width: `${percent}%` }} />
       </div>
     </div>
   );

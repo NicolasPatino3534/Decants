@@ -1,0 +1,183 @@
+import { archiveProduct, deleteVariant, updateProduct, upsertVariant } from "@/app/admin/actions";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatMoney } from "@/lib/format";
+import type { Product } from "@/lib/types";
+
+const genders = ["unisex", "feminine", "masculine"];
+const statuses = ["draft", "active", "archived"];
+
+export function ProductEditor({
+  product,
+  brands,
+  categories,
+}: {
+  product: Product;
+  brands: Array<{ id: string; name: string }>;
+  categories: Array<{ id: string; name: string }>;
+}) {
+  const stock = product.variants.reduce((sum, variant) => sum + variant.stockOnHand, 0);
+  const minPrice = product.variants.length > 0 ? Math.min(...product.variants.map((variant) => variant.priceCents)) : 0;
+
+  return (
+    <article className="rounded-md border border-line bg-white p-4 shadow-[0_10px_30px_rgba(24,20,14,0.04)] sm:p-5">
+      <div className="flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl font-black text-ink">{product.name}</h2>
+            <StatusBadge tone={product.status === "active" ? "green" : product.status === "archived" ? "neutral" : "amber"}>
+              {product.status}
+            </StatusBadge>
+          </div>
+          <p className="mt-1 text-sm text-[#665d50]">
+            {product.brand.name} - {product.category.name} - Stock {stock} - Desde {formatMoney(minPrice)}
+          </p>
+        </div>
+        <form action={archiveProduct}>
+          <input type="hidden" name="id" value={product.id} />
+          <Button variant="secondary" className="h-9">
+            Archivar
+          </Button>
+        </form>
+      </div>
+
+      <form action={updateProduct} className="mt-5 grid gap-3 text-sm md:grid-cols-4">
+        <input type="hidden" name="id" value={product.id} />
+        <Input name="name" label="Nombre" defaultValue={product.name} required />
+        <Select name="brandId" label="Marca" defaultValue={product.brand.id} options={brands.map((brand) => ({ label: brand.name, value: brand.id }))} />
+        <Select
+          name="categoryId"
+          label="Categoria"
+          defaultValue={product.category.id}
+          options={categories.map((category) => ({ label: category.name, value: category.id }))}
+        />
+        <Input name="concentration" label="Concentracion" defaultValue={product.concentration} />
+        <Select name="gender" label="Genero" defaultValue={product.gender} options={genders.map((value) => ({ label: value, value }))} />
+        <Select name="status" label="Estado" defaultValue={product.status} options={statuses.map((value) => ({ label: value, value }))} />
+        <Input name="durationEstimate" label="Duracion estimada" defaultValue={product.durationEstimate ?? ""} />
+        <Input name="projectionEstimate" label="Proyeccion" defaultValue={product.projectionEstimate ?? ""} />
+        <Input name="recommendedOccasion" label="Ocasion" defaultValue={product.recommendedOccasion ?? ""} />
+        <Input name="recommendedSeason" label="Estacion" defaultValue={product.recommendedSeason ?? ""} />
+        <Input name="notesTop" label="Notas de salida" defaultValue={product.notesTop.join(", ")} />
+        <Input name="notesHeart" label="Notas de corazon" defaultValue={product.notesHeart.join(", ")} />
+        <Input name="notesBase" label="Notas de fondo" defaultValue={product.notesBase.join(", ")} />
+        <label className="md:col-span-3">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#756b5d]">Descripcion</span>
+          <textarea
+            name="description"
+            defaultValue={product.description}
+            className="min-h-28 w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-[#b8872f]"
+          />
+        </label>
+        <label>
+          <span className="mb-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#756b5d]">Nueva imagen</span>
+          <input name="image" type="file" accept="image/*" className="h-10 w-full rounded-md border border-line px-3 py-2 text-sm" />
+          <span className="mt-1 block text-xs text-[#756b5d]">Reemplaza o agrega imagen principal.</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm font-semibold md:col-span-4">
+          <input name="featured" type="checkbox" defaultChecked={product.featured} />
+          Destacado
+        </label>
+        <Button className="md:col-span-4 md:w-fit">Guardar producto</Button>
+      </form>
+
+      <div className="mt-5 rounded-md border border-line">
+        <div className="border-b border-line bg-mist px-4 py-2 text-sm font-black text-ink">Variantes</div>
+        <div className="divide-y divide-line">
+          {product.variants.map((variant) => (
+            <form key={variant.id} action={upsertVariant} className="grid gap-3 p-3 md:grid-cols-[0.7fr_1fr_1fr_0.8fr_0.8fr_0.7fr_auto_auto]">
+              <input type="hidden" name="id" value={variant.id} />
+              <input type="hidden" name="productId" value={product.id} />
+              <Input name="sizeMl" label="Tamano ml" type="number" defaultValue={String(variant.sizeMl)} />
+              <Input name="sku" label="SKU" defaultValue={variant.sku} />
+              <Input name="price" label="Precio" type="number" defaultValue={String(variant.priceCents / 100)} />
+              <Input name="stock" label="Stock" type="number" defaultValue={String(variant.stockOnHand)} />
+              <Input name="lowStockThreshold" label="Umbral" type="number" defaultValue={String(variant.lowStockThreshold)} />
+              <label className="flex items-end gap-2 pb-2 text-sm font-semibold">
+                <input name="active" type="checkbox" defaultChecked={variant.active} />
+                Activa
+              </label>
+              <Button variant="secondary" className="h-9 self-end">
+                Guardar
+              </Button>
+              <button
+                formAction={deleteVariant}
+                className="self-end rounded-md border border-red-200 px-3 py-2 text-sm font-bold text-danger transition hover:bg-red-50"
+              >
+                Eliminar
+              </button>
+            </form>
+          ))}
+          <form action={upsertVariant} className="grid gap-3 p-3 md:grid-cols-[0.7fr_1fr_1fr_0.8fr_0.8fr_0.7fr_auto]">
+            <input type="hidden" name="productId" value={product.id} />
+            <Input name="sizeMl" label="Tamano ml" type="number" placeholder="2" />
+            <Input name="sku" label="SKU" placeholder="SKU-2ML" />
+            <Input name="price" label="Precio" type="number" placeholder="16000" />
+            <Input name="stock" label="Stock" type="number" placeholder="10" />
+            <Input name="lowStockThreshold" label="Umbral" type="number" defaultValue="5" />
+            <label className="flex items-end gap-2 pb-2 text-sm font-semibold">
+              <input name="active" type="checkbox" defaultChecked />
+              Activa
+            </label>
+            <Button className="h-9 self-end">Agregar</Button>
+          </form>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Input({
+  name,
+  label,
+  required,
+  defaultValue,
+  placeholder,
+  type = "text",
+}: {
+  name: string;
+  label: string;
+  required?: boolean;
+  defaultValue?: string;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <label>
+      <span className="mb-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#756b5d]">{label}</span>
+      <input
+        name={name}
+        type={type}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        required={required}
+        className="h-10 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-[#b8872f]"
+      />
+    </label>
+  );
+}
+
+function Select({
+  name,
+  label,
+  options,
+  defaultValue,
+}: {
+  name: string;
+  label: string;
+  options: Array<{ label: string; value: string }>;
+  defaultValue?: string;
+}) {
+  return (
+    <label>
+      <span className="mb-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#756b5d]">{label}</span>
+      <select name={name} defaultValue={defaultValue} className="h-10 w-full rounded-md border border-line px-3 text-sm">
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}

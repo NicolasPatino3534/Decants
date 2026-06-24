@@ -185,6 +185,11 @@ export async function getAdminCatalog() {
   return (data as unknown as LegacyAdminProductRow[]).map(mapLegacyAdminProduct);
 }
 
+export async function getAdminProductById(id: string) {
+  const products = await getAdminCatalog();
+  return products.find((product) => product.id === id || product.slug === id) ?? null;
+}
+
 export async function getAdminBrands() {
   const admin = createSupabaseAdminClient();
   if (!admin) return uniqueDemoBrands();
@@ -232,6 +237,11 @@ export async function getAdminOrdersDetailed() {
   const { data, error } = await admin.from("orders").select(orderSelect).order("created_at", { ascending: false }).limit(100);
   if (error || !data) return [];
   return (data as unknown as AdminOrderRow[]).map(mapAdminOrder);
+}
+
+export async function getAdminOrderById(id: string) {
+  const orders = await getAdminOrdersDetailed();
+  return orders.find((order) => order.id === id || order.orderNumber === id) ?? null;
 }
 
 export async function getInventoryMovements(limit = 80) {

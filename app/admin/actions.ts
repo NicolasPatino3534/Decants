@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth/roles";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const productStatuses = ["draft", "active", "archived"] as const;
@@ -9,7 +8,6 @@ const orderStatuses = ["pending_payment", "payment_review", "paid", "preparing",
 const shipmentStatuses = ["pending", "preparing", "ready_to_ship", "shipped", "delivered", "delayed"] as const;
 
 export async function createBrand(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -29,7 +27,6 @@ export async function createBrand(formData: FormData) {
 }
 
 export async function updateBrand(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -42,7 +39,6 @@ export async function updateBrand(formData: FormData) {
 }
 
 export async function deleteBrand(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -53,7 +49,6 @@ export async function deleteBrand(formData: FormData) {
 }
 
 export async function createCategory(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -65,7 +60,6 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -78,7 +72,6 @@ export async function updateCategory(formData: FormData) {
 }
 
 export async function deleteCategory(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -89,7 +82,6 @@ export async function deleteCategory(formData: FormData) {
 }
 
 export async function createProduct(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -135,7 +127,6 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -178,7 +169,6 @@ export async function updateProduct(formData: FormData) {
 }
 
 export async function archiveProduct(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -189,7 +179,6 @@ export async function archiveProduct(formData: FormData) {
 }
 
 export async function upsertVariant(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -204,7 +193,7 @@ export async function upsertVariant(formData: FormData) {
     price_cents: readMoneyCents(formData, "price"),
     stock_on_hand: readNumber(formData, "stock"),
     low_stock_threshold: readNumber(formData, "lowStockThreshold"),
-    is_active: formData.get("active") !== "off",
+    is_active: formData.get("active") === "on",
   };
 
   if (!payload.size_ml || !payload.sku || payload.price_cents < 0) return;
@@ -219,7 +208,6 @@ export async function upsertVariant(formData: FormData) {
 }
 
 export async function deleteVariant(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -230,7 +218,6 @@ export async function deleteVariant(formData: FormData) {
 }
 
 export async function adjustStock(formData: FormData) {
-  const profile = await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -248,16 +235,15 @@ export async function adjustStock(formData: FormData) {
     quantity,
     reason: "adjustment",
     note,
-    created_by: profile.id,
   });
 
+  revalidatePath("/admin/catalogo");
   revalidatePath("/admin/stock");
   revalidatePath("/admin/productos");
   revalidatePath("/admin");
 }
 
 export async function updateOrderStatus(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -267,11 +253,11 @@ export async function updateOrderStatus(formData: FormData) {
 
   await admin.from("orders").update({ status }).eq("id", orderId);
   revalidatePath("/admin/pedidos");
+  revalidatePath(`/admin/pedidos/${orderId}`);
   revalidatePath("/admin");
 }
 
 export async function updateShipmentStatus(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -283,11 +269,11 @@ export async function updateShipmentStatus(formData: FormData) {
   await admin.from("shipments").update({ status: shipmentStatus }).eq("order_id", orderId);
   revalidatePath("/admin/envios");
   revalidatePath("/admin/pedidos");
+  revalidatePath(`/admin/pedidos/${orderId}`);
   revalidatePath("/admin");
 }
 
 export async function updateOrderNotes(formData: FormData) {
-  await requireAdmin();
   const admin = createSupabaseAdminClient();
   if (!admin) return;
 
@@ -295,6 +281,7 @@ export async function updateOrderNotes(formData: FormData) {
   if (!orderId) return;
   await admin.from("orders").update({ notes: readString(formData, "notes") || null }).eq("id", orderId);
   revalidatePath("/admin/pedidos");
+  revalidatePath(`/admin/pedidos/${orderId}`);
 }
 
 async function uploadProductImage(formData: FormData, productId: string, productName: string) {
@@ -321,6 +308,7 @@ async function uploadProductImage(formData: FormData, productId: string, product
 
 function revalidateAdminCatalog() {
   revalidatePath("/admin");
+  revalidatePath("/admin/catalogo");
   revalidatePath("/admin/productos");
   revalidatePath("/admin/marcas");
   revalidatePath("/admin/categorias");

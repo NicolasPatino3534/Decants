@@ -118,7 +118,7 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
           <form id="checkout-form" action={startCheckout} className="mt-6 grid gap-5 rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.06)]">
             <section>
               <h2 className="flex items-center gap-2 text-lg font-black text-ink">
-                <BadgeCheck size={18} className="text-[#5f7d69]" /> Tus datos
+                <BadgeCheck size={18} className="text-[#8a611c]" /> Tus datos
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Field name="name" label="Nombre completo" autoComplete="name" defaultValue={initialCustomer.name} required />
@@ -129,7 +129,7 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
 
             <section>
               <h2 className="flex items-center gap-2 text-lg font-black text-ink">
-                <Truck size={18} className="text-[#5f7d69]" /> Entrega
+                <Truck size={18} className="text-[#8a611c]" /> Entrega
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Field name="postalCode" label="Código postal" autoComplete="postal-code" required />
@@ -142,7 +142,7 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
 
             <section>
               <h2 className="flex items-center gap-2 text-lg font-black text-ink">
-                <PackageCheck size={18} className="text-[#5f7d69]" /> Método y cupón
+                <PackageCheck size={18} className="text-[#8a611c]" /> Método y cupón
               </h2>
               <div className="mt-4 grid gap-4">
                 <label>
@@ -175,7 +175,7 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
               </div>
             </section>
 
-            <div className="flex items-center gap-2 rounded-md bg-[#f5faf6] p-3 text-sm font-semibold text-[#47624f]">
+            <div className="flex items-center gap-2 rounded-md bg-[#fbf7ed] p-3 text-sm font-semibold text-[#7a5a20]">
               <Truck size={17} />
               El envío se coordina por WhatsApp cuando el pedido pasa a preparación.
             </div>
@@ -193,7 +193,7 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
         <aside className="h-fit rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.08)] lg:sticky lg:top-28">
           <div className="flex items-center justify-between gap-4">
             <h2 className="font-display text-2xl text-ink">Resumen</h2>
-            <Lock className="text-[#5f7d69]" size={20} />
+            <Lock className="text-[#8a611c]" size={20} />
           </div>
           <div className="mt-4 divide-y divide-line">
             {lines.map((line) => (
@@ -265,7 +265,7 @@ function Field({
 
 function Step({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
   return (
-    <li className={`flex items-center gap-2 rounded-md border p-3 ${active ? "border-[#dfe8df] bg-[#f5faf6] text-[#47624f]" : "border-line bg-white"}`}>
+    <li className={`flex items-center gap-2 rounded-md border p-3 ${active ? "border-[#e6dcc6] bg-[#fbf7ed] text-[#7a5a20]" : "border-line bg-white"}`}>
       {icon}
       {label}
     </li>

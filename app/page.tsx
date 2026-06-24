@@ -77,7 +77,7 @@ export default async function HomePage() {
                   className="h-12 w-full rounded-md border border-transparent bg-mist pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-[#b88939]"
                 />
               </label>
-              <button className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#afa466] px-5 text-sm font-bold text-[#151515] transition hover:bg-[#fcffcc]">
+              <button className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#b8872f] px-5 text-sm font-bold text-white transition hover:bg-[#9f7225]">
                 Explorar catálogo <ArrowRight size={17} />
               </button>
             </form>
@@ -153,7 +153,7 @@ export default async function HomePage() {
           <div className="grid gap-4 md:grid-cols-3">
             {packs.map((pack) => (
               <article key={pack.title} className="rounded-md border border-line bg-[#fbfaf7] p-5">
-                <div className="grid h-10 w-10 place-items-center rounded-md bg-ink text-white">
+                <div className="grid h-10 w-10 place-items-center rounded-md bg-[#b8872f] text-white">
                   <Sparkles size={18} />
                 </div>
                 <h3 className="mt-5 font-display text-2xl text-ink">{pack.title}</h3>
@@ -165,18 +165,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="marcas" className="bg-ink py-16 text-white">
+      <section id="marcas" className="border-y border-line bg-white py-16 text-ink">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d7b779]">Marcas destacadas</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Marcas destacadas</p>
               <h2 className="font-display mt-2 text-4xl sm:text-5xl">Casas para explorar por perfil</h2>
             </div>
-            <p className="max-w-md text-sm leading-6 text-white/66">Una selección corta transmite curaduría. El catálogo completo mantiene filtros simples para profundizar.</p>
+            <p className="max-w-md text-sm leading-6 text-[#665d50]">Una selección corta transmite curaduría. El catálogo completo mantiene filtros simples para profundizar.</p>
           </div>
           <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {(brands.length ? brands : ["Al Haramain", "Armaf", "Lattafa"]).map((brandName) => (
-              <a key={brandName} href="/catalogo" className="flex items-center justify-between rounded-md border border-white/14 bg-white/[0.04] p-5 transition hover:bg-white/[0.08]">
+              <a key={brandName} href="/catalogo" className="flex items-center justify-between rounded-md border border-line bg-[#fbfaf6] p-5 transition hover:border-[#caa55c] hover:bg-[#fbf7ed]">
                 <span className="font-display text-2xl">{brandName}</span>
                 <ArrowRight size={18} />
               </a>
@@ -247,7 +247,7 @@ export default async function HomePage() {
 function Proof({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
   return (
     <div className="flex gap-3 rounded-md border border-line bg-white p-4">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-ink text-white">{icon}</div>
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[#b8872f] text-white">{icon}</div>
       <div>
         <p className="font-black text-ink">{title}</p>
         <p className="mt-1 text-sm leading-5 text-[#6f6658]">{text}</p>
@@ -259,7 +259,7 @@ function Proof({ icon, title, text }: { icon: React.ReactNode; title: string; te
 function Step({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
   return (
     <div className="rounded-md border border-line bg-white p-5">
-      <div className="grid h-10 w-10 place-items-center rounded-md bg-[#edf2ee] text-[#5f7d69]">{icon}</div>
+      <div className="grid h-10 w-10 place-items-center rounded-md bg-[#f6edda] text-[#8a611c]">{icon}</div>
       <p className="mt-5 font-black text-ink">{title}</p>
       <p className="mt-2 text-sm leading-6 text-[#6f6658]">{text}</p>
     </div>

@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #151515;
-  --color-paper: #fcffcc;
-  --color-mist: #303030;
-  --color-line: rgba(175, 164, 102, 0.38);
-  --color-amber: #afa466;
-  --color-moss: #afa466;
+  --color-ink: #18140e;
+  --color-paper: #ffffff;
+  --color-mist: #f8f6f0;
+  --color-line: #e6dcc6;
+  --color-amber: #b8872f;
+  --color-moss: #5f7d69;
   --color-danger: #c9342e;
 }
 
 :root {
-  color-scheme: dark;
-  --background: #151515;
-  --foreground: #fcffcc;
-  --champagne: #afa466;
-  --sage: #afa466;
-  --mist: #303030;
-  --line-soft: rgba(175, 164, 102, 0.38);
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #18140e;
+  --champagne: #b8872f;
+  --champagne-soft: #f6edda;
+  --mist: #f8f6f0;
+  --line-soft: #e6dcc6;
 }
 
 * {
@@ -45,12 +45,18 @@ textarea {
 }
 
 a {
+  color: inherit;
   text-decoration: none;
 }
 
 ::selection {
-  background: #fcffcc;
-  color: #151515;
+  background: #b8872f;
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #b8872f;
+  outline-offset: 2px;
 }
 
 .font-display {
@@ -59,85 +65,32 @@ a {
 
 .premium-shell {
   background:
-    linear-gradient(180deg, #151515 0%, #1a1a1a 46%, #151515 100%);
+    radial-gradient(circle at top left, rgba(184, 135, 47, 0.11), transparent 32rem),
+    linear-gradient(180deg, #ffffff 0%, #fbfaf6 48%, #ffffff 100%);
 }
 
 .luxury-rule {
-  background: linear-gradient(90deg, transparent, rgba(175, 164, 102, 0.8), transparent);
+  background: linear-gradient(90deg, transparent, rgba(184, 135, 47, 0.82), transparent);
 }
 
 .soft-grid {
   background-image:
-    linear-gradient(rgba(175, 164, 102, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(175, 164, 102, 0.08) 1px, transparent 1px);
+    linear-gradient(rgba(184, 135, 47, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184, 135, 47, 0.08) 1px, transparent 1px);
   background-size: 46px 46px;
-}
-
-.text-ink,
-[class*="text-[#111111]"] {
-  color: #fcffcc !important;
-}
-
-.text-white,
-[class*="text-white"] {
-  color: #fcffcc !important;
-}
-
-[class*="text-[#4"],
-[class*="text-[#5"],
-[class*="text-[#6"],
-[class*="text-[#7"],
-[class*="text-[#8"] {
-  color: #afa466 !important;
-}
-
-.bg-white,
-[class*="bg-white"] {
-  background-color: #303030 !important;
-}
-
-.bg-mist,
-[class*="bg-[#f8f8f6]"],
-[class*="bg-[#fbfaf7]"],
-[class*="bg-[#fffdfa]"],
-[class*="bg-[#f5faf6]"],
-[class*="bg-[#edf2ee]"],
-[class*="bg-[#f3ede3]"],
-[class*="bg-[#f1eadf]"],
-[class*="bg-[#fff5df]"] {
-  background-color: #303030 !important;
-}
-
-.bg-ink {
-  background-color: #151515 !important;
-}
-
-.border-line,
-.border-ink,
-[class*="border-[#e7dfd2]"],
-[class*="border-[#dfe8df]"],
-[class*="border-[#d7c5a7]"],
-[class*="border-white"] {
-  border-color: rgba(175, 164, 102, 0.38) !important;
-}
-
-[class*="bg-[#b88939]"],
-[class*="bg-[#5f7d69]"] {
-  background-color: #afa466 !important;
-  color: #151515 !important;
 }
 
 input,
 select,
 textarea {
-  background-color: #303030 !important;
-  border-color: rgba(175, 164, 102, 0.38) !important;
-  color: #fcffcc !important;
+  background-color: #ffffff;
+  border-color: var(--line-soft);
+  color: var(--foreground);
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: rgba(252, 255, 204, 0.52);
+  color: #807769;
 }
 
 @keyframes cart-line-in {
@@ -165,7 +118,7 @@ textarea::placeholder {
   }
   45% {
     transform: scale(1.16);
-    box-shadow: 0 0 0 6px rgba(175, 164, 102, 0.18);
+    box-shadow: 0 0 0 6px rgba(184, 135, 47, 0.18);
   }
   100% {
     transform: scale(1);
@@ -200,10 +153,16 @@ textarea::placeholder {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cart-line,
-  .cart-line-removing,
-  .cart-quantity-pop,
-  .cart-confirm {
-    animation: none;
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
   }
 }

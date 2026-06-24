@@ -62,16 +62,18 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="rounded-md border border-line bg-white p-4 shadow-[0_18px_46px_rgba(21,21,21,0.07)] sm:p-5">
-          <div className="grid gap-3 lg:grid-cols-[1.5fr_1fr_1fr_0.8fr_0.9fr_auto]">
-            <label className="relative">
-              <span className="sr-only">Buscar</span>
-              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#81786b]" size={18} />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar perfume, nota o marca"
-                className="h-11 w-full rounded-md border border-line bg-[#f8f8f6] pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-[#b88939] focus:bg-white"
-              />
+          <div className="grid items-end gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_0.8fr_0.9fr_auto]">
+            <label>
+              <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-[#7b7164]">Buscar</span>
+              <span className="relative block">
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#81786b]" size={18} />
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Buscar perfume, nota o marca"
+                  className="h-11 w-full rounded-md border border-line bg-[#f8f8f6] pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-[#b88939] focus:bg-white"
+                />
+              </span>
             </label>
             <FilterSelect label="Marca" value={brand} onChange={setBrand} options={brands} />
             <FilterSelect label="Categoría" value={family} onChange={setFamily} options={families} />
@@ -103,7 +105,7 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
           <div className="flex items-center gap-2 text-sm font-bold text-[#5f574c]">
             <SlidersHorizontal size={17} />
             {isLoading ? "Cargando perfumes..." : `${products.length} decants disponibles`}
-            {activeFilterCount > 0 ? <span className="rounded-md bg-[#edf2ee] px-2 py-1 text-xs text-[#5f7d69]">{activeFilterCount} activos</span> : null}
+            {activeFilterCount > 0 ? <span className="rounded-md bg-[#f6edda] px-2 py-1 text-xs text-[#8a611c]">{activeFilterCount} activos</span> : null}
           </div>
           <p className="text-sm text-[#6f6658]">Tip: 2ml para testear, 5ml para comparar, 10ml para convivir con la fragancia.</p>
         </div>
@@ -158,7 +160,7 @@ function FilterSelect({
 function TrustItem({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
     <div className="flex items-center gap-3 rounded-md border border-line bg-[#fbfaf7] p-4 text-sm font-bold text-ink">
-      <span className="grid h-9 w-9 place-items-center rounded-md bg-ink text-white">{icon}</span>
+      <span className="grid h-9 w-9 place-items-center rounded-md bg-[#b8872f] text-white">{icon}</span>
       {title}
     </div>
   );
