@@ -23,7 +23,8 @@ app/
   admin/envios/page.tsx             # Gestión de envíos
   admin/clientes/page.tsx           # Gestión de clientes
   api/checkout/session/route.ts     # Crear pedido y sesión de checkout
-  api/webhooks/stripe/route.ts      # Webhook de pagos cuando el proveedor esté activo
+  api/webhooks/mercadopago/route.ts # Webhook de Mercado Pago
+  api/webhooks/stripe/route.ts      # Webhook opcional de Stripe
 
 components/
   admin/                            # UI del panel admin
@@ -97,10 +98,11 @@ Stock y pedidos:
 3. En `/carrito`, revisa cantidades, subtotal y envío.
 4. En `/checkout`, carga datos de contacto, teléfono y dirección.
 5. `POST /api/checkout/session` valida variantes contra Supabase, reserva stock, crea pedido e ítems.
-6. El admin ve el pedido en `/admin/pedidos`, revisa datos del cliente y puede contactarlo por WhatsApp.
-7. En `/admin/stock`, revisa umbrales bajos y registra ajustes.
-8. En `/admin/envios`, cambia estados de preparación, despacho y entrega.
-9. El cliente ve el avance en `/cuenta/pedidos/[id]`.
+6. El proveedor de pago se resuelve con `PAYMENT_PROVIDER`: Mercado Pago, Stripe o manual.
+7. El admin ve el pedido en `/admin/pedidos`, revisa datos del cliente y puede contactarlo por WhatsApp.
+8. En `/admin/stock`, revisa umbrales bajos y registra ajustes.
+9. En `/admin/envios`, cambia estados de preparación, despacho y entrega.
+10. El cliente ve el avance en `/cuenta/pedidos/[id]`.
 
 ## 5. Variables de entorno
 
@@ -112,18 +114,29 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
+PAYMENT_PROVIDER=mercadopago
+NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY=
+MERCADO_PAGO_ACCESS_TOKEN=
+MERCADO_PAGO_WEBHOOK_SECRET=
+
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 
+NEXT_PUBLIC_GTM_ID=
+GOOGLE_ADS_CONVERSION_ID=
+GOOGLE_ADS_CONVERSION_LABEL=
+
 EMAIL_PROVIDER=resend
 RESEND_API_KEY=
 RESEND_FROM_EMAIL=pedidos@decantscba.com
+NOTIFICATION_WEBHOOK_SECRET=
 ADMIN_BOOTSTRAP_EMAILS=
 ```
 
 Notas:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` o `NEXT_PUBLIC_SUPABASE_ANON_KEY` se usa en cliente y server SSR.
 - `SUPABASE_SERVICE_ROLE_KEY` solo debe existir en servidor, nunca en componentes cliente.
-- Para producción en Vercel, replicar estas variables en Project Settings.
-- La integración de pagos queda como capacidad técnica, pero la activación del proveedor se realiza aparte.
+- `MERCADO_PAGO_ACCESS_TOKEN`, `MERCADO_PAGO_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY` y `NOTIFICATION_WEBHOOK_SECRET` son solo servidor.
+- Para produccion en Vercel, replicar estas variables en Project Settings.
+- Mercado Pago Checkout Pro queda como proveedor recomendado para Argentina. Stripe se mantiene como fallback opcional.

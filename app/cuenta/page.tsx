@@ -5,6 +5,8 @@ import { getAccountOrders } from "@/lib/data/orders";
 import { formatMoney } from "@/lib/format";
 import { StatusBadge } from "@/components/ui/status-badge";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountPage() {
   const profile = await requireCustomer();
   const orders = await getAccountOrders(profile.id);

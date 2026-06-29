@@ -11,8 +11,10 @@ Tienda online full-stack para venta de decants de perfumes con Next.js, Tailwind
 5. Crear un bucket publico `product-images` si no lo creo la migracion.
 6. Configurar las variables de `.env.example`.
 7. Deploy en Vercel con las mismas variables.
+8. Configurar Mercado Pago Checkout Pro y el webhook `/api/webhooks/mercadopago`.
+9. Configurar Google Tag Manager con los eventos ecommerce enviados por la tienda.
 
-La integracion de pagos queda preparada en el codigo, pero la activacion del proveedor se configura despues.
+La integracion de pagos queda lista para Mercado Pago como proveedor recomendado para Argentina. Stripe queda disponible como fallback opcional si el negocio opera con una cuenta soportada por Stripe.
 
 ## Desarrollo local
 

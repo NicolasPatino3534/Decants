@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -41,6 +42,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" data-scroll-behavior="smooth">
+      {env.googleTagManagerId ? <GoogleTagManager gtmId={env.googleTagManagerId} /> : null}
       <body>
         <CartProvider>
           <SiteHeader />

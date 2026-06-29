@@ -4,6 +4,8 @@ import { getOrderById } from "@/lib/data/orders";
 import { formatMoney } from "@/lib/format";
 import { StatusBadge } from "@/components/ui/status-badge";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountOrderPage({ params }: { params: Promise<{ id: string }> }) {
   await requireCustomer();
   const { id } = await params;

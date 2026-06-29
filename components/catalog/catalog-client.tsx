@@ -71,6 +71,7 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Buscar perfume, nota o marca"
+                  suppressHydrationWarning
                   className="h-11 w-full rounded-md border border-line bg-[#f8f8f6] pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-[#b88939] focus:bg-white"
                 />
               </span>
