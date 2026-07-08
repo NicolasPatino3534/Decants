@@ -1,5 +1,6 @@
 node_modules
 .next
+.vercel
 out
 dist
 .env
@@ -9,3 +10,4 @@ next-dev.out.log
 next-dev.err.log
 next-prod.live.log
 *.tsbuildinfo
+.env*
