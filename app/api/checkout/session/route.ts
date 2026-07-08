@@ -5,6 +5,8 @@ import { checkoutSchema, type CheckoutInput } from "@/lib/checkout/schema";
 import { resolveCouponDiscount, resolveShippingMethod } from "@/lib/checkout/options";
 import { buildCheckoutLines, CheckoutStockError, normalizeCheckoutItems } from "@/lib/checkout/stock";
 import { env } from "@/lib/env";
+import { createMercadoPagoPreference } from "@/lib/payments/mercado-pago";
+import { resolvePaymentProvider, validatePaymentProviderConfig } from "@/lib/payments/provider";
 import { getStripe } from "@/lib/payments/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -89,6 +91,12 @@ export async function POST(request: Request) {
     },
   };
 
+  const provider = resolvePaymentProvider();
+  const providerConfigError = validatePaymentProviderConfig(provider);
+  if (providerConfigError) {
+    return NextResponse.json({ error: providerConfigError }, { status: 503 });
+  }
+
   const existing = await findExistingOrderByIdempotencyKey(admin, checkoutInput);
   if (existing) {
     return NextResponse.json({ url: `${env.siteUrl}/checkout/success?order=${existing.id}`, orderId: existing.id, duplicate: true });
@@ -158,8 +166,7 @@ export async function POST(request: Request) {
     await incrementCouponUsage(admin, coupon.couponId);
     if (supabase) await clearPersistedCart(supabase, user.id);
 
-    const stripe = getStripe();
-    if (!stripe) {
+    if (provider === "manual") {
       await createPayment(admin, {
         orderId: order.id,
         provider: "manual",
@@ -167,6 +174,40 @@ export async function POST(request: Request) {
         totalCents: totals.totalCents,
       });
       return NextResponse.json({ url: `${env.siteUrl}/checkout/success?order=${order.id}&pending=1`, orderId: order.id, payment: "manual" });
+    }
+
+    if (provider === "mercadopago") {
+      try {
+        const preference = await createMercadoPagoPreference({
+          orderId: order.id,
+          input: checkoutInput,
+          lines,
+          totals,
+          shippingMethod,
+        });
+
+        if (!preference?.id || !preference.initPoint) {
+          throw new CheckoutError("Mercado Pago no devolvio una URL de checkout.", 502);
+        }
+
+        await createPayment(admin, {
+          orderId: order.id,
+          provider: "mercadopago",
+          providerSessionId: preference.id,
+          totalCents: totals.totalCents,
+        });
+
+        return NextResponse.json({ url: preference.initPoint, orderId: order.id, payment: "mercadopago" });
+      } catch (caught) {
+        if (caught instanceof CheckoutError) throw caught;
+        console.error("mercadopago_checkout_preference_error", caught);
+        throw new CheckoutError("Mercado Pago no esta disponible. Intenta nuevamente en unos minutos.", 502);
+      }
+    }
+
+    const stripe = getStripe();
+    if (!stripe) {
+      throw new CheckoutError("Stripe no esta configurado.", 503);
     }
 
     let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>;

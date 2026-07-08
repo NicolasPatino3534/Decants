@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/types";
+﻿import type { Product } from "@/lib/types";
 
 export const catalogProducts: Product[] = [
   {
@@ -21,7 +21,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "9am Dive de Afnan es una fragancia de la familia olfativa Aromática Acuática para Hombres y Mujeres. Esta fragrancia es nueva. 9am Dive se lanzó en 2022. Las Notas de Salida son menta, limón (lima ácida), grosellas negras y pimienta rosa; las Notas de Corazón son manzana, incienso y cedro; las Notas de Fondo son jengibre, sándalo, pachulí y jazmín.",
+    "description": "9am Dive de Afnan es una fragancia de la familia olfativa Aromática Acuática para Hombres y Mujeres. Esta fragancia es nueva. 9am Dive se lanzó en 2022. Las Notas de Salida son menta, limón (lima ácida), grosellas negras y pimienta rosa; las Notas de Corazón son manzana, incienso y cedro; las Notas de Fondo son jengibre, sándalo, pachulí y jazmín.",
     "notesTop": [
       "Menta",
       "Limón (lima ácida)",
@@ -93,7 +93,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "9pm de Afnan es una fragancia de la familia olfativa Ámbar Vainilla para Hombres. Esta fragrancia es nueva. 9pm se lanzó en 2020. Las Notas de Salida son manzana, canela, lavanda silvestre y bergamota; las Notas de Corazón son flor de azahar del naranjo y lirio de los valles (muguete); las Notas de Fondo son vainilla, haba tonka, ámbar y pachulí.",
+    "description": "9pm de Afnan es una fragancia de la familia olfativa Ámbar Vainilla para Hombres. Esta fragancia es nueva. 9pm se lanzó en 2020. Las Notas de Salida son manzana, canela, lavanda silvestre y bergamota; las Notas de Corazón son flor de azahar del naranjo y lirio de los valles (muguete); las Notas de Fondo son vainilla, haba tonka, ámbar y pachulí.",
     "notesTop": [
       "Manzana",
       "Canela",
@@ -351,7 +351,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "INSPIRADO EN SANTAL 33 DE LE LABO Amber Noir de Orientica Premium es una fragancia de la familia olfativa Ámbar Amaderada para Hombres y Mujeres. Esta fragrancia es nueva. Amber Noir se lanzó en 2023. Las Notas de Salida son elemí, higo y zanahoria; la Nota de Corazón es lirio de los valles (muguete); las Notas de Fondo son sándalo, cedro y almizcle.",
+    "description": "INSPIRADO EN SANTAL 33 DE LE LABO Amber Noir de Orientica Premium es una fragancia de la familia olfativa Ámbar Amaderada para Hombres y Mujeres. Esta fragancia es nueva. Amber Noir se lanzó en 2023. Las Notas de Salida son elemí, higo y zanahoria; la Nota de Corazón es lirio de los valles (muguete); las Notas de Fondo son sándalo, cedro y almizcle.",
     "notesTop": [
       "Elemí",
       "Higo",
@@ -417,7 +417,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Amber Oud Bleu Edition de Al Haramain Perfumes es una fragancia de la familia olfativa para Hombres y Mujeres. Esta fragrancia es nueva. Amber Oud Bleu Edition se lanzó en 2022. Las Notas de Salida son toronja (pomelo), limón (lima ácida), menta y pimienta rosa; las Notas de Corazón son jengibre, vetiver y jazmín; las Notas de Fondo son incienso de olíbano (franquincienso), sándalo, cedro y pachulí.",
+    "description": "Amber Oud Bleu Edition de Al Haramain Perfumes es una fragancia de la familia olfativa para Hombres y Mujeres. Esta fragancia es nueva. Amber Oud Bleu Edition se lanzó en 2022. Las Notas de Salida son toronja (pomelo), limón (lima ácida), menta y pimienta rosa; las Notas de Corazón son jengibre, vetiver y jazmín; las Notas de Fondo son incienso de olíbano (franquincienso), sándalo, cedro y pachulí.",
     "notesTop": [
       "Toronja (pomelo)",
       "Limón (lima ácida)",
@@ -489,7 +489,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Amber Oud Carbon Edition de Al Haramain Perfumes es una fragancia de la familia olfativa Amaderada Aromática para Hombres y Mujeres. Esta fragrancia es nueva. Amber Oud Carbon Edition se lanzó en 2022. Las Notas de Salida son bergamota, lavanda y romero; las Notas de Corazón son notas marinas, salvia y geranio; las Notas de Fondo son ámbar, vetiver, musgo y cedro.",
+    "description": "Amber Oud Carbon Edition de Al Haramain Perfumes es una fragancia de la familia olfativa Amaderada Aromática para Hombres y Mujeres. Esta fragancia es nueva. Amber Oud Carbon Edition se lanzó en 2022. Las Notas de Salida son bergamota, lavanda y romero; las Notas de Corazón son notas marinas, salvia y geranio; las Notas de Fondo son ámbar, vetiver, musgo y cedro.",
     "notesTop": [
       "Bergamota",
       "Lavanda",
@@ -560,7 +560,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Amber Oud Ultra Violet de Al Haramain Perfumes es una fragancia de la familia olfativa Almizcle Floral Amaderado para Mujeres. Esta fragrancia es nueva. Amber Oud Ultra Violet se lanzó en 2024. Las Notas de Salida son jengibre, rosa y bergamota; las Notas de Corazón son nardos, jazmín y flores blancas; las Notas de Fondo son roble, pachulí y almizcle.",
+    "description": "Amber Oud Ultra Violet de Al Haramain Perfumes es una fragancia de la familia olfativa Almizcle Floral Amaderado para Mujeres. Esta fragancia es nueva. Amber Oud Ultra Violet se lanzó en 2024. Las Notas de Salida son jengibre, rosa y bergamota; las Notas de Corazón son nardos, jazmín y flores blancas; las Notas de Fondo son roble, pachulí y almizcle.",
     "notesTop": [
       "Jengibre",
       "Rosa",
@@ -630,7 +630,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Amber Oud White Edition de Al Haramain Perfumes es una fragancia de la familia olfativa Chipre Floral para Hombres y Mujeres. Esta fragrancia es nueva. Amber Oud White Edition se lanzó en 2022. Las Notas de Salida son bergamota y naranja; las Notas de Corazón son jazmín, rosa, fresia y ciclamen (violeta persa); las Notas de Fondo son pachulí, almizcle, vetiver y vainilla.",
+    "description": "Amber Oud White Edition de Al Haramain Perfumes es una fragancia de la familia olfativa Chipre Floral para Hombres y Mujeres. Esta fragancia es nueva. Amber Oud White Edition se lanzó en 2022. Las Notas de Salida son bergamota y naranja; las Notas de Corazón son jazmín, rosa, fresia y ciclamen (violeta persa); las Notas de Fondo son pachulí, almizcle, vetiver y vainilla.",
     "notesTop": [
       "Bergamota",
       "Naranja"
@@ -875,7 +875,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "Amber Oud Aqua Dubai extrait de parfum de Al Haramain Perfumes es una fragancia de la familia olfativa Aromática Frutal para Hombres y Mujeres. Esta fragrancia es nueva. Amber Oud Aqua Dubai se lanzó en 2024. Las Notas de Salida son bergamota, mandarina y notas verdes; las Notas de Corazón son ámbar, melón, grosellas negras y piña; las Notas de Fondo son almizcle, petit grain, gálbano y vainilla. Similar Imagination Louis. V .",
+    "description": "Amber Oud Aqua Dubai extrait de parfum de Al Haramain Perfumes es una fragancia de la familia olfativa Aromática Frutal para Hombres y Mujeres. Esta fragancia es nueva. Amber Oud Aqua Dubai se lanzó en 2024. Las Notas de Salida son bergamota, mandarina y notas verdes; las Notas de Corazón son ámbar, melón, grosellas negras y piña; las Notas de Fondo son almizcle, petit grain, gálbano y vainilla. Similar Imagination Louis. V .",
     "notesTop": [
       "Bergamota",
       "Mandarina",
@@ -1125,7 +1125,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "Atlantis Extrait de French Avenue es una fragancia de la familia olfativa Aromática Acuática para Hombres y Mujeres. Esta fragrancia es nueva. Atlantis Extrait se lanzó en 2025. Las Notas de Salida son naranja, mandarina y limón (lima ácida); las Notas de Corazón son sandía y coco; las Notas de Fondo son cacao, ámbar gris y Amberwood.",
+    "description": "Atlantis Extrait de French Avenue es una fragancia de la familia olfativa Aromática Acuática para Hombres y Mujeres. Esta fragancia es nueva. Atlantis Extrait se lanzó en 2025. Las Notas de Salida son naranja, mandarina y limón (lima ácida); las Notas de Corazón son sandía y coco; las Notas de Fondo son cacao, ámbar gris y Amberwood.",
     "notesTop": [
       "Naranja",
       "Mandarina",
@@ -1439,11 +1439,11 @@ export const catalogProducts: Product[] = [
   },
   {
     "id": "prod_22641288",
-    "name": "BHARARA KING (Bhararra)",
+    "name": "BHARARA KING (Bharara)",
     "slug": "bharara-king-bhararra-dupe-erbapura",
     "brand": {
       "id": "brand_bhararra",
-      "name": "Bhararra",
+      "name": "Bharara",
       "slug": "bhararra"
     },
     "category": {
@@ -1655,7 +1655,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Bharara Queen de Bharara es una fragancia de la familia olfativa para Mujeres. Esta fragrancia es nueva. Bharara Queen se lanzó en 2024. La Nota de Salida es bergamota; las Notas de Corazón son flores blancas y rosa; las Notas de Fondo son sándalo, caramelo y vainilla.",
+    "description": "Bharara Queen de Bharara es una fragancia de la familia olfativa para Mujeres. Esta fragancia es nueva. Bharara Queen se lanzó en 2024. La Nota de Salida es bergamota; las Notas de Corazón son flores blancas y rosa; las Notas de Fondo son sándalo, caramelo y vainilla.",
     "notesTop": [],
     "notesHeart": [
       "Flores blancas",
@@ -1720,7 +1720,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Valentino Uomo Born In Roma Coral Fantasy de Valentino es una fragancia de la familia olfativa Amaderada Aromática para Hombres. Esta fragrancia es nueva. Valentino Uomo Born In Roma Coral Fantasy se lanzó en 2022. Valentino Uomo Born In Roma Coral Fantasy fue creada por Nicolas Beaulieu y Jean-Christophe Hérault. Las Notas de Salida son manzana roja, cardamomo y bergamota de Calabria; las Notas de Corazón son lavanda, geranio bourbon y esclarea; las Notas de Fondo son hojas de tabaco, pachulí y vetiver de Haití.",
+    "description": "Valentino Uomo Born In Roma Coral Fantasy de Valentino es una fragancia de la familia olfativa Amaderada Aromática para Hombres. Esta fragancia es nueva. Valentino Uomo Born In Roma Coral Fantasy se lanzó en 2022. Valentino Uomo Born In Roma Coral Fantasy fue creada por Nicolas Beaulieu y Jean-Christophe Hérault. Las Notas de Salida son manzana roja, cardamomo y bergamota de Calabria; las Notas de Corazón son lavanda, geranio bourbon y esclarea; las Notas de Fondo son hojas de tabaco, pachulí y vetiver de Haití.",
     "notesTop": [
       "Manzana roja",
       "Cardamomo",
@@ -1790,7 +1790,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Boss Bottled Pacific de Hugo Boss es una fragancia de la familia olfativa Amaderada Aromática para Hombres. Esta fragrancia es nueva. Boss Bottled Pacific se lanzó en 2023. La Nariz detrás de esta fragrancia es Sophie Labbé.",
+    "description": "Boss Bottled Pacific de Hugo Boss es una fragancia de la familia olfativa Amaderada Aromática para Hombres. Esta fragancia es nueva. Boss Bottled Pacific se lanzó en 2023. La Nariz detrás de esta fragancia es Sophie Labbé.",
     "notesTop": [],
     "notesHeart": [],
     "notesBase": [],
@@ -1967,7 +1967,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Castley de Parfums de Marly es una fragancia de la familia olfativa Cítrica Aromática para Hombres. Esta fragrancia es nueva. Castley se lanzó en 2025. Las Notas de Salida son bergamota, jengibre, pimienta negra y toronja (pomelo); las Notas de Corazón son pimienta, neroli, petit grain, Timur y rosa; las Notas de Fondo son Akigalawood, ládano, benjuí y cuero.",
+    "description": "Castley de Parfums de Marly es una fragancia de la familia olfativa Cítrica Aromática para Hombres. Esta fragancia es nueva. Castley se lanzó en 2025. Las Notas de Salida son bergamota, jengibre, pimienta negra y toronja (pomelo); las Notas de Corazón son pimienta, neroli, petit grain, Timur y rosa; las Notas de Fondo son Akigalawood, ládano, benjuí y cuero.",
     "notesTop": [
       "Bergamota",
       "Jengibre",
@@ -2157,7 +2157,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Club de Nuit Blue Iconic de Armaf es una fragancia de la familia olfativa para Hombres. Esta fragrancia es nueva. Club de Nuit Blue Iconic se lanzó en 2022. Las Notas de Salida son toronja (pomelo), limón (lima ácida), menta, pimienta rosa y cilantro; las Notas de Corazón son jengibre, melón, jazmín y nuez moscada; las Notas de Fondo son notas amaderadas, incienso, sándalo, ámbar, cedro, pachulí y ládano.",
+    "description": "Club de Nuit Blue Iconic de Armaf es una fragancia de la familia olfativa para Hombres. Esta fragancia es nueva. Club de Nuit Blue Iconic se lanzó en 2022. Las Notas de Salida son toronja (pomelo), limón (lima ácida), menta, pimienta rosa y cilantro; las Notas de Corazón son jengibre, melón, jazmín y nuez moscada; las Notas de Fondo son notas amaderadas, incienso, sándalo, ámbar, cedro, pachulí y ládano.",
     "notesTop": [
       "Toronja (pomelo)",
       "Limón (lima ácida)",
@@ -2234,7 +2234,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Club de Nuit White Imperiale de Armaf es una fragancia de la familia olfativa para Mujeres. Esta fragrancia es nueva. Club de Nuit White Imperiale se lanzó en 2022. Las Notas de Salida son lichi, bergamota y nuez moscada; las Notas de Corazón son rosa turca, vainilla, almizcle y peonía; las Notas de Fondo son vainilla, incienso, cachemira y cedro.",
+    "description": "Club de Nuit White Imperiale de Armaf es una fragancia de la familia olfativa para Mujeres. Esta fragancia es nueva. Club de Nuit White Imperiale se lanzó en 2022. Las Notas de Salida son lichi, bergamota y nuez moscada; las Notas de Corazón son rosa turca, vainilla, almizcle y peonía; las Notas de Fondo son vainilla, incienso, cachemira y cedro.",
     "notesTop": [
       "Lichi",
       "Bergamota",
@@ -2364,7 +2364,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Club De Nuit Intense Woman Perfume Oil de Armaf es una fragancia de la familia olfativa para Mujeres. Esta fragrancia es nueva. Club De Nuit Intense Woman Perfume Oil se lanzó en 2022. Las Notas de Salida son rosa, azafrán y geranio; las Notas de Corazón son nuez moscada, alcaravea, violeta y pimienta; las Notas de Fondo son pachulí, ámbar, madera de oud y vainilla.",
+    "description": "Club De Nuit Intense Woman Perfume Oil de Armaf es una fragancia de la familia olfativa para Mujeres. Esta fragancia es nueva. Club De Nuit Intense Woman Perfume Oil se lanzó en 2022. Las Notas de Salida son rosa, azafrán y geranio; las Notas de Corazón son nuez moscada, alcaravea, violeta y pimienta; las Notas de Fondo son pachulí, ámbar, madera de oud y vainilla.",
     "notesTop": [
       "Rosa",
       "Azafrán",
@@ -2637,7 +2637,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "Club De Nuit Urban Elixir de Armaf es una fragancia de la familia olfativa para Hombres. Esta fragrancia es nueva. Club De Nuit Urban Elixir se lanzó en 2022. Las Notas de Salida son bergamota, pimienta rosa, jazmín y flor de azahar del naranjo; las Notas de Corazón son lavanda, geranio, elemí, azafrán, cempasúchil (tagete, clavelón) y vetiver; las Notas de Fondo son ambroxan, pachulí, cedro, ámbar y ládano.",
+    "description": "Club De Nuit Urban Elixir de Armaf es una fragancia de la familia olfativa para Hombres. Esta fragancia es nueva. Club De Nuit Urban Elixir se lanzó en 2022. Las Notas de Salida son bergamota, pimienta rosa, jazmín y flor de azahar del naranjo; las Notas de Corazón son lavanda, geranio, elemí, azafrán, cempasúchil (tagete, clavelón) y vetiver; las Notas de Fondo son ambroxan, pachulí, cedro, ámbar y ládano.",
     "notesTop": [
       "Bergamota",
       "Pimienta rosa",
@@ -2714,7 +2714,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "Club de Nuit Untold de Armaf es una fragancia de la familia olfativa para Hombres y Mujeres. Esta fragrancia es nueva. Club de Nuit Untold se lanzó en 2022. Las Notas de Salida son azafrán y jazmín; las Notas de Corazón son Amberwood y ámbar gris; las Notas de Fondo son resina de abeto y cedro.",
+    "description": "Club de Nuit Untold de Armaf es una fragancia de la familia olfativa para Hombres y Mujeres. Esta fragancia es nueva. Club de Nuit Untold se lanzó en 2022. Las Notas de Salida son azafrán y jazmín; las Notas de Corazón son Amberwood y ámbar gris; las Notas de Fondo son resina de abeto y cedro.",
     "notesTop": [
       "Azafrán",
       "Jazmín"
@@ -2909,7 +2909,7 @@ export const catalogProducts: Product[] = [
       "slug": "nicho-autor"
     },
     "concentration": "Decant",
-    "description": "Delphinus de Creed es una fragancia de la familia olfativa Oriental Floral para Hombres y Mujeres. Esta fragrancia es nueva. Delphinus se lanzó en 2024. Las Notas de Salida son almendra, incienso, pimienta rosa y pimienta negra; las Notas de Corazón son raíz de lirio, heliotropo y orquídea; las Notas de Fondo son vainilla Bourbon, haba tonka, cuero, Amberwood y pachulí.",
+    "description": "Delphinus de Creed es una fragancia de la familia olfativa Oriental Floral para Hombres y Mujeres. Esta fragancia es nueva. Delphinus se lanzó en 2024. Las Notas de Salida son almendra, incienso, pimienta rosa y pimienta negra; las Notas de Corazón son raíz de lirio, heliotropo y orquídea; las Notas de Fondo son vainilla Bourbon, haba tonka, cuero, Amberwood y pachulí.",
     "notesTop": [
       "Almendra",
       "Incienso",
@@ -3056,7 +3056,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Eau d'Ombré Leather de Tom Ford es una fragancia de la familia olfativa Cuero para Hombres. Esta fragrancia es nueva. Eau d'Ombré Leather se lanzó en 2024. La Nariz detrás de esta fragrancia es Sonia Constant. Las Notas de Salida son cardamomo, jengibre y cilantro; las Notas de Corazón son vainilla y cuero; la Nota de Fondo es Ambrofix™",
+    "description": "Eau d'Ombré Leather de Tom Ford es una fragancia de la familia olfativa Cuero para Hombres. Esta fragancia es nueva. Eau d'Ombré Leather se lanzó en 2024. La Nariz detrás de esta fragancia es Sonia Constant. Las Notas de Salida son cardamomo, jengibre y cilantro; las Notas de Corazón son vainilla y cuero; la Nota de Fondo es Ambrofix™",
     "notesTop": [
       "Cardamomo",
       "Jengibre",
@@ -3295,7 +3295,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Eros Flame de Versace es una fragancia de la familia olfativa Amaderada Especiada para Hombres. El Perfumista detrás de esta fragrancia es Olivier Pescheux. Las Notas de Salida son mandarina, pimienta de Madagascar, limón, Chinotto y romero; las Notas de Corazón son geranio, rosa y Pepperwood; las Notas de Fondo son vainilla, haba tonka, sándalo, cedro de Texas, pachulí y musgo de roble.",
+    "description": "Eros Flame de Versace es una fragancia de la familia olfativa Amaderada Especiada para Hombres. El Perfumista detrás de esta fragancia es Olivier Pescheux. Las Notas de Salida son mandarina, pimienta de Madagascar, limón, Chinotto y romero; las Notas de Corazón son geranio, rosa y Pepperwood; las Notas de Fondo son vainilla, haba tonka, sándalo, cedro de Texas, pachulí y musgo de roble.",
     "notesTop": [
       "Mandarina",
       "Pimienta de Madagascar",
@@ -3355,9 +3355,9 @@ export const catalogProducts: Product[] = [
     "name": "EXPERIENCIA OLFATIVA ARABES (seleccion decantscba.com)",
     "slug": "experiencia-olfativa-arabes-seleccion-decantscbacom",
     "brand": {
-      "id": "brand_seleccion-decantscba-com",
+      "id": "brand_seleccion-decants-cba",
       "name": "seleccion decantscba.com",
-      "slug": "seleccion-decantscba-com"
+      "slug": "seleccion-decants-cba"
     },
     "category": {
       "id": "cat_promos",
@@ -3370,7 +3370,7 @@ export const catalogProducts: Product[] = [
       "slug": "promos"
     },
     "concentration": "Decant",
-    "description": "Decants Cordoba te propone una Experiencia Olfativa Increíble. 5 de los permumes Arabes más destacados y premiados en una presentación de 2ml, 3ml, 5ml y 10ml Amber Oud Gold Edition de Al Haramain Perfumes es una fragancia de la familia olfativa Oriental Vainilla para Hombres y Mujeres. Frutal de alta duración y proyección, ideal para toda ocasión. Notas de Salida: bergamota y notas verdes Notas de Corazón: melón, piña, ámbar y Acuerdo goloso Notas de Fondo: almizcle, vainilla y notas amaderadas. Amber Noir de Orientica Premium es una fragancia de la familia olfativa Oriental Amaderada para Hombres y Mujeres. Misterioso, intrigante y seductor. Como si salieras a tu patio y olieras a tierra mojada pero con toques dulces. Excelente para esos días templados y elegantes. Notas de Salida: zanahoria, higo y elemí Nota de Corazón: lirio de los valles (muguete) Notas de Fondo: sándalo, almizcle y cedro. Club de Nuit Untold de Armaf es una fragancia de la familia olfativa para Hombres y Mujeres. Toque del mas dulce y esponjoso algodón de azúcar con tintes especiados. Notas de Salida: azafrán y jazmín Notas de Corazón: Amberwood y ámbar gris Notas de Fondo: resina de abeto y cedro. Liquid Brun de French Avenue es una fragancia de la familia olfativa Amaderada para Hombres. Inspirado en el perfume mas premiado del año 2024 (ALTHAIR PARFUM DE MARLY) Notas dulce avainilladas, ideal para climas fríos, salidas y juntadas con amigos Notas de Salida: canela, flor de azahar del naranjo, cardamomo y bergamota Notas de Corazón: vainilla Bourbon y elemí Notas de Fondo: praliné, ambroxan, madera de gaiac y almizcle. Club de Nuit Precieux de Armaf es una fragancia de la familia olfativa Oriental Amaderada para Hombres y Mujeres. Nueva bestria negra pero totalmente mejorada en cuanto a la calidad de sus aromas frutales. Un mismo estilo en una versión mejorada. Notas de Salida: piña, limón (lima ácida), bergamota, caramelo, pera, pimienta rosa y pimienta negra Notas de Corazón: musgo de roble, madera blanca, jazmín, anís y lirio de los valles (muguete) Notas de Fondo: ambroxan, ámbar, pachulí, almizcle blanco, vainilla, cuero y cedro.",
+    "description": "Decants Cordoba te propone una Experiencia Olfativa Increíble. 5 de los perfumes Arabes más destacados y premiados en una presentación de 2ml, 3ml, 5ml y 10ml Amber Oud Gold Edition de Al Haramain Perfumes es una fragancia de la familia olfativa Oriental Vainilla para Hombres y Mujeres. Frutal de alta duración y proyección, ideal para toda ocasión. Notas de Salida: bergamota y notas verdes Notas de Corazón: melón, piña, ámbar y Acuerdo goloso Notas de Fondo: almizcle, vainilla y notas amaderadas. Amber Noir de Orientica Premium es una fragancia de la familia olfativa Oriental Amaderada para Hombres y Mujeres. Misterioso, intrigante y seductor. Como si salieras a tu patio y olieras a tierra mojada pero con toques dulces. Excelente para esos días templados y elegantes. Notas de Salida: zanahoria, higo y elemí Nota de Corazón: lirio de los valles (muguete) Notas de Fondo: sándalo, almizcle y cedro. Club de Nuit Untold de Armaf es una fragancia de la familia olfativa para Hombres y Mujeres. Toque del mas dulce y esponjoso algodón de azúcar con tintes especiados. Notas de Salida: azafrán y jazmín Notas de Corazón: Amberwood y ámbar gris Notas de Fondo: resina de abeto y cedro. Liquid Brun de French Avenue es una fragancia de la familia olfativa Amaderada para Hombres. Inspirado en el perfume mas premiado del año 2024 (ALTHAIR PARFUM DE MARLY) Notas dulce avainilladas, ideal para climas fríos, salidas y juntadas con amigos Notas de Salida: canela, flor de azahar del naranjo, cardamomo y bergamota Notas de Corazón: vainilla Bourbon y elemí Notas de Fondo: praliné, ambroxan, madera de gaiac y almizcle. Club de Nuit Precieux de Armaf es una fragancia de la familia olfativa Oriental Amaderada para Hombres y Mujeres. Nueva bestia negra pero totalmente mejorada en cuanto a la calidad de sus aromas frutales. Un mismo estilo en una versión mejorada. Notas de Salida: piña, limón (lima ácida), bergamota, caramelo, pera, pimienta rosa y pimienta negra Notas de Corazón: musgo de roble, madera blanca, jazmín, anís y lirio de los valles (muguete) Notas de Fondo: ambroxan, ámbar, pachulí, almizcle blanco, vainilla, cuero y cedro.",
     "notesTop": [],
     "notesHeart": [],
     "notesBase": [],
@@ -3556,12 +3556,12 @@ export const catalogProducts: Product[] = [
   },
   {
     "id": "prod_22833430",
-    "name": "EXPERIENCIA OLFATIVA DISEÑADOR (Seleccion decantscba.com)",
+    "name": "EXPERIENCIA OLFATIVA DISEÑADOR (Seleccion Decants.CBA)",
     "slug": "experiencia-olfativa-disenador-seleccion-decantscbacom",
     "brand": {
-      "id": "brand_seleccion-decantscba-com",
-      "name": "Seleccion decantscba.com",
-      "slug": "seleccion-decantscba-com"
+      "id": "brand_seleccion-decants-cba",
+      "name": "Seleccion Decants.CBA",
+      "slug": "seleccion-decants-cba"
     },
     "category": {
       "id": "cat_promos",
@@ -3574,7 +3574,7 @@ export const catalogProducts: Product[] = [
       "slug": "promos"
     },
     "concentration": "Decant",
-    "description": "Decant s Córdoba te propone una Experiencia Olfativa Increíble. 5 de los permumes de Diseñador más destacados y premiados en una presentación de 2ml, 3ml, 5ml y 10ml Le Male Le Parfum de Jean Paul Gaultier es una fragancia de la familia olfativa Oriental para Hombres. Ideal para citas importantes, cenas, hará que te lleves todas las miradas. Super elegante, masculino y sexi. Nota de Salida: cardamomo Notas de Corazón: lavanda e iris Notas de Fondo: vainilla, notas orientales y notas amaderadas. Le Male Elixir de Jean Paul Gaultier es una fragancia de la familia olfativa Oriental Fougère para Hombres. El favorito de muchos, el mejor perfume para fiestas. Notas de Salida: lavanda y menta Notas de Corazón: vainilla y benjuí Notas de Fondo: miel, haba tonka y tabaco. Valentino Uomo Born In Roma Coral Fantasy de Valentino es una fragancia de la familia olfativa Amaderada Aromática para Hombres. Con notas jugadas de manzana y tabaco lo convierten en la mejor opción a la hora de juntarse con amigos y salir a fiestas. Muy amplia proyección y duración. Notas de Salida: manzana roja, cardamomo y bergamota de Calabria Notas de Corazón: lavanda, geranio bourbon y esclarea Notas de Fondo: hojas de tabaco, pachulí y vetiver de Haití. Dior Homme Intense de Dior es una fragancia de la familia olfativa Oriental Amaderada para Hombres. La definición de este perfume es ELEGANTE. Por donde vayas, harás que giren a ver una persona distinguida y refinada. Nota de Salida: iris de la Toscana Nota de Corazón: almizcle ambreta Nota de Fondo: cedro de Virginia. Eros Flame de Versace es una fragancia de la familia olfativa Amaderada Especiada para Hombres. Para muchos la mejor fragancia Versace. Una mandarina cremosa, calida y dulce pero con un toques de pimienta. Ideal para climas templados. Notas de Salida: mandarina, pimienta de Madagascar, limón (lima ácida), Chinotto y romero Notas de Corazón: geranio, rosa y Pepperwood Notas de Fondo: vainilla, haba tonka, sándalo, cedro de Texas, pachulí y musgo de roble.",
+    "description": "Decants Córdoba te propone una Experiencia Olfativa Increíble. 5 de los perfumes de Diseñador más destacados y premiados en una presentación de 2ml, 3ml, 5ml y 10ml Le Male Le Parfum de Jean Paul Gaultier es una fragancia de la familia olfativa Oriental para Hombres. Ideal para citas importantes, cenas, hará que te lleves todas las miradas. Super elegante, masculino y sexi. Nota de Salida: cardamomo Notas de Corazón: lavanda e iris Notas de Fondo: vainilla, notas orientales y notas amaderadas. Le Male Elixir de Jean Paul Gaultier es una fragancia de la familia olfativa Oriental Fougère para Hombres. El favorito de muchos, el mejor perfume para fiestas. Notas de Salida: lavanda y menta Notas de Corazón: vainilla y benjuí Notas de Fondo: miel, haba tonka y tabaco. Valentino Uomo Born In Roma Coral Fantasy de Valentino es una fragancia de la familia olfativa Amaderada Aromática para Hombres. Con notas jugadas de manzana y tabaco lo convierten en la mejor opción a la hora de juntarse con amigos y salir a fiestas. Muy amplia proyección y duración. Notas de Salida: manzana roja, cardamomo y bergamota de Calabria Notas de Corazón: lavanda, geranio bourbon y esclarea Notas de Fondo: hojas de tabaco, pachulí y vetiver de Haití. Dior Homme Intense de Dior es una fragancia de la familia olfativa Oriental Amaderada para Hombres. La definición de este perfume es ELEGANTE. Por donde vayas, harás que giren a ver una persona distinguida y refinada. Nota de Salida: iris de la Toscana Nota de Corazón: almizcle ambreta Nota de Fondo: cedro de Virginia. Eros Flame de Versace es una fragancia de la familia olfativa Amaderada Especiada para Hombres. Para muchos la mejor fragancia Versace. Una mandarina cremosa, calida y dulce pero con un toques de pimienta. Ideal para climas templados. Notas de Salida: mandarina, pimienta de Madagascar, limón (lima ácida), Chinotto y romero Notas de Corazón: geranio, rosa y Pepperwood Notas de Fondo: vainilla, haba tonka, sándalo, cedro de Texas, pachulí y musgo de roble.",
     "notesTop": [],
     "notesHeart": [],
     "notesBase": [],
@@ -3623,7 +3623,7 @@ export const catalogProducts: Product[] = [
   },
   {
     "id": "prod_23193235",
-    "name": "EXPERIENCIA OLFATIVA JEAN PATUL GAULTIER",
+    "name": "EXPERIENCIA OLFATIVA JEAN PAUL GAULTIER",
     "slug": "experiencia-olfativa-jean-patul-gaultier",
     "brand": {
       "id": "brand_decants-cba",
@@ -3690,12 +3690,12 @@ export const catalogProducts: Product[] = [
   },
   {
     "id": "prod_22833213",
-    "name": "EXPERIENCIA OLFATIVA NICHO-AUTOR (Seleccion dectanscba.com)",
-    "slug": "experiencia-olfativa-nicho-autor-seleccion-dectanscbacom",
+    "name": "EXPERIENCIA OLFATIVA NICHO-AUTOR (Seleccion Decants.CBA)",
+    "slug": "experiencia-olfativa-nicho-autor-seleccion-decantscbacom",
     "brand": {
-      "id": "brand_seleccion-dectanscba-com",
-      "name": "Seleccion dectanscba.com",
-      "slug": "seleccion-dectanscba-com"
+      "id": "brand_seleccion-decants-cba",
+      "name": "Seleccion Decants.CBA",
+      "slug": "seleccion-decants-cba"
     },
     "category": {
       "id": "cat_promos",
@@ -3708,7 +3708,7 @@ export const catalogProducts: Product[] = [
       "slug": "promos"
     },
     "concentration": "Decant",
-    "description": "Decant s Cordoba te propone una Experiencia Olfativa increíble. 5 de los permumes mas destacados y premiados en el mundo en una presentación de 2ml, 3ml, 5ml y 10ml Alexandria II de Xerjoff es una fragancia de la familia olfativa Oriental Amaderada para Hombres y Mujeres. Maxima calidad, es el perfume con mas calidad que conozco. Sus ingredientes son muy naturales. Este perfume es un beast mode. Puede durar días en la piel. Recomendado para ocasiones ultra especiales. Notas de Salida: palisandro, lavanda, canela y manzana Notas de Corazón: rosa, cedro y lirio de los valles (muguete) Notas de Fondo son madera de oud, sándalo, ámbar, vainilla y almizcle. XJ 1861 Naxos de Xerjoff es una fragancia de la familia olfativa Cítrica Gourmand para Hombres y Mujeres. Es mi fragancia favorita en el mundo, sus notas de tabaco, vainilla y jazmin la hacen increíblemente elegante. Ideal para citas y situaciones muy formales, te hará destacar sobre el resto. Tiene una duración de mas de 12 horas y altísima proyección. Notas de Salida son lavanda, bergamota y limón (lima ácida) Notas de Corazón son miel, canela, cachemira y jazmín sambac (sampaguita) Notas de Fondo son hojas de tabaco, vainilla y haba tonka. Althaïr de Parfums de Marly es una fragancia de la familia olfativa Oriental Vainilla para Hombres. Mejor perfume para hombres 2024, by FRAGANTICA. Alta proyección y duración en piel. Notas de Salida son canela, cardamomo, flor de azahar del naranjo y bergamota Notas de Corazón son vainilla Bourbon y elemí Notas de Fondo son praliné, almizcle, ambroxan, madera de gaiac, haba tonka y almendras acarameladas. Angels' Share de By Kilian es una fragancia de la familia olfativa Oriental Vainilla para Hombres y Mujeres. Mejor perfume gourmand del mundo. Inspirado en barriles de coñac. Ideal para invierno, citas y eventos formales. Nota de Salida es coñac Notas de Corazón son canela, haba tonka, roble y hediona Notas de Fondo son vainilla, praliné, sándalo y almendras acarameladas. Ombré Leather de Tom Ford es una fragancia de la familia olfativa Cuero para Hombres y Mujeres. Es el mejor perfume de cuero, ideal para personas con clase y de buen porte. Con destacada duración y proyección. Nota de Salida es cardamomo Notas de Corazón son cuero y jazmín sambac (sampaguita) Notas de Fondo son ámbar, musgo y pachulí.",
+    "description": "Decants Cordoba te propone una Experiencia Olfativa increíble. 5 de los perfumes mas destacados y premiados en el mundo en una presentación de 2ml, 3ml, 5ml y 10ml Alexandria II de Xerjoff es una fragancia de la familia olfativa Oriental Amaderada para Hombres y Mujeres. Maxima calidad, es el perfume con mas calidad que conozco. Sus ingredientes son muy naturales. Este perfume es un beast mode. Puede durar días en la piel. Recomendado para ocasiones ultra especiales. Notas de Salida: palisandro, lavanda, canela y manzana Notas de Corazón: rosa, cedro y lirio de los valles (muguete) Notas de Fondo son madera de oud, sándalo, ámbar, vainilla y almizcle. XJ 1861 Naxos de Xerjoff es una fragancia de la familia olfativa Cítrica Gourmand para Hombres y Mujeres. Es mi fragancia favorita en el mundo, sus notas de tabaco, vainilla y jazmin la hacen increíblemente elegante. Ideal para citas y situaciones muy formales, te hará destacar sobre el resto. Tiene una duración de mas de 12 horas y altísima proyección. Notas de Salida son lavanda, bergamota y limón (lima ácida) Notas de Corazón son miel, canela, cachemira y jazmín sambac (sampaguita) Notas de Fondo son hojas de tabaco, vainilla y haba tonka. Althaïr de Parfums de Marly es una fragancia de la familia olfativa Oriental Vainilla para Hombres. Mejor perfume para hombres 2024, by FRAGANTICA. Alta proyección y duración en piel. Notas de Salida son canela, cardamomo, flor de azahar del naranjo y bergamota Notas de Corazón son vainilla Bourbon y elemí Notas de Fondo son praliné, almizcle, ambroxan, madera de gaiac, haba tonka y almendras acarameladas. Angels' Share de By Kilian es una fragancia de la familia olfativa Oriental Vainilla para Hombres y Mujeres. Mejor perfume gourmand del mundo. Inspirado en barriles de coñac. Ideal para invierno, citas y eventos formales. Nota de Salida es coñac Notas de Corazón son canela, haba tonka, roble y hediona Notas de Fondo son vainilla, praliné, sándalo y almendras acarameladas. Ombré Leather de Tom Ford es una fragancia de la familia olfativa Cuero para Hombres y Mujeres. Es el mejor perfume de cuero, ideal para personas con clase y de buen porte. Con destacada duración y proyección. Nota de Salida es cardamomo Notas de Corazón son cuero y jazmín sambac (sampaguita) Notas de Fondo son ámbar, musgo y pachulí.",
     "notesTop": [
       "Lavanda",
       "Bergamota",
@@ -3911,11 +3911,11 @@ export const catalogProducts: Product[] = [
   },
   {
     "id": "prod_23106643",
-    "name": "GRAN SOIR (Maison Fancis Kurdigan)",
+    "name": "GRAN SOIR (Maison Francis Kurkdjian)",
     "slug": "gran-soir-maison-fancis-kurdigan",
     "brand": {
       "id": "brand_maison-fancis-kurdigan",
-      "name": "Maison Fancis Kurdigan",
+      "name": "Maison Francis Kurkdjian",
       "slug": "maison-fancis-kurdigan"
     },
     "category": {
@@ -3929,7 +3929,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Grand Soir de Maison Francis Kurkdjian es una fragancia de la familia olfativa Oriental para Hombres y Mujeres. Grand Soir se lanzó en 2016. La Nariz detrás de esta fragrancia es Francis Kurkdjian. Las Notas de Salida son ládano español y naranja; las Notas de Corazón son lavanda y benjuí de Siam; las Notas de Fondo son ámbar, vainilla, haba tonka, almizcle y cedro.",
+    "description": "Grand Soir de Maison Francis Kurkdjian es una fragancia de la familia olfativa Oriental para Hombres y Mujeres. Grand Soir se lanzó en 2016. La Nariz detrás de esta fragancia es Francis Kurkdjian. Las Notas de Salida son ládano español y naranja; las Notas de Corazón son lavanda y benjuí de Siam; las Notas de Fondo son ámbar, vainilla, haba tonka, almizcle y cedro.",
     "notesTop": [
       "Ládano español",
       "Naranja"
@@ -3999,7 +3999,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Greenley de Parfums de Marly es una fragancia de la familia olfativa Cítrica Aromática para Hombres y Mujeres. Greenley se lanzó en 2020. La Nariz detrás de esta fragrancia es Nathalie Templer. Las Notas de Salida son manzana verde, bergamota de Calabria y mandarina; las Notas de Corazón son petit grain, cedro, cachemira, Pomarose y violeta; las Notas de Fondo son musgo de roble, almizcle y Amberwood.",
+    "description": "Greenley de Parfums de Marly es una fragancia de la familia olfativa Cítrica Aromática para Hombres y Mujeres. Greenley se lanzó en 2020. La Nariz detrás de esta fragancia es Nathalie Templer. Las Notas de Salida son manzana verde, bergamota de Calabria y mandarina; las Notas de Corazón son petit grain, cedro, cachemira, Pomarose y violeta; las Notas de Fondo son musgo de roble, almizcle y Amberwood.",
     "notesTop": [
       "Manzana verde",
       "Bergamota de Calabria",
@@ -4400,7 +4400,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "Jean Lowe Immortal de Maison Alhambra es una fragancia de la familia olfativa Ámbar para Hombres. Esta fragrancia es nueva. Jean Lowe Immortal se lanzó en 2023. Las Notas de Salida son toronja (pomelo), jengibre y bergamota; las Notas de Corazón son notas acuáticas, romero, salvia y geranio; las Notas de Fondo son ambroxan, ámbar y ládano.",
+    "description": "Jean Lowe Immortal de Maison Alhambra es una fragancia de la familia olfativa Ámbar para Hombres. Esta fragancia es nueva. Jean Lowe Immortal se lanzó en 2023. Las Notas de Salida son toronja (pomelo), jengibre y bergamota; las Notas de Corazón son notas acuáticas, romero, salvia y geranio; las Notas de Fondo son ambroxan, ámbar y ládano.",
     "notesTop": [
       "Toronja (pomelo)",
       "Jengibre",
@@ -4529,7 +4529,7 @@ export const catalogProducts: Product[] = [
       "slug": "nicho-autor"
     },
     "concentration": "Decant",
-    "description": "Layton Exclusif de Parfums de Marly es una fragancia de la familia olfativa Oriental para Hombres y Mujeres. Layton Exclusif se lanzó en 2017. La Nariz detrás de esta fragrancia es Hamid Merati-Kashani. Las Notas de Salida son almendra, mandarina, bergamota y notas acuosas; las Notas de Corazón son algalia (civet), geranio, rosa, gardenia y nenúfar (lirio de agua); las Notas de Fondo son Oud laosiano, madera de gaiac, vainilla, café, sándalo, ámbar, hojas de pachulí de Indonesia, musgo de roble y pimienta rosa.",
+    "description": "Layton Exclusif de Parfums de Marly es una fragancia de la familia olfativa Oriental para Hombres y Mujeres. Layton Exclusif se lanzó en 2017. La Nariz detrás de esta fragancia es Hamid Merati-Kashani. Las Notas de Salida son almendra, mandarina, bergamota y notas acuosas; las Notas de Corazón son algalia (civet), geranio, rosa, gardenia y nenúfar (lirio de agua); las Notas de Fondo son Oud laosiano, madera de gaiac, vainilla, café, sándalo, ámbar, hojas de pachulí de Indonesia, musgo de roble y pimienta rosa.",
     "notesTop": [
       "Almendra",
       "Mandarina",
@@ -4608,7 +4608,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Le Beau de Jean Paul Gaultier es una fragancia de la familia olfativa Amaderada Aromática para Hombres. Esta fragrancia es nueva. Le Beau se lanzó en 2019. Le Beau fue creada por los Perfumistas Quentin Bisch y Sonia Constant. La Nota de Salida es bergamota; la Nota de Corazón es coco; la Nota de Fondo es haba tonka.",
+    "description": "Le Beau de Jean Paul Gaultier es una fragancia de la familia olfativa Amaderada Aromática para Hombres. Esta fragancia es nueva. Le Beau se lanzó en 2019. Le Beau fue creada por los Perfumistas Quentin Bisch y Sonia Constant. La Nota de Salida es bergamota; la Nota de Corazón es coco; la Nota de Fondo es haba tonka.",
     "notesTop": [],
     "notesHeart": [],
     "notesBase": [],
@@ -4666,7 +4666,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Le Beau Le Parfum de Jean Paul Gaultier es una fragancia de la familia olfativa Ámbar Amaderada para Hombres. Le Beau Le Parfum se lanzó en 2022. El Perfumista detrás de esta fragrancia es Quentin Bisch. Las Notas de Salida son piña, iris, ciprés y jengibre; las Notas de Corazón son coco y notas amaderadas; las Notas de Fondo son haba tonka, sándalo, ámbar y ámbar gris.",
+    "description": "Le Beau Le Parfum de Jean Paul Gaultier es una fragancia de la familia olfativa Ámbar Amaderada para Hombres. Le Beau Le Parfum se lanzó en 2022. El Perfumista detrás de esta fragancia es Quentin Bisch. Las Notas de Salida son piña, iris, ciprés y jengibre; las Notas de Corazón son coco y notas amaderadas; las Notas de Fondo son haba tonka, sándalo, ámbar y ámbar gris.",
     "notesTop": [
       "Piña",
       "Iris",
@@ -4737,7 +4737,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Le Beau Paradise Garden de Jean Paul Gaultier es una fragancia de la familia olfativa para Hombres. Esta fragrancia es nueva. Le Beau Paradise Garden se lanzó en 2024. El Perfumista detrás de esta fragrancia es Quentin Bisch. Las Notas de Salida son notas verdes, notas acuosas, menta y jengibre; las Notas de Corazón son coco, higo y sal; las Notas de Fondo son haba tonka y sándalo.",
+    "description": "Le Beau Paradise Garden de Jean Paul Gaultier es una fragancia de la familia olfativa para Hombres. Esta fragancia es nueva. Le Beau Paradise Garden se lanzó en 2024. El Perfumista detrás de esta fragancia es Quentin Bisch. Las Notas de Salida son notas verdes, notas acuosas, menta y jengibre; las Notas de Corazón son coco, higo y sal; las Notas de Fondo son haba tonka y sándalo.",
     "notesTop": [
       "Notas verdes",
       "Notas acuosas",
@@ -4865,7 +4865,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Le Male Le Parfum edp intense de Jean Paul Gaultier es una fragancia de la familia olfativa Oriental para Hombres. Esta fragrancia es nueva. Le Male Le Parfum se lanzó en 2020. Le Male Le Parfum fue creada por Quentin Bisch y Nathalie Gracia-Cetto. La Nota de Salida es cardamomo; las Notas de Corazón son lavanda y iris; las Notas de Fondo son vainilla, notas orientales y notas amaderadas.",
+    "description": "Le Male Le Parfum edp intense de Jean Paul Gaultier es una fragancia de la familia olfativa Oriental para Hombres. Esta fragancia es nueva. Le Male Le Parfum se lanzó en 2020. Le Male Le Parfum fue creada por Quentin Bisch y Nathalie Gracia-Cetto. La Nota de Salida es cardamomo; las Notas de Corazón son lavanda y iris; las Notas de Fondo son vainilla, notas orientales y notas amaderadas.",
     "notesTop": [],
     "notesHeart": [
       "Lavanda",
@@ -4993,7 +4993,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Lost Cherry de Tom Ford es una fragancia de la familia olfativa Oriental Floral para Hombres y Mujeres. Lost Cherry se lanzó en 2018. La Nariz detrás de esta fragrancia es Louise Turner. Las Notas de Salida son almendra amarga, Cereza negra y Cherry Liqueur; las Notas de Corazón son cereza ácida (guinda), ciruela, rosa turca y jazmín sambac (sampaguita); las Notas de Fondo son vainilla, haba tonka, canela, bálsamo del Perú, sándalo, benjuí, clavos de olor, cedro, pachulí y vetiver.",
+    "description": "Lost Cherry de Tom Ford es una fragancia de la familia olfativa Oriental Floral para Hombres y Mujeres. Lost Cherry se lanzó en 2018. La Nariz detrás de esta fragancia es Louise Turner. Las Notas de Salida son almendra amarga, Cereza negra y Cherry Liqueur; las Notas de Corazón son cereza ácida (guinda), ciruela, rosa turca y jazmín sambac (sampaguita); las Notas de Fondo son vainilla, haba tonka, canela, bálsamo del Perú, sándalo, benjuí, clavos de olor, cedro, pachulí y vetiver.",
     "notesTop": [
       "Almendra amarga",
       "Cereza negra",
@@ -5071,7 +5071,7 @@ export const catalogProducts: Product[] = [
       "slug": "arabe"
     },
     "concentration": "Decant",
-    "description": "Mayar de Lattafa Perfumes es una fragancia de la familia olfativa Floral Frutal para Mujeres. Esta fragrancia es nueva. Mayar se lanzó en 2022. Las Notas de Salida son lichi, frambuesa y hojas de violeta; las Notas de Corazón son rosa blanca, peonía y jazmín; las Notas de Fondo son almizcle y vainilla.",
+    "description": "Mayar de Lattafa Perfumes es una fragancia de la familia olfativa Floral Frutal para Mujeres. Esta fragancia es nueva. Mayar se lanzó en 2022. Las Notas de Salida son lichi, frambuesa y hojas de violeta; las Notas de Corazón son rosa blanca, peonía y jazmín; las Notas de Fondo son almizcle y vainilla.",
     "notesTop": [
       "Lichi",
       "Frambuesa",
@@ -5256,7 +5256,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Game of Spades Moon de Jo Milano Paris es una fragancia de la familia olfativa Oriental Floral para Hombres y Mujeres. Esta fragrancia es nueva. Game of Spades Moon se lanzó en 2025.",
+    "description": "Game of Spades Moon de Jo Milano Paris es una fragancia de la familia olfativa Oriental Floral para Hombres y Mujeres. Esta fragancia es nueva. Game of Spades Moon se lanzó en 2025.",
     "notesTop": [],
     "notesHeart": [],
     "notesBase": [],
@@ -5314,7 +5314,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Moustache Eau de Parfum de Rochas es una fragancia de la familia olfativa Ámbar Amaderada para Hombres. Moustache Eau de Parfum se lanzó en 2018. La Nariz detrás de esta fragrancia es Natalie Gracia-Cetto. Las Notas de Salida son pimienta rosa y mandarina; las Notas de Corazón son cedro del Atlas y rosa de Bulgaria (rosa Damascena de Bulgaria); las Notas de Fondo son benjuí, vainilla y pachulí.",
+    "description": "Moustache Eau de Parfum de Rochas es una fragancia de la familia olfativa Ámbar Amaderada para Hombres. Moustache Eau de Parfum se lanzó en 2018. La Nariz detrás de esta fragancia es Natalie Gracia-Cetto. Las Notas de Salida son pimienta rosa y mandarina; las Notas de Corazón son cedro del Atlas y rosa de Bulgaria (rosa Damascena de Bulgaria); las Notas de Fondo son benjuí, vainilla y pachulí.",
     "notesTop": [
       "Pimienta rosa",
       "Mandarina"
@@ -5712,7 +5712,7 @@ export const catalogProducts: Product[] = [
       "slug": "nicho-autor"
     },
     "concentration": "Decant",
-    "description": "Oud Wood de Tom Ford es una fragancia de la familia olfativa Oriental Amaderada para Hombres y Mujeres. Oud Wood se lanzó en 2007. La Nariz detrás de esta fragrancia es Richard Herpin.",
+    "description": "Oud Wood de Tom Ford es una fragancia de la familia olfativa Oriental Amaderada para Hombres y Mujeres. Oud Wood se lanzó en 2007. La Nariz detrás de esta fragancia es Richard Herpin.",
     "notesTop": [],
     "notesHeart": [],
     "notesBase": [],
@@ -5915,7 +5915,7 @@ export const catalogProducts: Product[] = [
       "slug": "nicho-autor"
     },
     "concentration": "Decant",
-    "description": "Red Tobacco de Mancera es una fragancia de la familia olfativa Amaderada Especiada para Hombres y Mujeres. Red Tobacco se lanzó en 2017. La Nariz detrás de esta fragrancia es Pierre Montale. Las Notas de Salida son canela, madera de oud, incienso, azafrán, nuez moscada, manzana verde y pera blanca; las Notas de Corazón son pachulí y jazmín; las Notas de Fondo son tabaco, vainilla de Madagascar, ámbar, sándalo, madera de gaiac, almizcle blanco y vetiver de Haití.",
+    "description": "Red Tobacco de Mancera es una fragancia de la familia olfativa Amaderada Especiada para Hombres y Mujeres. Red Tobacco se lanzó en 2017. La Nariz detrás de esta fragancia es Pierre Montale. Las Notas de Salida son canela, madera de oud, incienso, azafrán, nuez moscada, manzana verde y pera blanca; las Notas de Corazón son pachulí y jazmín; las Notas de Fondo son tabaco, vainilla de Madagascar, ámbar, sándalo, madera de gaiac, almizcle blanco y vetiver de Haití.",
     "notesTop": [
       "Canela",
       "Madera de oud",
@@ -6120,7 +6120,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Sauvage 2015 de Christian Dior es una fragancia de la familia olfativa Aromática Fougère para Hombres. Sauvage 2015 se lanzó en 2015. El Perfumista (el creador) de esta fragrancia es Francois Demachy. Las Notas de Salida son pimienta y bergamota de Calabria; las Notas de Corazón son geranio, lavanda, pimienta de Sichuan, elemí, pimienta rosa, vetiver y pachulí; las Notas de Fondo son cedro, ládano y ambroxan.",
+    "description": "Sauvage 2015 de Christian Dior es una fragancia de la familia olfativa Aromática Fougère para Hombres. Sauvage 2015 se lanzó en 2015. El Perfumista (el creador) de esta fragancia es Francois Demachy. Las Notas de Salida son pimienta y bergamota de Calabria; las Notas de Corazón son geranio, lavanda, pimienta de Sichuan, elemí, pimienta rosa, vetiver y pachulí; las Notas de Fondo son cedro, ládano y ambroxan.",
     "notesTop": [
       "Pimienta",
       "Bergamota de Calabria"
@@ -6515,7 +6515,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Tobacco Vanille de Tom Ford es una fragancia de la familia olfativa Oriental Especiada para Hombres y Mujeres. Tobacco Vanille se lanzó en 2007. La Nariz detrás de esta fragrancia es Olivier Gillotin. Las Notas de Salida son hojas de tabaco y notas especiadas; las Notas de Corazón son vainilla, cacao, haba tonka y flor del tabaco; las Notas de Fondo son frutas secas y notas amaderadas.",
+    "description": "Tobacco Vanille de Tom Ford es una fragancia de la familia olfativa Oriental Especiada para Hombres y Mujeres. Tobacco Vanille se lanzó en 2007. La Nariz detrás de esta fragancia es Olivier Gillotin. Las Notas de Salida son hojas de tabaco y notas especiadas; las Notas de Corazón son vainilla, cacao, haba tonka y flor del tabaco; las Notas de Fondo son frutas secas y notas amaderadas.",
     "notesTop": [
       "Hojas de tabaco",
       "Notas especiadas"
@@ -6713,7 +6713,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Ultra Male de Jean Paul Gaultier es una fragancia de la familia olfativa Oriental Fougère para Hombres. El Perfumista detrás de esta fragrancia es Francis Kurkdjian. Las Notas de Salida son bergamota, pera, menta, lavanda y limón (lima ácida); las Notas de Corazón son canela, esclarea y alcaravea; las Notas de Fondo son vaina de vainilla negra, ámbar, cedro y pachulí.",
+    "description": "Ultra Male de Jean Paul Gaultier es una fragancia de la familia olfativa Oriental Fougère para Hombres. El Perfumista detrás de esta fragancia es Francis Kurkdjian. Las Notas de Salida son bergamota, pera, menta, lavanda y limón (lima ácida); las Notas de Corazón son canela, esclarea y alcaravea; las Notas de Fondo son vaina de vainilla negra, ámbar, cedro y pachulí.",
     "notesTop": [
       "Bergamota",
       "Pera",
@@ -6786,7 +6786,7 @@ export const catalogProducts: Product[] = [
       "slug": "general"
     },
     "concentration": "Decant",
-    "description": "Velvet Gold de Orientica Premium es una fragancia de la familia olfativa Floral para Mujeres. Esta fragrancia es nueva. Velvet Gold se lanzó en 2022. Las Notas de Salida son caramelo, violeta, pimienta rosa y bergamota; las Notas de Corazón son notas atalcadas, rosa y pachulí; las Notas de Fondo son vainilla, almizcle.",
+    "description": "Velvet Gold de Orientica Premium es una fragancia de la familia olfativa Floral para Mujeres. Esta fragancia es nueva. Velvet Gold se lanzó en 2022. Las Notas de Salida son caramelo, violeta, pimienta rosa y bergamota; las Notas de Corazón son notas atalcadas, rosa y pachulí; las Notas de Fondo son vainilla, almizcle.",
     "notesTop": [
       "Caramelo",
       "Violeta",
@@ -6856,7 +6856,7 @@ export const catalogProducts: Product[] = [
       "slug": "disenador"
     },
     "concentration": "Decant",
-    "description": "Y Eau de Parfum de Yves Saint Laurent es una fragancia de la familia olfativa Aromática Fougère para Hombres. Y Eau de Parfum se lanzó en 2018. La Nariz detrás de esta fragrancia es Dominique Ropion. Las Notas de Salida son manzana, jengibre y bergamota; las Notas de Corazón son salvia, bayas de enebro y geranio; las Notas de Fondo son Amberwood, haba tonka, cedro, vetiver y incienso de olíbano (franquincienso).",
+    "description": "Y Eau de Parfum de Yves Saint Laurent es una fragancia de la familia olfativa Aromática Fougère para Hombres. Y Eau de Parfum se lanzó en 2018. La Nariz detrás de esta fragancia es Dominique Ropion. Las Notas de Salida son manzana, jengibre y bergamota; las Notas de Corazón son salvia, bayas de enebro y geranio; las Notas de Fondo son Amberwood, haba tonka, cedro, vetiver y incienso de olíbano (franquincienso).",
     "notesTop": [
       "Manzana",
       "Jengibre",

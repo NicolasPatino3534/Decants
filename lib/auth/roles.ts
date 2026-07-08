@@ -39,7 +39,9 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
 
   const profileRole = "role" in (profile ?? {}) ? (profile?.role as AppRole | null) : null;
   const roleList = roles?.map((row) => row.role as AppRole) ?? [];
-  const mergedRoles = Array.from(new Set([profileRole, ...roleList].filter(Boolean))) as AppRole[];
+  const claimRoles = getRolesFromMetadata(user.app_metadata);
+  const bootstrapRoles: AppRole[] = user.email && isBootstrapOwner(user.email) ? ["owner", "admin", "staff"] : [];
+  const mergedRoles = Array.from(new Set([profileRole, ...roleList, ...claimRoles, ...bootstrapRoles].filter(Boolean))) as AppRole[];
 
   return {
     id: user.id,
@@ -76,6 +78,25 @@ export function getDemoAccountOrder() {
   return demoOrders[0];
 }
 
+export function isDemoProfile(profile: CurrentProfile | null | undefined) {
+  return Boolean(profile?.id === "demo-owner" || profile?.email.endsWith("@decantscba.local"));
+}
+
 export function isBootstrapOwner(email: string) {
   return env.adminBootstrapEmails.includes(email.toLowerCase());
+}
+
+function getRolesFromMetadata(appMetadata: Record<string, unknown> | null | undefined): AppRole[] {
+  if (!appMetadata) return [];
+
+  const role = appMetadata.role ?? appMetadata.app_role;
+  const roles = appMetadata.roles;
+  const values = [
+    typeof role === "string" ? role : null,
+    ...(Array.isArray(roles) ? roles : typeof roles === "string" ? roles.split(",") : []),
+  ];
+
+  return values
+    .map((value) => String(value).trim())
+    .filter((value): value is AppRole => value === "owner" || value === "admin" || value === "staff" || value === "customer");
 }

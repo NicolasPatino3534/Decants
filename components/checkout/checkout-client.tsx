@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, BadgeCheck, CheckCircle2, CreditCard, Lock, MapPin, PackageCheck, ShoppingBag, Truck } from "lucide-react";
 import { useCart } from "@/components/cart/cart-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { trackBeginCheckout } from "@/lib/analytics/events";
 import { calculateCartTotals, fallbackShippingMethods } from "@/lib/cart/pricing";
 import { formatMoney } from "@/lib/format";
 import type { ShippingMethod } from "@/lib/types";
@@ -70,6 +71,8 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
     };
 
     try {
+      trackBeginCheckout(lines, totals.totalCents, couponCode.trim());
+
       const response = await fetch("/api/checkout/session", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -122,7 +125,7 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Field name="name" label="Nombre completo" autoComplete="name" defaultValue={initialCustomer.name} required />
-              <Field name="email" label="Email" type="email" autoComplete="email" defaultValue={initialCustomer.email} required readOnly />
+              <Field name="email" label="Email" type="email" autoComplete="email" defaultValue={initialCustomer.email} required readOnly={Boolean(initialCustomer.email)} />
               <Field name="phone" label="Teléfono" type="tel" autoComplete="tel" defaultValue={initialCustomer.phone} required />
               </div>
             </section>

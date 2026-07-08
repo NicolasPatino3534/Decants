@@ -41,9 +41,9 @@ export function AuthForm({ nextPath }: { nextPath: string }) {
     const passwordConfirm = String(formData.get("passwordConfirm") ?? "");
 
     if (mode === "update") {
-      if (password.length < 8) {
+      if (!isStrongPassword(password)) {
         setLoading(false);
-        setMessage("La contraseña debe tener al menos 8 caracteres.");
+        setMessage("La contraseña debe tener al menos 8 caracteres, una letra y un número.");
         return;
       }
       if (password !== passwordConfirm) {
@@ -85,9 +85,9 @@ export function AuthForm({ nextPath }: { nextPath: string }) {
         setMessage("Completá nombre y teléfono para crear la cuenta.");
         return;
       }
-      if (password.length < 8) {
+      if (!isStrongPassword(password)) {
         setLoading(false);
-        setMessage("La contraseña debe tener al menos 8 caracteres.");
+        setMessage("La contraseña debe tener al menos 8 caracteres, una letra y un número.");
         return;
       }
       if (password !== passwordConfirm) {
@@ -167,8 +167,21 @@ export function AuthForm({ nextPath }: { nextPath: string }) {
         {mode === "signup" ? <AuthField name="fullName" label="Nombre completo" autoComplete="name" required /> : null}
         {mode === "signup" ? <AuthField name="phone" label="Teléfono" type="tel" autoComplete="tel" required /> : null}
         {mode !== "update" ? <AuthField name="email" label="Email" type="email" autoComplete="email" required /> : null}
-        {mode !== "reset" ? <AuthField name="password" label={mode === "update" ? "Nueva contraseña" : "Contraseña"} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required /> : null}
-        {mode === "signup" || mode === "update" ? <AuthField name="passwordConfirm" label="Repetir contraseña" type="password" autoComplete="new-password" required /> : null}
+        {mode !== "reset" ? (
+          <AuthField
+            name="password"
+            label={mode === "update" ? "Nueva contraseña" : "Contraseña"}
+            type="password"
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
+            minLength={8}
+            pattern={mode === "login" ? undefined : "^(?=.*[A-Za-z])(?=.*\\d).{8,}$"}
+            title="Minimo 8 caracteres, una letra y un numero."
+            required
+          />
+        ) : null}
+        {mode === "signup" || mode === "update" ? (
+          <AuthField name="passwordConfirm" label="Repetir contraseña" type="password" autoComplete="new-password" minLength={8} required />
+        ) : null}
         {message ? <p className="rounded-md bg-mist p-3 text-sm font-semibold text-neutral-700">{message}</p> : null}
         <Button disabled={loading} className="w-full">
           {mode === "reset" ? <Mail size={17} /> : mode === "signup" ? <KeyRound size={17} /> : <LogIn size={17} />}
@@ -197,12 +210,18 @@ function AuthField({
   type = "text",
   required = false,
   autoComplete,
+  minLength,
+  pattern,
+  title,
 }: {
   name: string;
   label: string;
   type?: string;
   required?: boolean;
   autoComplete?: string;
+  minLength?: number;
+  pattern?: string;
+  title?: string;
 }) {
   return (
     <label className="block">
@@ -212,6 +231,9 @@ function AuthField({
         type={type}
         required={required}
         autoComplete={autoComplete}
+        minLength={minLength}
+        pattern={pattern}
+        title={title}
         className="h-11 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink"
       />
     </label>
@@ -225,4 +247,8 @@ function toSpanishAuthMessage(message: string) {
   if (lower.includes("password")) return "Revisá la contraseña ingresada.";
   if (lower.includes("email")) return "Revisá el email ingresado.";
   return message;
+}
+
+function isStrongPassword(password: string) {
+  return password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
 }

@@ -53,11 +53,16 @@ function hasAdminClaim(appMetadata?: Record<string, unknown> | null) {
   if (!appMetadata) return false;
 
   const role = appMetadata.role ?? appMetadata.app_role;
-  if (role === "admin") return true;
+  if (role === "owner" || role === "admin" || role === "staff") return true;
 
   const roles = appMetadata.roles;
-  if (Array.isArray(roles)) return roles.includes("admin");
-  if (typeof roles === "string") return roles.split(",").map((item) => item.trim()).includes("admin");
+  if (Array.isArray(roles)) return roles.some((item) => item === "owner" || item === "admin" || item === "staff");
+  if (typeof roles === "string") {
+    return roles
+      .split(",")
+      .map((item) => item.trim())
+      .some((item) => item === "owner" || item === "admin" || item === "staff");
+  }
 
   return false;
 }

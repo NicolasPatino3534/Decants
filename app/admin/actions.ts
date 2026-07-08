@@ -1,14 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth/roles";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const productStatuses = ["draft", "active", "archived"] as const;
 const orderStatuses = ["pending_payment", "payment_review", "paid", "preparing", "ready_to_ship", "shipped", "delivered", "cancelled", "rejected"] as const;
 const shipmentStatuses = ["pending", "preparing", "ready_to_ship", "shipped", "delivered", "delayed"] as const;
 
+async function createAuthorizedAdminClient() {
+  await requireAdmin();
+  return createSupabaseAdminClient();
+}
+
 export async function createBrand(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const name = readString(formData, "name");
@@ -27,7 +33,7 @@ export async function createBrand(formData: FormData) {
 }
 
 export async function updateBrand(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const id = readString(formData, "id");
@@ -39,7 +45,7 @@ export async function updateBrand(formData: FormData) {
 }
 
 export async function deleteBrand(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const id = readString(formData, "id");
@@ -49,7 +55,7 @@ export async function deleteBrand(formData: FormData) {
 }
 
 export async function createCategory(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const name = readString(formData, "name");
@@ -60,7 +66,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const id = readString(formData, "id");
@@ -72,7 +78,7 @@ export async function updateCategory(formData: FormData) {
 }
 
 export async function deleteCategory(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const id = readString(formData, "id");
@@ -82,7 +88,7 @@ export async function deleteCategory(formData: FormData) {
 }
 
 export async function createProduct(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const name = readString(formData, "name");
@@ -127,7 +133,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const id = readString(formData, "id");
@@ -169,7 +175,7 @@ export async function updateProduct(formData: FormData) {
 }
 
 export async function archiveProduct(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const id = readString(formData, "id");
@@ -179,7 +185,7 @@ export async function archiveProduct(formData: FormData) {
 }
 
 export async function upsertVariant(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const id = readString(formData, "id");
@@ -208,7 +214,7 @@ export async function upsertVariant(formData: FormData) {
 }
 
 export async function deleteVariant(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const id = readString(formData, "id");
@@ -218,7 +224,7 @@ export async function deleteVariant(formData: FormData) {
 }
 
 export async function adjustStock(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const variantId = readString(formData, "variantId");
@@ -244,7 +250,7 @@ export async function adjustStock(formData: FormData) {
 }
 
 export async function updateOrderStatus(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const orderId = readString(formData, "orderId");
@@ -258,7 +264,7 @@ export async function updateOrderStatus(formData: FormData) {
 }
 
 export async function updateShipmentStatus(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const orderId = readString(formData, "orderId");
@@ -274,7 +280,7 @@ export async function updateShipmentStatus(formData: FormData) {
 }
 
 export async function updateOrderNotes(formData: FormData) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   if (!admin) return;
 
   const orderId = readString(formData, "orderId");
@@ -285,7 +291,7 @@ export async function updateOrderNotes(formData: FormData) {
 }
 
 async function uploadProductImage(formData: FormData, productId: string, productName: string) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createAuthorizedAdminClient();
   const file = formData.get("image");
   if (!admin || !(file instanceof File) || file.size === 0) return;
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { trackAddToCart } from "@/lib/analytics/events";
 import { calculateSubtotal, clampCartQuantity, mergeCartLines } from "@/lib/cart/pricing";
 import type { CartLine, DecantVariant, Product } from "@/lib/types";
 
@@ -49,7 +50,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch("/api/cart", { headers: { Accept: "application/json" } });
       const payload = (await response.json()) as { lines?: CartLine[]; authenticated?: boolean };
       if (!payload.authenticated) {
-        setLines(localLines);
+        setLines((current) => mergeCartLines(current, localLines));
         setHydrated(true);
         return;
       }
@@ -98,29 +99,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [hydrated, lines, serverSyncEnabled]);
 
   const addItem = useCallback((product: Product, variant: DecantVariant, quantity = 1) => {
+    const safeQuantity = clampCartQuantity(quantity, variant.stockOnHand);
+    trackAddToCart(product, variant, safeQuantity);
+
     setLines((current) => {
       const existing = current.find((line) => line.variantId === variant.id);
-      if (existing) {
-        return current.map((line) =>
+      const next = existing
+        ? current.map((line) =>
           line.variantId === variant.id
-            ? { ...line, stockOnHand: variant.stockOnHand, quantity: clampCartQuantity(line.quantity + quantity, variant.stockOnHand) }
+            ? { ...line, stockOnHand: variant.stockOnHand, quantity: clampCartQuantity(line.quantity + safeQuantity, variant.stockOnHand) }
             : line,
-        );
-      }
-      return [
-        ...current,
-        {
-          productId: product.id,
-          productSlug: product.slug,
-          productName: product.name,
-          imageUrl: product.imageUrl,
-          variantId: variant.id,
-          sizeMl: variant.sizeMl,
-          priceCents: variant.priceCents,
-          stockOnHand: variant.stockOnHand,
-          quantity: clampCartQuantity(quantity, variant.stockOnHand),
-        },
-      ];
+        )
+        : [
+            ...current,
+            {
+              productId: product.id,
+              productSlug: product.slug,
+              productName: product.name,
+              imageUrl: product.imageUrl,
+              variantId: variant.id,
+              sizeMl: variant.sizeMl,
+              priceCents: variant.priceCents,
+              stockOnHand: variant.stockOnHand,
+              quantity: safeQuantity,
+            },
+          ];
+      if (typeof window !== "undefined") window.localStorage.setItem(storageKey, JSON.stringify(next));
+      return next;
     });
   }, []);
 
