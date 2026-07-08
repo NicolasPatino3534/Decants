@@ -3,10 +3,10 @@ import Link from "next/link";
 import { cn } from "@/lib/format";
 
 const variants = {
-  primary: "bg-[#b8872f] text-white hover:bg-[#9f7225]",
-  secondary: "border border-[#caa55c] bg-white text-ink hover:bg-[#f8f1e3]",
-  subtle: "border border-line bg-white text-ink hover:border-[#caa55c] hover:bg-[#fbf7ed]",
-  champagne: "bg-[#b8872f] text-white hover:bg-[#9f7225]",
+  primary: "bg-amber text-white hover:brightness-95",
+  secondary: "border border-amber bg-white text-ink hover:bg-mist",
+  subtle: "border border-line bg-white text-ink hover:border-amber hover:bg-mist",
+  champagne: "bg-amber text-white hover:brightness-95",
   danger: "bg-danger text-white hover:brightness-95",
 };
 
@@ -18,7 +18,7 @@ export function Button({ className, variant = "primary", ...props }: ButtonProps
   return (
     <button
       className={cn(
-        "inline-flex h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-[#b88939] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-amber focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         variants[variant],
         className,
       )}
@@ -37,7 +37,7 @@ export function ButtonLink({ href, className, variant = "primary", ...props }: B
     <Link
       href={href}
       className={cn(
-        "inline-flex h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-[#b88939] focus:ring-offset-2",
+        "inline-flex h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-amber focus:ring-offset-2",
         variants[variant],
         className,
       )}

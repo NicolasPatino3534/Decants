@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/catalog/product-card";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/use-products";
 import type { ProductFilters, ProductSort } from "@/lib/catalog/filters";
+import { occasionLinks } from "@/lib/site-content";
 import type { Product } from "@/lib/types";
 
 export function CatalogClient({ products: initialProducts, initialQuery = "" }: { products: Product[]; initialQuery?: string }) {
@@ -46,22 +47,22 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
       <section className="border-b border-line bg-white">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Catálogo de decants</p>
-            <h1 className="font-display mt-2 text-5xl leading-tight text-ink sm:text-6xl">Encontrá tu próxima firma</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8c682b]">Catalogo de decants</p>
+            <h1 className="font-display mt-2 text-5xl leading-tight text-ink sm:text-6xl">Encontra tu proxima firma</h1>
             <p className="mt-4 max-w-xl leading-7 text-[#5f574c]">
-              Buscá por nombre, nota o marca. Filtrá solo lo necesario y entrá a cada ficha para comparar tamaños.
+              Busca por nombre, nota, marca u ocasion. Filtra solo lo necesario y entra a cada ficha para comparar tamanos.
             </p>
           </div>
           <div className="grid content-end gap-3 sm:grid-cols-3">
             <TrustItem icon={<BadgeCheck size={17} />} title="Originalidad" />
-            <TrustItem icon={<Sparkles size={17} />} title="Curaduría" />
+            <TrustItem icon={<Sparkles size={17} />} title="Curaduria" />
             <TrustItem icon={<SlidersHorizontal size={17} />} title="Filtros simples" />
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="rounded-md border border-line bg-white p-4 shadow-[0_18px_46px_rgba(21,21,21,0.07)] sm:p-5">
+        <div className="rounded-md border border-line bg-white p-4 shadow-[0_8px_18px_rgba(21,21,21,0.07)] sm:p-5">
           <div className="grid items-end gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_0.8fr_0.9fr_auto]">
             <label>
               <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-[#7b7164]">Buscar</span>
@@ -70,15 +71,15 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Buscar perfume, nota o marca"
+                  placeholder="Buscar perfume, nota, marca u ocasion"
                   suppressHydrationWarning
                   className="h-11 w-full rounded-md border border-line bg-[#f8f8f6] pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-[#b88939] focus:bg-white"
                 />
               </span>
             </label>
             <FilterSelect label="Marca" value={brand} onChange={setBrand} options={brands} />
-            <FilterSelect label="Categoría" value={family} onChange={setFamily} options={families} />
-            <FilterSelect label="Género" value={gender} onChange={setGender} options={genders.map((value) => ({ label: labelGender(value), value }))} />
+            <FilterSelect label="Categoria" value={family} onChange={setFamily} options={families} />
+            <FilterSelect label="Genero" value={gender} onChange={setGender} options={genders.map((value) => ({ label: labelGender(value), value }))} />
             <label>
               <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-[#7b7164]">Orden</span>
               <select
@@ -94,11 +95,39 @@ export function CatalogClient({ products: initialProducts, initialQuery = "" }: 
               </select>
             </label>
             {activeFilterCount > 0 ? (
-              <Button variant="subtle" className="h-11 self-end whitespace-nowrap" onClick={clearFilters}>
+              <Button type="button" variant="subtle" className="h-11 self-end whitespace-nowrap" onClick={clearFilters}>
                 <X size={16} />
                 Limpiar
               </Button>
             ) : null}
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-md border border-line bg-white p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-black text-ink">Comprar por situacion</p>
+              <p className="mt-1 text-xs font-semibold text-[#6f6658]">Atajos para empezar por uso real: oficina, noche, cita, calor o regalo.</p>
+            </div>
+            {query ? (
+              <Button type="button" variant="subtle" className="h-9 w-fit" onClick={() => setQuery("")}>
+                <X size={15} /> Quitar busqueda
+              </Button>
+            ) : null}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {occasionLinks.map((item) => (
+              <button
+                key={item.title}
+                type="button"
+                onClick={() => setQuery(item.query)}
+                className={`rounded-md border px-3 py-2 text-sm font-bold transition ${
+                  query === item.query ? "border-[#b8872f] bg-[#b8872f] text-white" : "border-line bg-[#fbfaf7] text-[#4f493f] hover:border-[#caa55c]"
+                }`}
+              >
+                {item.title}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -188,9 +217,9 @@ function CatalogError({ message, onRetry }: { message: string; onRetry: () => vo
   return (
     <div className="mt-7 rounded-md border border-[#e1c7bf] bg-[#fff8f5] p-6 text-center">
       <AlertCircle className="mx-auto text-[#9a3f2f]" size={24} />
-      <p className="mt-3 font-black text-ink">Ocurrió un error</p>
+      <p className="mt-3 font-black text-ink">Ocurrio un error</p>
       <p className="mt-1 text-sm text-[#6f6658]">{message}</p>
-      <Button className="mt-5" variant="secondary" onClick={onRetry}>
+      <Button type="button" className="mt-5" variant="secondary" onClick={onRetry}>
         Reintentar
       </Button>
     </div>
@@ -202,9 +231,9 @@ function CatalogEmpty({ onClear }: { onClear: () => void }) {
     <div className="mt-7 rounded-md border border-line bg-white p-10 text-center">
       <p className="font-display text-3xl text-ink">No encontramos decants</p>
       <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#6f6658]">
-        Probá quitar filtros o buscar por otra nota olfativa. También podés empezar por familias frescas, ambaradas o florales.
+        Proba quitar filtros o buscar por otra nota olfativa. Tambien podes empezar por familias frescas, ambaradas o florales.
       </p>
-      <Button className="mt-6" variant="secondary" onClick={onClear}>
+      <Button type="button" className="mt-6" variant="secondary" onClick={onClear}>
         Limpiar filtros
       </Button>
     </div>

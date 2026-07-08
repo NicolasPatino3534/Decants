@@ -18,7 +18,18 @@ export function productMatchesFilters(product: Product, filters: ProductFilters)
   const normalizedQuery = filters.query?.trim().toLowerCase();
   const matchesQuery =
     !normalizedQuery ||
-    [product.name, product.brand.name, product.category.name, product.concentration, ...product.notesTop, ...product.notesHeart, ...product.notesBase]
+    [
+      product.name,
+      product.brand.name,
+      product.category.name,
+      product.concentration,
+      product.description,
+      product.recommendedOccasion,
+      product.recommendedSeason,
+      ...product.notesTop,
+      ...product.notesHeart,
+      ...product.notesBase,
+    ]
       .join(" ")
       .toLowerCase()
       .includes(normalizedQuery);

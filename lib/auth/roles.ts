@@ -78,6 +78,10 @@ export function getDemoAccountOrder() {
   return demoOrders[0];
 }
 
+export function isDemoProfile(profile: CurrentProfile | null | undefined) {
+  return Boolean(profile?.id === "demo-owner" || profile?.email.endsWith("@decantscba.local"));
+}
+
 export function isBootstrapOwner(email: string) {
   return env.adminBootstrapEmails.includes(email.toLowerCase());
 }

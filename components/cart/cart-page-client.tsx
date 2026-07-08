@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, LockKeyhole, Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from "lucide-react";
+import { ArrowRight, BadgeCheck, LockKeyhole, MessageCircle, Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { whatsappUrl } from "@/lib/brand";
 import { calculateCartTotals, fallbackShippingMethods } from "@/lib/cart/pricing";
 import { formatMoney } from "@/lib/format";
 
@@ -18,6 +19,9 @@ export function CartPageClient() {
     lines,
     shippingCents: lines.length > 0 ? fallbackShippingMethods[0].basePriceCents : 0,
   });
+  const cartConsultMessage = `Hola DecantsCBA, quiero consultar por mi carrito: ${lines
+    .map((line) => `${line.productName} ${line.sizeMl}ml x ${line.quantity}`)
+    .join(", ")}.`;
 
   function animateQuantity(variantId: string, nextQuantity: number) {
     setChangedVariantId(variantId);
@@ -36,7 +40,7 @@ export function CartPageClient() {
   if (lines.length === 0) {
     return (
       <main className="premium-shell mx-auto grid min-h-[70vh] place-items-center px-4 py-16 text-center">
-        <div className="max-w-md rounded-md border border-line bg-white p-8 shadow-[0_18px_50px_rgba(11,13,15,0.08)]">
+        <div className="max-w-md rounded-md border border-line bg-white p-8 shadow-[0_8px_18px_rgba(11,13,15,0.08)]">
           <div className="mx-auto grid h-12 w-12 place-items-center rounded-md bg-[#f6edda] text-[#8a611c]">
             <ShoppingBag size={20} />
           </div>
@@ -149,7 +153,7 @@ export function CartPageClient() {
             Seguir explorando
           </ButtonLink>
         </section>
-        <aside className="h-fit rounded-md border border-line bg-white p-5 shadow-[0_18px_50px_rgba(11,13,15,0.08)] lg:sticky lg:top-28">
+        <aside className="h-fit rounded-md border border-line bg-white p-5 shadow-[0_8px_18px_rgba(11,13,15,0.08)] lg:sticky lg:top-28">
           <div className="flex items-center justify-between gap-4">
             <h2 className="font-display text-2xl text-ink">Resumen</h2>
             <LockKeyhole className="text-[#8a611c]" size={20} />
@@ -170,6 +174,9 @@ export function CartPageClient() {
           </p>
           <ButtonLink href="/checkout" className="mt-5 h-12 w-full">
             Continuar pedido <ArrowRight size={17} />
+          </ButtonLink>
+          <ButtonLink href={whatsappUrl(cartConsultMessage)} variant="subtle" className="mt-3 h-11 w-full">
+            <MessageCircle size={17} /> Consultar seleccion
           </ButtonLink>
         </aside>
       </div>

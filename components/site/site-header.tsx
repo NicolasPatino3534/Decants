@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, Search, ShieldCheck, ShoppingCart, Truck, UserRound, X } from "lucide-react";
+import { HelpCircle, Menu, Search, ShieldCheck, ShoppingCart, Truck, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { ButtonLink } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/site/theme-toggle";
 import { brand } from "@/lib/brand";
 
 export function SiteHeader() {
@@ -14,20 +15,21 @@ export function SiteHeader() {
 
   const navItems = [
     { href: "/catalogo", label: "Catalogo" },
-    { href: "/#discovery-sets", label: "Discovery sets" },
-    { href: "/#confianza", label: "Confianza" },
-    { href: "/#faq", label: "FAQ" },
+    { href: "/#situaciones", label: "Situaciones" },
+    { href: "/#discovery-sets", label: "Sets" },
+    { href: "/como-comprar", label: "Como comprar" },
+    { href: "/faq", label: "FAQ" },
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur-xl">
-      <div className="hidden border-b border-line bg-[#fbf7ed] lg:block">
-        <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-6 text-xs font-semibold text-[#6f5522]">
+    <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur-xl">
+      <div className="hidden border-b border-line bg-mist lg:block">
+        <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-6 text-xs font-semibold text-amber">
           <span className="flex items-center gap-2">
-            <ShieldCheck size={14} /> Decants originales y stock visible
+            <ShieldCheck size={14} /> Decants originales, rotulados y con stock visible
           </span>
           <span className="flex items-center gap-2">
-            <Truck size={14} /> Envios a todo el pais y retiro en Cordoba
+            <Truck size={14} /> Envios a todo el pais, retiro en Cordoba y atencion por WhatsApp
           </span>
         </div>
       </div>
@@ -38,10 +40,10 @@ export function SiteHeader() {
           </span>
           <span>
             <span className="font-display block text-xl font-semibold leading-none tracking-normal">{brand.displayName}</span>
-            <span className="mt-1 hidden text-[11px] font-bold uppercase tracking-[0.18em] text-[#7b7164] sm:block">Perfumes originales</span>
+            <span className="theme-muted mt-1 hidden text-[11px] font-bold uppercase tracking-[0.18em] sm:block">Perfumes originales</span>
           </span>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm font-bold text-[#433d34] lg:flex">
+        <nav className="hidden items-center gap-7 text-sm font-bold text-ink lg:flex">
           {navItems.map((item) => (
             <Link key={item.href} href={item.href} className="hover:text-[#9a6f24]">
               {item.label}
@@ -49,9 +51,15 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <span className="hidden lg:inline-flex">
             <ButtonLink href="/catalogo" variant="subtle" className="h-10 px-3" aria-label="Buscar perfumes">
               <Search size={18} />
+            </ButtonLink>
+          </span>
+          <span className="hidden lg:inline-flex">
+            <ButtonLink href="/contacto" variant="subtle" className="h-10 px-3" aria-label="Contacto">
+              <HelpCircle size={18} />
             </ButtonLink>
           </span>
           <span className="hidden lg:inline-flex">
@@ -62,7 +70,7 @@ export function SiteHeader() {
           <ButtonLink href="/carrito" variant="secondary" className="relative h-10 px-3" aria-label="Carrito">
             <ShoppingCart size={18} />
             {count > 0 ? (
-              <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-[#b8872f] px-1 text-[11px] font-bold text-white">
+              <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-amber px-1 text-[11px] font-bold text-white">
                 {count}
               </span>
             ) : null}
@@ -89,10 +97,13 @@ export function SiteHeader() {
             <Link href="/cuenta" className="rounded-md px-3 py-3 hover:bg-mist" onClick={() => setOpen(false)}>
               Mi cuenta
             </Link>
+            <Link href="/contacto" className="rounded-md px-3 py-3 hover:bg-mist" onClick={() => setOpen(false)}>
+              Contacto
+            </Link>
           </nav>
-          <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-[#6f5522]">
-            <span className="rounded-md bg-[#fbf7ed] p-3">Compra segura</span>
-            <span className="rounded-md bg-[#fbf7ed] p-3">Tracking en envios</span>
+          <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-amber">
+            <span className="rounded-md bg-mist p-3">Frascos originales</span>
+            <span className="rounded-md bg-mist p-3">Pedido rotulado</span>
           </div>
         </div>
       ) : null}

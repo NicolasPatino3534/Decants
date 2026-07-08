@@ -125,7 +125,7 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Field name="name" label="Nombre completo" autoComplete="name" defaultValue={initialCustomer.name} required />
-              <Field name="email" label="Email" type="email" autoComplete="email" defaultValue={initialCustomer.email} required readOnly />
+              <Field name="email" label="Email" type="email" autoComplete="email" defaultValue={initialCustomer.email} required readOnly={Boolean(initialCustomer.email)} />
               <Field name="phone" label="Teléfono" type="tel" autoComplete="tel" defaultValue={initialCustomer.phone} required />
               </div>
             </section>
