@@ -27,7 +27,7 @@ export default async function AdminBalancePage() {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a6f24]">Balance</p>
           <h1 className="mt-2 text-3xl font-black text-ink">Ingresos y ventas</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#665d50]">
-            Resumen basico para revisar ventas sin sumar secciones fuera del alcance del panel temporal.
+            Resumen básico para revisar ventas sin sumar secciones fuera del alcance del panel temporal.
           </p>
         </div>
       </div>
@@ -43,8 +43,8 @@ export default async function AdminBalancePage() {
         <div className="rounded-md border border-line bg-white p-5">
           <h2 className="text-lg font-black text-ink">Resumen de ventas</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Summary label="Ultimos 7 dias" value={formatMoney(lastSevenDaysRevenue)} />
-            <Summary label="Productos en catalogo" value={String(products.length)} />
+            <Summary label="Últimos 7 días" value={formatMoney(lastSevenDaysRevenue)} />
+            <Summary label="Productos en catálogo" value={String(products.length)} />
             <Summary label="Pedidos pendientes" value={String(orders.filter((order) => order.paymentStatus !== "paid").length)} />
             <Summary label="Pedidos entregados" value={String(orders.filter((order) => order.status === "delivered").length)} />
           </div>
@@ -54,7 +54,7 @@ export default async function AdminBalancePage() {
           <h2 className="text-lg font-black text-ink">Accesos del panel</h2>
           <div className="mt-4 grid gap-3">
             <AdminLink href="/admin/pedidos" icon={<ClipboardList size={18} />} title="Pedidos" text="Ver pedidos y entrar al detalle." />
-            <AdminLink href="/admin/catalogo" icon={<PackageSearch size={18} />} title="Catalogo" text="Ver productos y editar datos." />
+            <AdminLink href="/admin/catalogo" icon={<PackageSearch size={18} />} title="Catálogo" text="Ver productos y editar datos." />
           </div>
         </div>
       </section>

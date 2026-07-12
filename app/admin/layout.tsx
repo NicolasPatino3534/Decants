@@ -8,8 +8,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="mx-auto flex max-w-7xl items-start gap-2 font-semibold">
           <AlertTriangle className="mt-0.5 shrink-0" size={17} />
           <p>
-            Admin temporal sin cuentas ni login. No es seguro para produccion: antes de publicar debe restaurarse autenticacion,
-            roles y proteccion de server actions.
+            Admin temporal sin cuentas ni login. No es seguro para producción: antes de publicar debe restaurarse autenticación,
+            roles y protección de server actions.
           </p>
         </div>
       </div>

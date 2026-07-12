@@ -3,6 +3,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { brand } from "@/lib/brand";
 import { env } from "@/lib/env";
 
@@ -40,13 +41,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" data-scroll-behavior="smooth">
+    <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
-        <CartProvider>
-          <SiteHeader />
-          {children}
-          <SiteFooter />
-        </CartProvider>
+        <ThemeProvider>
+          <CartProvider>
+            <SiteHeader />
+            {children}
+            <SiteFooter />
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

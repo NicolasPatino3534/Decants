@@ -47,22 +47,22 @@ export function ProductEditor({
         <Select name="brandId" label="Marca" defaultValue={product.brand.id} options={brands.map((brand) => ({ label: brand.name, value: brand.id }))} />
         <Select
           name="categoryId"
-          label="Categoria"
+          label="Categoría"
           defaultValue={product.category.id}
           options={categories.map((category) => ({ label: category.name, value: category.id }))}
         />
-        <Input name="concentration" label="Concentracion" defaultValue={product.concentration} />
-        <Select name="gender" label="Genero" defaultValue={product.gender} options={genders.map((value) => ({ label: value, value }))} />
+        <Input name="concentration" label="Concentración" defaultValue={product.concentration} />
+        <Select name="gender" label="Género" defaultValue={product.gender} options={genders.map((value) => ({ label: value, value }))} />
         <Select name="status" label="Estado" defaultValue={product.status} options={statuses.map((value) => ({ label: value, value }))} />
-        <Input name="durationEstimate" label="Duracion estimada" defaultValue={product.durationEstimate ?? ""} />
-        <Input name="projectionEstimate" label="Proyeccion" defaultValue={product.projectionEstimate ?? ""} />
-        <Input name="recommendedOccasion" label="Ocasion" defaultValue={product.recommendedOccasion ?? ""} />
-        <Input name="recommendedSeason" label="Estacion" defaultValue={product.recommendedSeason ?? ""} />
+        <Input name="durationEstimate" label="Duración estimada" defaultValue={product.durationEstimate ?? ""} />
+        <Input name="projectionEstimate" label="Proyección" defaultValue={product.projectionEstimate ?? ""} />
+        <Input name="recommendedOccasion" label="Ocasión" defaultValue={product.recommendedOccasion ?? ""} />
+        <Input name="recommendedSeason" label="Estación" defaultValue={product.recommendedSeason ?? ""} />
         <Input name="notesTop" label="Notas de salida" defaultValue={product.notesTop.join(", ")} />
-        <Input name="notesHeart" label="Notas de corazon" defaultValue={product.notesHeart.join(", ")} />
+        <Input name="notesHeart" label="Notas de corazón" defaultValue={product.notesHeart.join(", ")} />
         <Input name="notesBase" label="Notas de fondo" defaultValue={product.notesBase.join(", ")} />
         <label className="md:col-span-3">
-          <span className="mb-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#756b5d]">Descripcion</span>
+          <span className="mb-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#756b5d]">Descripción</span>
           <textarea
             name="description"
             defaultValue={product.description}

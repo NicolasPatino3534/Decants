@@ -9,7 +9,7 @@ import { brand } from "@/lib/brand";
 const items = [
   { href: "/admin", label: "Balance", icon: WalletCards },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
-  { href: "/admin/catalogo", label: "Catalogo", icon: Package },
+  { href: "/admin/catalogo", label: "Catálogo", icon: Package },
 ];
 
 export function AdminSidebar() {
@@ -47,7 +47,7 @@ export function AdminSidebar() {
         })}
       </nav>
       <div className="mx-3 mb-4 hidden rounded-md border border-line bg-[#fbf7ed] p-4 text-xs leading-5 text-[#665d50] lg:block">
-        Panel reducido a pedidos, catalogo y balance para operar sin ruido mientras se prepara autenticacion real.
+        Panel reducido a pedidos, catálogo y balance para operar sin ruido mientras se prepara autenticación real.
       </div>
     </aside>
   );

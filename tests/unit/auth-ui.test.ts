@@ -17,7 +17,7 @@ describe("auth UI contract", () => {
     expect(siteHeaderSource).toContain("Crear cuenta");
     expect(siteHeaderSource).toContain("Mi cuenta");
     expect(siteHeaderSource).toContain("Mis pedidos");
-    expect(siteHeaderSource).toContain("Cerrar sesion");
+    expect(siteHeaderSource).toContain("Cerrar sesión");
     expect(siteHeaderSource).toContain('aria-live="polite"');
   });
 });

@@ -18,82 +18,114 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const visibleRelated = related.length ? related : fallbackRelated;
   const firstVariant = product.variants[0];
   const lastVariant = product.variants[product.variants.length - 1] ?? firstVariant;
+  const availableStock = product.variants.reduce((total, variant) => total + Math.max(variant.stockOnHand, 0), 0);
   const profile = getScentProfile(product);
+  const descriptionParagraphs = splitDescription(product.description);
 
   return (
     <main className="premium-shell">
-      <div className="mx-auto grid max-w-6xl gap-7 px-4 py-6 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8 lg:py-9">
-        <section>
-          <div className="relative min-h-[330px] overflow-hidden rounded-md border border-line bg-mist shadow-[0_18px_56px_rgba(11,13,15,0.12)] lg:min-h-[480px]">
-            <Image
-              src={product.imageUrl}
-              alt={`${product.name} decant`}
-              fill
-              priority
-              loading="eager"
-              sizes="(min-width: 1024px) 44vw, 100vw"
-              className="object-cover"
-            />
-            <div className="absolute left-4 top-4 rounded-md bg-white/90 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#8c682b] backdrop-blur">
-              {product.brand.name}
-            </div>
-          </div>
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {[product.family.name, product.concentration, `${firstVariant?.sizeMl ?? 2}ml+`].map((label) => (
-              <div key={label} className="rounded-md border border-line bg-white p-2.5 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-[#6f6658]">
-                {label}
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.86fr)] xl:gap-12">
+            <section aria-label="Imagen del producto" className="min-w-0 space-y-4">
+              <div className="relative aspect-[4/5] min-h-[360px] overflow-hidden rounded-md border border-line bg-[var(--surface-strong)] shadow-[var(--shadow-lifted)] sm:min-h-[520px] lg:max-h-[700px]">
+                <Image
+                  src={product.imageUrl}
+                  alt={`${product.name} decant`}
+                  fill
+                  priority
+                  loading="eager"
+                  sizes="(min-width: 1024px) 54vw, 100vw"
+                  className="object-contain p-5"
+                />
+                <div className="absolute left-4 top-4 rounded-md border border-white/20 bg-black/45 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
+                  {product.brand.name}
+                </div>
               </div>
+              <div className="grid gap-2 sm:grid-cols-4">
+                <Attribute label="Familia" value={product.family.name} />
+                <Attribute label="Concentración" value={product.concentration} />
+                <Attribute label="Tamaños" value={product.variants.length > 0 ? product.variants.map((variant) => `${variant.sizeMl}ml`).join(" / ") : "Pendiente"} />
+                <Attribute label="Stock" value={availableStock > 0 ? `${availableStock} unidades` : "Sin stock"} />
+              </div>
+            </section>
+
+            <aside className="min-w-0 space-y-5 lg:sticky lg:top-28">
+              <section className="rounded-md border border-line bg-paper p-5 shadow-soft sm:p-6">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--accent-muted)]">
+                  <span>{product.family.name}</span>
+                  <span aria-hidden="true">/</span>
+                  <span>{formatGender(product.gender)}</span>
+                </div>
+                <h1 className="font-display mt-3 text-4xl leading-tight text-ink sm:text-5xl">{product.name}</h1>
+                <p className="mt-3 text-base font-semibold text-muted">
+                  {product.brand.name} · {product.concentration}
+                </p>
+                {firstVariant ? (
+                  <div className="mt-5 rounded-md bg-warm p-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-soft">Precio</p>
+                    <p className="font-display mt-1 text-3xl text-ink">
+                      {formatMoney(firstVariant.priceCents)}
+                      {lastVariant && firstVariant.id !== lastVariant.id ? ` - ${formatMoney(lastVariant.priceCents)}` : ""}
+                    </p>
+                  </div>
+                ) : null}
+              </section>
+
+              <AddToCartPanel product={product} />
+
+              <div className="grid gap-2 rounded-md border border-line bg-warm p-4 text-sm font-semibold text-[var(--accent-muted)] sm:grid-cols-3">
+                <span className="flex items-center gap-2"><BadgeCheck size={16} /> Originalidad verificada</span>
+                <span className="flex items-center gap-2"><ShieldCheck size={16} /> Compra segura</span>
+                <span className="flex items-center gap-2"><Truck size={16} /> Envío con tracking</span>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-line bg-paper py-12 lg:py-16">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--accent-muted)]">Descripción</p>
+            <h2 className="font-display mt-2 text-4xl leading-tight text-ink sm:text-5xl">La ficha olfativa, con más aire</h2>
+          </div>
+          <div className="space-y-4 text-base leading-8 text-muted">
+            {descriptionParagraphs.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="lg:pt-1">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#8c682b]">
-            <span>{product.family.name}</span>
-            <span>/</span>
-            <span>{product.gender}</span>
-          </div>
-          <h1 className="font-display mt-3 text-4xl leading-tight text-ink sm:text-5xl">{product.name}</h1>
-          <p className="mt-2 text-base font-semibold text-[#5f574c]">
-            {product.brand.name} · {product.concentration}
-          </p>
-          {firstVariant ? (
-            <p className="font-display mt-4 text-2xl text-ink">
-              {formatMoney(firstVariant.priceCents)} - {formatMoney(lastVariant.priceCents)}
-            </p>
-          ) : null}
-          <p className="mt-4 text-sm leading-7 text-[#4f493f]">{product.description}</p>
-
-          <div className="mt-5 grid gap-3 rounded-md border border-line bg-white p-4 sm:grid-cols-3">
-            <NoteList title="Salida" notes={product.notesTop} />
-            <NoteList title="Corazón" notes={product.notesHeart} />
-            <NoteList title="Fondo" notes={product.notesBase} />
+      <section className="border-b border-line py-12 lg:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--accent-muted)]">Notas y atributos</p>
+              <h2 className="font-display mt-2 text-4xl text-ink">Cómo evoluciona en piel</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <NoteList title="Salida" notes={product.notesTop} />
+              <NoteList title="Corazón" notes={product.notesHeart} />
+              <NoteList title="Fondo" notes={product.notesBase} />
+            </div>
           </div>
 
-          <div className="mt-5 grid gap-3 rounded-md border border-line bg-[#f8f8f6] p-4 sm:grid-cols-2">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <ProfileMeter icon={<Clock3 size={17} />} label="Duración estimada" value={profile.longevity} percent={profile.longevityPercent} />
             <ProfileMeter icon={<Gauge size={17} />} label="Proyección" value={profile.projection} percent={profile.projectionPercent} />
             <ProfileFact icon={<SunMedium size={17} />} label="Estación" value={profile.season} />
             <ProfileFact icon={<CalendarDays size={17} />} label="Ocasión" value={profile.occasion} />
           </div>
+        </div>
+      </section>
 
-          <div className="mt-5 grid gap-2 rounded-md border border-[#e6dcc6] bg-[#fbf7ed] p-4 text-sm font-semibold text-[#7a5a20] sm:grid-cols-3">
-            <span className="flex items-center gap-2"><BadgeCheck size={16} /> Originalidad verificada</span>
-            <span className="flex items-center gap-2"><ShieldCheck size={16} /> Compra segura</span>
-            <span className="flex items-center gap-2"><Truck size={16} /> Envío con tracking</span>
-          </div>
-
-          <div className="mt-6">
-            <AddToCartPanel product={product} />
-          </div>
-        </section>
-      </div>
-
-      <section className="border-t border-line bg-white py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <section className="border-b border-line bg-paper py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-7 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">Perfil de usuario</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--accent-muted)]">Perfil de usuario</p>
               <h2 className="font-display mt-2 text-4xl text-ink">Para quién es este decant</h2>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
@@ -106,10 +138,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </section>
 
       {visibleRelated.length > 0 ? (
-        <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8c682b]">También podría gustarte</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--accent-muted)]">También podría gustarte</p>
               <h2 className="font-display mt-2 text-4xl text-ink">Comparar antes de decidir</h2>
             </div>
           </div>
@@ -124,14 +156,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   );
 }
 
+function Attribute({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-line bg-paper p-3 text-center">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-soft">{label}</p>
+      <p className="mt-1 text-sm font-black text-ink">{value}</p>
+    </div>
+  );
+}
+
 function NoteList({ title, notes }: { title: string; notes: string[] }) {
   return (
-    <div>
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8c682b]">{title}</p>
-      <ul className="mt-2 space-y-1 text-sm text-[#6f6658]">
-        {notes.map((note) => (
-          <li key={note}>{note}</li>
-        ))}
+    <div className="rounded-md border border-line bg-paper p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent-muted)]">{title}</p>
+      <ul className="mt-3 space-y-2 text-sm text-muted">
+        {notes.length > 0 ? notes.map((note) => <li key={note}>{note}</li>) : <li>Sin notas cargadas</li>}
       </ul>
     </div>
   );
@@ -139,14 +178,14 @@ function NoteList({ title, notes }: { title: string; notes: string[] }) {
 
 function ProfileMeter({ icon, label, value, percent }: { icon: React.ReactNode; label: string; value: string; percent: number }) {
   return (
-    <div className="rounded-md border border-line bg-white p-4">
+    <div className="rounded-md border border-line bg-paper p-4">
       <div className="flex items-center gap-2 text-sm font-black text-ink">
-        <span className="text-[#8a611c]">{icon}</span>
+        <span className="text-amber">{icon}</span>
         {label}
       </div>
-      <p className="mt-2 text-sm text-[#5f574c]">{value}</p>
+      <p className="mt-2 text-sm text-muted">{value}</p>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-mist">
-        <div className="h-full rounded-full bg-[#b8872f]" style={{ width: `${percent}%` }} />
+        <div className="h-full rounded-full bg-amber" style={{ width: `${percent}%` }} />
       </div>
     </div>
   );
@@ -154,12 +193,12 @@ function ProfileMeter({ icon, label, value, percent }: { icon: React.ReactNode; 
 
 function ProfileFact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-md border border-line bg-white p-4">
+    <div className="rounded-md border border-line bg-paper p-4">
       <div className="flex items-center gap-2 text-sm font-black text-ink">
-        <span className="text-[#b88939]">{icon}</span>
+        <span className="text-amber">{icon}</span>
         {label}
       </div>
-      <p className="mt-2 text-sm leading-6 text-[#5f574c]">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-muted">{value}</p>
     </div>
   );
 }
@@ -179,4 +218,20 @@ function getScentProfile(product: Product) {
     occasion: product.recommendedOccasion || (intense ? "Salidas, eventos y uso nocturno" : "Oficina, día y uso frecuente"),
     wearer: product.gender === "unisex" ? "Quien busca una firma versátil" : product.gender === "feminine" ? "Perfil pulido, suave y luminoso" : "Perfil intenso, seco y elegante",
   };
+}
+
+function formatGender(gender: Product["gender"]) {
+  if (gender === "feminine") return "Mujer";
+  if (gender === "masculine") return "Hombre";
+  return "Unisex";
+}
+
+function splitDescription(description: string) {
+  if (description.length < 320) return [description];
+
+  const sentences = description.match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? [description];
+  const midpoint = Math.ceil(sentences.length / 2);
+  const first = sentences.slice(0, midpoint).join(" ").trim();
+  const second = sentences.slice(midpoint).join(" ").trim();
+  return [first, second].filter(Boolean);
 }

@@ -1,10 +1,10 @@
 import { cn } from "@/lib/format";
 
 const toneClass = {
-  green: "bg-green-50 text-moss ring-green-200",
-  amber: "bg-amber-50 text-amber ring-amber-200",
-  red: "bg-red-50 text-danger ring-red-200",
-  neutral: "bg-mist text-neutral-700 ring-line",
+  green: "bg-green-500/10 text-moss ring-green-500/30",
+  amber: "bg-warm text-[var(--accent-muted)] ring-line",
+  red: "bg-red-500/10 text-danger ring-red-500/30",
+  neutral: "bg-mist text-muted ring-line",
 };
 
 export function StatusBadge({
@@ -15,7 +15,7 @@ export function StatusBadge({
   tone?: keyof typeof toneClass;
 }) {
   return (
-    <span className={cn("inline-flex rounded-md px-2 py-1 text-xs font-semibold ring-1", toneClass[tone])}>
+    <span className={cn("inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold ring-1", toneClass[tone])}>
       {children}
     </span>
   );

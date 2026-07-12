@@ -11,10 +11,10 @@ export default async function AdminCatalogPage() {
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a6f24]">Catalogo</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a6f24]">Catálogo</p>
           <h1 className="mt-2 text-3xl font-black text-ink">Productos</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#665d50]">
-            Lista simple para entrar al detalle de cada perfume y editar datos, imagenes, stock, estado y variantes.
+            Lista simple para entrar al detalle de cada perfume y editar datos, imágenes, stock, estado y variantes.
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-bold text-[#665d50]">

@@ -7,10 +7,10 @@ export default async function AuthPage({ searchParams }: { searchParams: Promise
   const initialMode = params.mode === "signup" ? "signup" : "login";
 
   return (
-    <main className="mx-auto min-h-[70vh] max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+    <main className="premium-shell min-h-[70vh] px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl text-center">
-        <h1 className="text-4xl font-black">Cuenta {brand.displayName}</h1>
-        <p className="mt-3 text-neutral-600">Accedé a pedidos, tracking y datos guardados para comprar más rápido.</p>
+        <h1 className="font-display text-4xl text-ink">Cuenta {brand.displayName}</h1>
+        <p className="mt-3 text-muted">Accedé a pedidos, tracking y datos guardados para comprar más rápido.</p>
       </div>
       <div className="mt-8">
         <AuthForm initialMode={initialMode} nextPath={nextPath} />

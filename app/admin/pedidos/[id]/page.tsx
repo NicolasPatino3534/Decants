@@ -56,10 +56,10 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           </section>
 
           <section className="rounded-md border border-line bg-[#fbfaf6] p-4">
-            <h2 className="font-black text-ink">Contacto y envio</h2>
+            <h2 className="font-black text-ink">Contacto y envío</h2>
             <div className="mt-2 space-y-1 text-sm text-[#665d50]">
-              <p>{order.shippingAddress.phone ? `Telefono: ${order.shippingAddress.phone}` : "Sin telefono"}</p>
-              <p>{order.shippingAddress.street ?? "Sin direccion"}</p>
+              <p>{order.shippingAddress.phone ? `Teléfono: ${order.shippingAddress.phone}` : "Sin teléfono"}</p>
+              <p>{order.shippingAddress.street ?? "Sin dirección"}</p>
               <p>{[order.shippingAddress.city, order.shippingAddress.state, order.shippingAddress.postalCode].filter(Boolean).join(", ")}</p>
               <p>{order.shippingAddress.country ?? ""}</p>
               {order.shippingAddress.reference ? <p>Referencia: {order.shippingAddress.reference}</p> : null}
@@ -102,7 +102,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           <form action={updateShipmentStatus} className="rounded-md border border-line p-4">
             <input type="hidden" name="orderId" value={order.id} />
             <label>
-              <span className="mb-1 block text-sm font-bold">Estado de envio</span>
+              <span className="mb-1 block text-sm font-bold">Estado de envío</span>
               <select name="shipmentStatus" defaultValue={order.shipmentStatus} className="h-10 w-full rounded-md border border-line px-2 text-sm">
                 {shipmentStatuses.map((status) => (
                   <option key={status} value={status}>

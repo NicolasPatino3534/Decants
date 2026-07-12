@@ -175,7 +175,7 @@ export async function POST(request: Request) {
               {
                 id: order.id,
                 title: `Pedido Decants CBA #${order.id.slice(0, 8)}`,
-                description: `${lines.length} producto(s), envio incluido`,
+                description: `${lines.length} producto(s), envío incluido`,
                 quantity: 1,
                 unit_price: centsToMoney(totals.totalCents),
                 currency_id: "ARS",

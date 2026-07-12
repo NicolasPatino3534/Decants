@@ -118,7 +118,7 @@ export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: Vi
     }
 
     if (mode === "signup" && result.data.user?.identities?.length === 0) {
-      setMessage("Ese email ya tiene una cuenta. Inicia sesion con tu contrasena.");
+      setMessage("Ese email ya tiene una cuenta. Iniciá sesión con tu contraseña.");
       return;
     }
 
@@ -136,7 +136,7 @@ export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: Vi
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-md border border-line bg-white p-5">
+    <div className="mx-auto max-w-md rounded-md border border-line bg-paper p-5 shadow-soft">
       {mode === "update" ? null : (
         <div className="grid grid-cols-2 gap-2 rounded-md bg-mist p-1">
           <button
@@ -145,7 +145,7 @@ export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: Vi
               setMode("login");
               setMessage(null);
             }}
-            className={`h-10 rounded-md text-sm font-bold ${mode === "login" ? "bg-white shadow-sm" : "text-neutral-600"}`}
+            className={`h-10 rounded-md text-sm font-bold ${mode === "login" ? "bg-paper text-ink shadow-sm" : "text-muted"}`}
           >
             Ingresar
           </button>
@@ -155,7 +155,7 @@ export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: Vi
               setMode("signup");
               setMessage(null);
             }}
-            className={`h-10 rounded-md text-sm font-bold ${mode === "signup" ? "bg-white shadow-sm" : "text-neutral-600"}`}
+            className={`h-10 rounded-md text-sm font-bold ${mode === "signup" ? "bg-paper text-ink shadow-sm" : "text-muted"}`}
           >
             Crear cuenta
           </button>
@@ -167,7 +167,7 @@ export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: Vi
         {mode !== "update" ? <AuthField name="email" label="Email" type="email" autoComplete="email" required /> : null}
         {mode !== "reset" ? <AuthField name="password" label={mode === "update" ? "Nueva contraseña" : "Contraseña"} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required /> : null}
         {mode === "signup" || mode === "update" ? <AuthField name="passwordConfirm" label="Repetir contraseña" type="password" autoComplete="new-password" required /> : null}
-        {message ? <p className="rounded-md bg-mist p-3 text-sm font-semibold text-neutral-700">{message}</p> : null}
+        {message ? <p className="rounded-md bg-mist p-3 text-sm font-semibold text-muted">{message}</p> : null}
         <Button disabled={loading} className="w-full">
           {mode === "reset" ? <Mail size={17} /> : mode === "signup" ? <KeyRound size={17} /> : <LogIn size={17} />}
           {loading ? "Procesando..." : mode === "login" ? "Ingresar" : mode === "signup" ? "Crear cuenta" : mode === "update" ? "Actualizar contraseña" : "Enviar recuperación"}
@@ -192,13 +192,13 @@ function AuthField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-bold">{label}</span>
+      <span className="mb-1 block text-sm font-bold text-ink">{label}</span>
       <input
         name={name}
         type={type}
         required={required}
         autoComplete={autoComplete}
-        className="h-11 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink"
+        className="h-11 w-full rounded-md border border-line bg-paper px-3 text-sm text-ink outline-none focus:border-amber"
       />
     </label>
   );

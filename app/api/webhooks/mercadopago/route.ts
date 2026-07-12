@@ -192,7 +192,7 @@ async function sendPaidEmail(admin: AdminClient, orderId: string) {
     to: order.customer_email,
     subject: `Pedido #${order.order_number} confirmado`,
     template: "order_paid",
-    html: `<p>Hola ${customerName}, recibimos tu pago del pedido #${orderNumber}. Te avisamos cuando el envio este en camino.</p>`,
+    html: `<p>Hola ${customerName}, recibimos tu pago del pedido #${orderNumber}. Te avisamos cuando el envío esté en camino.</p>`,
   });
 }
 

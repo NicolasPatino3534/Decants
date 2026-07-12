@@ -32,6 +32,11 @@ function readStoredCart() {
   }
 }
 
+function writeStoredCart(lines: CartLine[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(storageKey, JSON.stringify(lines));
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -41,7 +46,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(storageKey, JSON.stringify(lines));
+    writeStoredCart(lines);
   }, [hydrated, lines]);
 
   useEffect(() => {
@@ -50,17 +55,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const syncCart = useCallback(async () => {
     try {
-      const localLines = readStoredCart();
       const response = await fetch("/api/cart", { headers: { Accept: "application/json" } });
       const payload = (await response.json()) as { lines?: CartLine[]; authenticated?: boolean };
       if (!payload.authenticated) {
-        setLines(localLines);
+        const latestLocalLines = readStoredCart();
+        linesRef.current = latestLocalLines;
+        setLines(latestLocalLines);
         setHydrated(true);
-        return localLines;
+        return latestLocalLines;
       }
 
       setServerSyncEnabled(true);
-      const merged = mergeCartLines(payload.lines ?? [], localLines);
+      const merged = mergeCartLines(payload.lines ?? [], readStoredCart());
       const syncResponse = await fetch("/api/cart", {
         method: "PUT",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -70,6 +76,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const refreshedLines = syncResponse.ok && Array.isArray(syncPayload.lines) ? syncPayload.lines : merged;
 
       skipNextSyncRef.current = true;
+      linesRef.current = refreshedLines;
+      writeStoredCart(refreshedLines);
       setLines(refreshedLines);
       return refreshedLines;
     } catch {
@@ -107,43 +115,53 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [hydrated, lines, serverSyncEnabled]);
 
   const addItem = useCallback((product: Product, variant: DecantVariant, quantity = 1) => {
-    setLines((current) => {
-      const existing = current.find((line) => line.variantId === variant.id);
-      if (existing) {
-        return current.map((line) =>
+    const current = linesRef.current;
+    const existing = current.find((line) => line.variantId === variant.id);
+    const nextLines = existing
+      ? current.map((line) =>
           line.variantId === variant.id
             ? { ...line, stockOnHand: variant.stockOnHand, quantity: clampCartQuantity(line.quantity + quantity, variant.stockOnHand) }
             : line,
-        );
-      }
-      return [
-        ...current,
-        {
-          productId: product.id,
-          productSlug: product.slug,
-          productName: product.name,
-          imageUrl: product.imageUrl,
-          variantId: variant.id,
-          sizeMl: variant.sizeMl,
-          priceCents: variant.priceCents,
-          stockOnHand: variant.stockOnHand,
-          quantity: clampCartQuantity(quantity, variant.stockOnHand),
-        },
-      ];
-    });
+        )
+      : [
+          ...current,
+          {
+            productId: product.id,
+            productSlug: product.slug,
+            productName: product.name,
+            imageUrl: product.imageUrl,
+            variantId: variant.id,
+            sizeMl: variant.sizeMl,
+            priceCents: variant.priceCents,
+            stockOnHand: variant.stockOnHand,
+            quantity: clampCartQuantity(quantity, variant.stockOnHand),
+          },
+        ];
+
+    linesRef.current = nextLines;
+    writeStoredCart(nextLines);
+    setLines(nextLines);
   }, []);
 
   const updateQuantity = useCallback((variantId: string, quantity: number) => {
-    setLines((current) =>
-      current.map((line) => (line.variantId === variantId ? { ...line, quantity: clampCartQuantity(quantity, line.stockOnHand) } : line)),
+    const nextLines = linesRef.current.map((line) =>
+      line.variantId === variantId ? { ...line, quantity: clampCartQuantity(quantity, line.stockOnHand) } : line,
     );
+    linesRef.current = nextLines;
+    writeStoredCart(nextLines);
+    setLines(nextLines);
   }, []);
 
   const removeItem = useCallback((variantId: string) => {
-    setLines((current) => current.filter((line) => line.variantId !== variantId));
+    const nextLines = linesRef.current.filter((line) => line.variantId !== variantId);
+    linesRef.current = nextLines;
+    writeStoredCart(nextLines);
+    setLines(nextLines);
   }, []);
 
   const clearCart = useCallback(() => {
+    linesRef.current = [];
+    writeStoredCart([]);
     setLines([]);
     if (serverSyncEnabled) {
       fetch("/api/cart", { method: "DELETE" }).catch(() => undefined);

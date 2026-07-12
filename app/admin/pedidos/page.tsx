@@ -14,7 +14,7 @@ export default async function AdminOrdersPage() {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a6f24]">Pedidos</p>
           <h1 className="mt-2 text-3xl font-black text-ink">Ver pedidos</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#665d50]">
-            Lista de pedidos con acceso al detalle completo de cliente, productos, estado, fecha, total y datos de envio.
+            Lista de pedidos con acceso al detalle completo de cliente, productos, estado, fecha, total y datos de envío.
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-bold text-[#665d50]">

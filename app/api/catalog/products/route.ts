@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   const { products, error } = await fetchProductsFromSupabase(supabase, filters);
   if (error) {
     console.error("catalog_products_supabase_error", { message: error.message });
-    return NextResponse.json({ products: [], source: "supabase", error: "No se pudo cargar el catalogo." }, { status: 502 });
+    return NextResponse.json({ products: [], source: "supabase", error: "No se pudo cargar el catálogo." }, { status: 502 });
   }
 
   return NextResponse.json({ products, source: "supabase" });
