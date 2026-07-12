@@ -9,3 +9,4 @@ next-dev.out.log
 next-dev.err.log
 next-prod.live.log
 *.tsbuildinfo
+.vercel/
