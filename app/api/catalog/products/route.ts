@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { filterProducts, type ProductFilters, type ProductSort } from "@/lib/catalog/filters";
 import { fetchProductsFromSupabase } from "@/lib/data/products";
 import { demoProducts } from "@/lib/demo-data";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const filters = parseProductFilters(new URL(request.url).searchParams);
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient() ?? (await createSupabaseServerClient());
 
   if (!supabase) {
     return NextResponse.json({ products: filterProducts(demoProducts, filters), source: "demo" });
@@ -15,11 +16,8 @@ export async function GET(request: Request) {
 
   const { products, error } = await fetchProductsFromSupabase(supabase, filters);
   if (error) {
-    return NextResponse.json({ products: filterProducts(demoProducts, filters), source: "demo" });
-  }
-
-  if (products.length === 0) {
-    return NextResponse.json({ products: filterProducts(demoProducts, filters), source: "demo" });
+    console.error("catalog_products_supabase_error", { message: error.message });
+    return NextResponse.json({ products: [], source: "supabase", error: "No se pudo cargar el catalogo." }, { status: 502 });
   }
 
   return NextResponse.json({ products, source: "supabase" });

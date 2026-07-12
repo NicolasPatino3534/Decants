@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@supabase/supabase-js";
 import { fetchProductsFromSupabase } from "@/lib/data/products";
 import { env } from "@/lib/env";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const revalidate = 3600;
 
@@ -23,14 +23,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  if (!env.supabaseUrl || !env.supabasePublishableKey) return staticRoutes;
+  if (!env.supabaseUrl || !env.supabaseServiceRoleKey) return staticRoutes;
 
-  const supabase = createClient(env.supabaseUrl, env.supabasePublishableKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return staticRoutes;
   const { products, error } = await fetchProductsFromSupabase(supabase);
   if (error) return staticRoutes;
 

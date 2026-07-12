@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildCartLinesFromItems, clearPersistedCart, getPersistedCartLines, replacePersistedCart } from "@/lib/cart/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const cartSchema = z.object({
@@ -24,7 +25,8 @@ export async function GET() {
 
   if (!user) return NextResponse.json({ lines: [], authenticated: false });
 
-  const lines = await getPersistedCartLines(supabase, user.id);
+  const catalogSupabase = createSupabaseAdminClient() ?? supabase;
+  const lines = await getPersistedCartLines(supabase, user.id, catalogSupabase);
   return NextResponse.json({ lines, authenticated: true });
 }
 
@@ -41,10 +43,11 @@ export async function PUT(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const lines = await buildCartLinesFromItems(supabase, parsed.data.items);
+  const catalogSupabase = createSupabaseAdminClient() ?? supabase;
+  const lines = await buildCartLinesFromItems(catalogSupabase, parsed.data.items);
   if (!user) return NextResponse.json({ lines, authenticated: false });
 
-  const result = await replacePersistedCart(supabase, user.id, lines);
+  const result = await replacePersistedCart(supabase, user.id, lines, catalogSupabase);
   if (!result.ok) {
     return NextResponse.json(
       { lines, authenticated: true, warning: "No se pudo sincronizar el carrito en Supabase." },

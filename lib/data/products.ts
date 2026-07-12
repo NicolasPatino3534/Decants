@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { demoProducts } from "@/lib/demo-data";
 import { filterProducts, sortProducts, type ProductFilters } from "@/lib/catalog/filters";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Brand, Category, Product, ProductVariant } from "@/lib/types";
 
@@ -118,26 +119,25 @@ const legacyProductSelect = `
 `;
 
 export async function getProducts(filters: ProductFilters = {}) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = (createSupabaseAdminClient() as SupabaseClient | null) ?? (await createSupabaseServerClient());
   if (!supabase) return filterProducts(demoProducts, filters);
 
   const { products, error } = await fetchProductsFromSupabase(supabase, filters);
-  if (error) return filterProducts(demoProducts, filters);
-  if (products.length === 0) return filterProducts(demoProducts, filters);
+  if (error) return [];
   return products;
 }
 
 export async function getProductBySlug(slug: string) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = (createSupabaseAdminClient() as SupabaseClient | null) ?? (await createSupabaseServerClient());
   if (!supabase) return demoProducts.find((product) => product.slug === slug) ?? null;
 
   const { product, error } = await fetchProductBySlugFromSupabase(supabase, slug);
-  if (error) return demoProducts.find((item) => item.slug === slug) ?? null;
-  return product ?? demoProducts.find((item) => item.slug === slug) ?? null;
+  if (error) return null;
+  return product;
 }
 
 export async function getAdminProducts() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = (createSupabaseAdminClient() as SupabaseClient | null) ?? (await createSupabaseServerClient());
   if (!supabase) return demoProducts;
 
   const { data, error } = await supabase

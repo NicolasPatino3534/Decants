@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { fetchProductBySlugFromSupabase } from "@/lib/data/products";
 import { demoProducts } from "@/lib/demo-data";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient() ?? (await createSupabaseServerClient());
 
   if (!supabase) {
     const product = demoProducts.find((item) => item.slug === slug) ?? null;
@@ -15,16 +16,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
 
   const { product, error } = await fetchProductBySlugFromSupabase(supabase, slug);
   if (error) {
-    const fallbackProduct = demoProducts.find((item) => item.slug === slug) ?? null;
-    return fallbackProduct
-      ? NextResponse.json({ product: fallbackProduct, source: "demo" })
-      : NextResponse.json({ product: null, error: "No se pudo cargar el producto." }, { status: 500 });
+    console.error("catalog_product_supabase_error", { slug, message: error.message });
+    return NextResponse.json({ product: null, source: "supabase", error: "No se pudo cargar el producto." }, { status: 502 });
   }
   if (!product) {
-    const fallbackProduct = demoProducts.find((item) => item.slug === slug) ?? null;
-    return fallbackProduct
-      ? NextResponse.json({ product: fallbackProduct, source: "demo" })
-      : NextResponse.json({ product: null, error: "Producto no encontrado." }, { status: 404 });
+    return NextResponse.json({ product: null, source: "supabase", error: "Producto no encontrado." }, { status: 404 });
   }
 
   return NextResponse.json({ product, source: "supabase" });

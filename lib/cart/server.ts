@@ -66,7 +66,7 @@ export function selectCartLinesForItems(items: CartItemInput[], lines: CartLine[
   });
 }
 
-export async function getPersistedCartLines(supabase: SupabaseClient, userId: string) {
+export async function getPersistedCartLines(supabase: SupabaseClient, userId: string, resolverSupabase = supabase) {
   const { data: cart } = await supabase
     .from("carts")
     .select("id")
@@ -79,17 +79,17 @@ export async function getPersistedCartLines(supabase: SupabaseClient, userId: st
   const { data, error } = await supabase.from("cart_items").select("variant_id,quantity").eq("cart_id", cart.id);
   if (error || !data) return [] as CartLine[];
   return buildCartLinesFromItems(
-    supabase,
+    resolverSupabase,
     (data as CartItemRow[]).map((item) => ({ variantId: item.variant_id, quantity: item.quantity })),
   );
 }
 
-export async function replacePersistedCart(supabase: SupabaseClient, userId: string, lines: CartLine[]) {
+export async function replacePersistedCart(supabase: SupabaseClient, userId: string, lines: CartLine[], resolverSupabase = supabase) {
   const cart = await ensureActiveCart(supabase, userId);
   if (!cart) return { ok: false, error: "No se pudo crear el carrito." };
 
   const refreshedLines = await buildCartLinesFromItems(
-    supabase,
+    resolverSupabase,
     lines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })),
   );
 
