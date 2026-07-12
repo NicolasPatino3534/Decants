@@ -15,7 +15,7 @@ type CheckoutCustomer = {
 };
 
 export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutCustomer }) {
-  const { lines, clearCart } = useCart();
+  const { lines, clearCart, syncCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>(fallbackShippingMethods);
@@ -49,6 +49,13 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
     setLoading(true);
     setError(null);
 
+    const refreshedLines = await syncCart();
+    if (refreshedLines.length === 0) {
+      setError("El carrito tenia productos que ya no estan disponibles. Volve al catalogo y agregalos nuevamente.");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       idempotencyKey,
       customer: {
@@ -66,7 +73,7 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
       },
       shippingMethodId,
       couponCode,
-      items: lines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })),
+      items: refreshedLines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })),
     };
 
     try {

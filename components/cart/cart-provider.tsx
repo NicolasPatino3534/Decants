@@ -12,7 +12,7 @@ type CartContextValue = {
   updateQuantity: (variantId: string, quantity: number) => void;
   removeItem: (variantId: string) => void;
   clearCart: () => void;
-  syncCart: () => Promise<void>;
+  syncCart: () => Promise<CartLine[]>;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -36,12 +36,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [serverSyncEnabled, setServerSyncEnabled] = useState(false);
+  const linesRef = useRef<CartLine[]>([]);
   const skipNextSyncRef = useRef(false);
 
   useEffect(() => {
     if (!hydrated) return;
     window.localStorage.setItem(storageKey, JSON.stringify(lines));
   }, [hydrated, lines]);
+
+  useEffect(() => {
+    linesRef.current = lines;
+  }, [lines]);
 
   const syncCart = useCallback(async () => {
     try {
@@ -51,21 +56,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (!payload.authenticated) {
         setLines(localLines);
         setHydrated(true);
-        return;
+        return localLines;
       }
 
       setServerSyncEnabled(true);
       const merged = mergeCartLines(payload.lines ?? [], localLines);
-      skipNextSyncRef.current = true;
-      setLines(merged);
-
-      await fetch("/api/cart", {
+      const syncResponse = await fetch("/api/cart", {
         method: "PUT",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ items: merged.map((line) => ({ variantId: line.variantId, quantity: line.quantity })) }),
       });
+      const syncPayload = (await syncResponse.json().catch(() => ({}))) as { lines?: CartLine[] };
+      const refreshedLines = syncResponse.ok && Array.isArray(syncPayload.lines) ? syncPayload.lines : merged;
+
+      skipNextSyncRef.current = true;
+      setLines(refreshedLines);
+      return refreshedLines;
     } catch {
       // Local cart remains the source of truth if server sync is unavailable.
+      return linesRef.current;
     } finally {
       setHydrated(true);
     }
