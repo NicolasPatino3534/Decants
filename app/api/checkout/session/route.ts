@@ -562,20 +562,6 @@ async function createOrderItems(
   orderId: string,
   lines: Array<{ variant: CheckoutVariant; quantity: number; totalCents: number }>,
 ) {
-  const legacyPayload = lines.map((line) => ({
-    order_id: orderId,
-    product_id: line.variant.productId,
-    variant_id: line.variant.id,
-    product_name: line.variant.productName,
-    variant_label: `${line.variant.sizeMl}ml`,
-    quantity: line.quantity,
-    unit_price_cents: line.variant.priceCents,
-    total_cents: line.totalCents,
-  }));
-
-  let { error } = await admin.from("order_items").insert(legacyPayload);
-  if (!error) return;
-
   const modernPayload = lines.map((line) => ({
     order_id: orderId,
     product_id: line.variant.productId,
@@ -589,8 +575,58 @@ async function createOrderItems(
     total_cents: line.totalCents,
   }));
 
-  const retry = await admin.from("order_items").insert(modernPayload);
-  if (retry.error) throw new CheckoutError("No se pudieron crear los items del pedido.", 500);
+  let { error } = await admin.from("order_items").insert(modernPayload);
+  if (!error) return;
+
+  const modernError = error;
+  const hybridPayload = lines.map((line) => ({
+    order_id: orderId,
+    product_id: line.variant.productId,
+    variant_id: line.variant.id,
+    product_name: line.variant.productName,
+    variant_label: `${line.variant.sizeMl}ml`,
+    brand_name: line.variant.brandName,
+    variant_size_ml: line.variant.sizeMl,
+    sku: line.variant.sku,
+    quantity: line.quantity,
+    unit_price_cents: line.variant.priceCents,
+    total_cents: line.totalCents,
+  }));
+
+  const hybridRetry = await admin.from("order_items").insert(hybridPayload);
+  if (!hybridRetry.error) return;
+
+  const legacyPayload = lines.map((line) => ({
+    order_id: orderId,
+    product_id: line.variant.productId,
+    variant_id: line.variant.id,
+    product_name: line.variant.productName,
+    variant_label: `${line.variant.sizeMl}ml`,
+    quantity: line.quantity,
+    unit_price_cents: line.variant.priceCents,
+    total_cents: line.totalCents,
+  }));
+
+  const legacyRetry = await admin.from("order_items").insert(legacyPayload);
+  if (!legacyRetry.error) return;
+
+  console.error("checkout_order_items_insert_error", {
+    modern: serializePostgrestError(modernError),
+    hybrid: serializePostgrestError(hybridRetry.error),
+    legacy: serializePostgrestError(legacyRetry.error),
+    lineCount: lines.length,
+    variantTables: Array.from(new Set(lines.map((line) => line.variant.table))),
+  });
+  throw new CheckoutError("No se pudieron crear los items del pedido.", 500);
+}
+
+function serializePostgrestError(error: { code?: string; message?: string; details?: string | null; hint?: string | null }) {
+  return {
+    code: error.code,
+    message: error.message,
+    details: error.details,
+    hint: error.hint,
+  };
 }
 
 async function createPayment(
