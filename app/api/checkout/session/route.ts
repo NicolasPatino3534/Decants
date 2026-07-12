@@ -5,6 +5,7 @@ import { checkoutSchema, type CheckoutInput } from "@/lib/checkout/schema";
 import { resolveCouponDiscount, resolveShippingMethod } from "@/lib/checkout/options";
 import { buildCheckoutLines, CheckoutStockError, normalizeCheckoutItems } from "@/lib/checkout/stock";
 import { env } from "@/lib/env";
+import { getMercadoPagoPreference } from "@/lib/payments/mercadopago";
 import { getStripe } from "@/lib/payments/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -157,6 +158,65 @@ export async function POST(request: Request) {
     await createInventoryReservationMovements(admin, order.id, lines);
     await incrementCouponUsage(admin, coupon.couponId);
     if (supabase) await clearPersistedCart(supabase, user.id);
+
+    if (env.paymentProvider === "mercadopago") {
+      const preferenceClient = getMercadoPagoPreference();
+      if (!preferenceClient) {
+        throw new CheckoutError("Mercado Pago no esta configurado. Revisa MERCADOPAGO_ACCESS_TOKEN.", 503);
+      }
+      const mercadoPagoSiteUrl = getMercadoPagoSiteUrl();
+
+      let preference: Awaited<ReturnType<typeof preferenceClient.create>>;
+      try {
+        preference = await preferenceClient.create({
+          body: {
+            items: [
+              {
+                id: order.id,
+                title: `Pedido Decants CBA #${order.id.slice(0, 8)}`,
+                description: `${lines.length} producto(s), envio incluido`,
+                quantity: 1,
+                unit_price: centsToMoney(totals.totalCents),
+                currency_id: "ARS",
+              },
+            ],
+            payer: {
+              name: checkoutInput.customer.name,
+              email: checkoutInput.customer.email,
+              phone: { number: checkoutInput.customer.phone },
+            },
+            back_urls: {
+              success: `${mercadoPagoSiteUrl}/checkout/success?order=${order.id}`,
+              pending: `${mercadoPagoSiteUrl}/checkout/success?order=${order.id}&pending=1`,
+              failure: `${mercadoPagoSiteUrl}/checkout?payment=failed`,
+            },
+            auto_return: "approved",
+            external_reference: order.id,
+            metadata: { orderId: order.id, idempotencyKey: checkoutInput.idempotencyKey },
+            notification_url: `${mercadoPagoSiteUrl}/api/webhooks/mercadopago`,
+            statement_descriptor: "DECANTS CBA",
+          },
+          requestOptions: { idempotencyKey: `mercadopago-preference-${order.id}` },
+        });
+      } catch (caught) {
+        console.error("mercadopago_preference_error", caught);
+        throw new CheckoutError("Mercado Pago no esta disponible. Intenta nuevamente en unos minutos.", 502);
+      }
+
+      const checkoutUrl = preference.init_point ?? preference.sandbox_init_point;
+      if (!preference.id || !checkoutUrl) {
+        throw new CheckoutError("Mercado Pago no devolvio una URL de checkout.", 502);
+      }
+
+      await createPayment(admin, {
+        orderId: order.id,
+        provider: "mercadopago",
+        providerSessionId: preference.id,
+        totalCents: totals.totalCents,
+      });
+
+      return NextResponse.json({ url: checkoutUrl, orderId: order.id, payment: "mercadopago" });
+    }
 
     const stripe = getStripe();
     if (!stripe) {
@@ -598,6 +658,18 @@ async function findExistingOrderByIdempotencyKey(admin: NonNullable<ReturnType<t
 
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function centsToMoney(cents: number) {
+  return Math.round(cents) / 100;
+}
+
+function getMercadoPagoSiteUrl() {
+  const siteUrl = env.siteUrl.replace(/\/$/, "");
+  if (process.env.NODE_ENV === "production" && !siteUrl.startsWith("https://")) {
+    throw new CheckoutError("NEXT_PUBLIC_SITE_URL debe ser una URL HTTPS publica para usar Mercado Pago en produccion.", 503);
+  }
+  return siteUrl;
 }
 
 function isMissingRpcError(error: { code?: string; message?: string }) {

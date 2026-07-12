@@ -22,8 +22,9 @@ app/
   admin/stock/page.tsx              # Gestión de stock
   admin/envios/page.tsx             # Gestión de envíos
   admin/clientes/page.tsx           # Gestión de clientes
-  api/checkout/session/route.ts     # Crear pedido y sesión de checkout
-  api/webhooks/stripe/route.ts      # Webhook de pagos cuando el proveedor esté activo
+  api/checkout/session/route.ts     # Crear pedido y preferencia/sesión de checkout
+  api/webhooks/mercadopago/route.ts # Webhook principal de pagos Mercado Pago
+  api/webhooks/stripe/route.ts      # Webhook alternativo si Stripe se reactiva
 
 components/
   admin/                            # UI del panel admin
@@ -41,6 +42,7 @@ lib/
   checkout/                         # Validaciones y stock
   data/                             # Repositorios de lectura/escritura
   notifications/                    # Proveedor de email
+  payments/                         # Clientes y helpers de proveedores de pago
   supabase/                         # Clientes Supabase browser/server/admin
   env.ts                            # Variables de entorno centralizadas
 ```
@@ -97,10 +99,12 @@ Stock y pedidos:
 3. En `/carrito`, revisa cantidades, subtotal y envío.
 4. En `/checkout`, carga datos de contacto, teléfono y dirección.
 5. `POST /api/checkout/session` valida variantes contra Supabase, reserva stock, crea pedido e ítems.
-6. El admin ve el pedido en `/admin/pedidos`, revisa datos del cliente y puede contactarlo por WhatsApp.
-7. En `/admin/stock`, revisa umbrales bajos y registra ajustes.
-8. En `/admin/envios`, cambia estados de preparación, despacho y entrega.
-9. El cliente ve el avance en `/cuenta/pedidos/[id]`.
+6. Si `PAYMENT_PROVIDER=mercadopago`, el backend crea una preferencia de Mercado Pago Checkout Pro y devuelve la URL de pago.
+7. Mercado Pago notifica a `/api/webhooks/mercadopago`; el backend valida firma, consulta el pago por API y actualiza pedido, pago, stock/envío y email.
+8. El admin ve el pedido en `/admin/pedidos`, revisa datos del cliente y puede contactarlo por WhatsApp.
+9. En `/admin/stock`, revisa umbrales bajos y registra ajustes.
+10. En `/admin/envios`, cambia estados de preparación, despacho y entrega.
+11. El cliente ve el avance en `/cuenta/pedidos/[id]`.
 
 ## 5. Variables de entorno
 
@@ -116,6 +120,11 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 
+PAYMENT_PROVIDER=mercadopago
+MERCADOPAGO_ACCESS_TOKEN=
+NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=
+MERCADOPAGO_WEBHOOK_SECRET=
+
 EMAIL_PROVIDER=resend
 RESEND_API_KEY=
 RESEND_FROM_EMAIL=pedidos@decantscba.com
@@ -125,5 +134,7 @@ ADMIN_BOOTSTRAP_EMAILS=
 Notas:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` o `NEXT_PUBLIC_SUPABASE_ANON_KEY` se usa en cliente y server SSR.
 - `SUPABASE_SERVICE_ROLE_KEY` solo debe existir en servidor, nunca en componentes cliente.
+- `MERCADOPAGO_ACCESS_TOKEN` y `MERCADOPAGO_WEBHOOK_SECRET` solo deben existir en servidor.
+- `NEXT_PUBLIC_SITE_URL` debe ser el dominio HTTPS real en Vercel para que `back_urls` y `notification_url` funcionen correctamente.
 - Para producción en Vercel, replicar estas variables en Project Settings.
-- La integración de pagos queda como capacidad técnica, pero la activación del proveedor se realiza aparte.
+- La integración activa de pagos es Mercado Pago Checkout Pro. Stripe queda como alternativa técnica.

@@ -4,7 +4,8 @@
 
 - Next.js App Router with React and Tailwind CSS.
 - Supabase for database, auth, RLS, storage, and service-role admin access.
-- Stripe checkout/webhook code prepared.
+- Mercado Pago Checkout Pro is the primary payment provider.
+- Stripe checkout/webhook code remains available as a fallback if `PAYMENT_PROVIDER` is changed.
 - Resend email provider prepared.
 - Vercel-compatible build through `npm run build`.
 
@@ -30,7 +31,10 @@ Important: the admin panel is temporarily open without login, accounts, or roles
 ## Security Notes
 
 - `.env.example` contains placeholders only. No real keys should be committed.
-- `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, and `NOTIFICATION_WEBHOOK_SECRET` must stay server-only in Vercel environment variables.
+- `SUPABASE_SERVICE_ROLE_KEY`, `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, and `NOTIFICATION_WEBHOOK_SECRET` must stay server-only in Vercel environment variables.
+- `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` is public and can be exposed to the browser, but it is not currently required by the redirect-based Checkout Pro flow.
+- `/api/checkout/session` uses Mercado Pago when `PAYMENT_PROVIDER=mercadopago`.
+- `/api/webhooks/mercadopago` validates Mercado Pago signatures when `MERCADOPAGO_WEBHOOK_SECRET` is configured, then fetches the payment from Mercado Pago before updating orders.
 - `/api/webhooks/stripe` validates Stripe signatures with `STRIPE_WEBHOOK_SECRET`.
 - `/api/notifications/order` now requires `x-internal-secret` matching `NOTIFICATION_WEBHOOK_SECRET`.
 - `npm audit` still reports 2 moderate findings from `postcss` vendored under `next`. `next` was updated to `16.2.9`; do not run `npm audit fix --force` without reviewing the proposed major/breaking change.
@@ -62,9 +66,20 @@ Without Supabase environment variables, the app uses demo data for preview.
 4. Install command: `npm install`.
 5. Add production environment variables from `.env.example`.
 6. Configure Supabase migrations and storage bucket before accepting real orders.
-7. Configure Stripe webhook URL in Stripe once payment is enabled:
+7. Configure Mercado Pago Webhooks in the Mercado Pago developer panel:
+   - Mode: production for the live domain, test for preview/tunnel testing.
+   - URL: `https://YOUR_DOMAIN/api/webhooks/mercadopago`
+   - Event: `Pagos (legacy)` / payments.
+   - Copy the generated secret into `MERCADOPAGO_WEBHOOK_SECRET` in Vercel.
+8. Configure these required payment variables in Vercel:
+   - `PAYMENT_PROVIDER=mercadopago`
+   - `MERCADOPAGO_ACCESS_TOKEN`
+   - `MERCADOPAGO_WEBHOOK_SECRET`
+   - `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY`
+   - `NEXT_PUBLIC_SITE_URL=https://YOUR_DOMAIN`
+9. Configure Stripe webhook URL in Stripe only if Stripe is re-enabled:
    `/api/webhooks/stripe`
-8. Re-enable admin authentication before publishing `/admin` to real users.
+10. Re-enable admin authentication before publishing `/admin` to real users.
 
 ## Google Ads And Meta Ads
 
