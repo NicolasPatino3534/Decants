@@ -6,10 +6,12 @@ import { KeyRound, LogIn, Mail } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export function AuthForm({ nextPath }: { nextPath: string }) {
+type VisibleAuthMode = "login" | "signup";
+
+export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: VisibleAuthMode; nextPath: string }) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
-  const [mode, setMode] = useState<"login" | "signup" | "reset" | "update">("login");
+  const [mode, setMode] = useState<VisibleAuthMode | "reset" | "update">(initialMode);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -116,7 +118,7 @@ export function AuthForm({ nextPath }: { nextPath: string }) {
     }
 
     if (mode === "signup" && result.data.user?.identities?.length === 0) {
-      setMessage("Ese email ya tiene una cuenta. Iniciá sesión o recuperá la contraseña.");
+      setMessage("Ese email ya tiene una cuenta. Inicia sesion con tu contrasena.");
       return;
     }
 
@@ -125,44 +127,40 @@ export function AuthForm({ nextPath }: { nextPath: string }) {
       return;
     }
 
+    if (mode === "login") {
+      window.sessionStorage.setItem("decantscba-login-greeting", "1");
+    }
+
     router.push(nextPath);
     router.refresh();
   }
 
   return (
     <div className="mx-auto max-w-md rounded-md border border-line bg-white p-5">
-      <div className="grid grid-cols-3 gap-2 rounded-md bg-mist p-1">
-        <button
-          type="button"
-          onClick={() => {
-            setMode("login");
-            setMessage(null);
-          }}
-          className={`h-10 rounded-md text-sm font-bold ${mode === "login" ? "bg-white shadow-sm" : "text-neutral-600"}`}
-        >
-          Ingresar
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setMode("signup");
-            setMessage(null);
-          }}
-          className={`h-10 rounded-md text-sm font-bold ${mode === "signup" ? "bg-white shadow-sm" : "text-neutral-600"}`}
-        >
-          Crear cuenta
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setMode("reset");
-            setMessage(null);
-          }}
-          className={`h-10 rounded-md text-sm font-bold ${mode === "reset" ? "bg-white shadow-sm" : "text-neutral-600"}`}
-        >
-          Recuperar
-        </button>
-      </div>
+      {mode === "update" ? null : (
+        <div className="grid grid-cols-2 gap-2 rounded-md bg-mist p-1">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("login");
+              setMessage(null);
+            }}
+            className={`h-10 rounded-md text-sm font-bold ${mode === "login" ? "bg-white shadow-sm" : "text-neutral-600"}`}
+          >
+            Ingresar
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("signup");
+              setMessage(null);
+            }}
+            className={`h-10 rounded-md text-sm font-bold ${mode === "signup" ? "bg-white shadow-sm" : "text-neutral-600"}`}
+          >
+            Crear cuenta
+          </button>
+        </div>
+      )}
       <form action={submit} className="mt-5 space-y-4">
         {mode === "signup" ? <AuthField name="fullName" label="Nombre completo" autoComplete="name" required /> : null}
         {mode === "signup" ? <AuthField name="phone" label="Teléfono" type="tel" autoComplete="tel" required /> : null}
@@ -174,18 +172,6 @@ export function AuthForm({ nextPath }: { nextPath: string }) {
           {mode === "reset" ? <Mail size={17} /> : mode === "signup" ? <KeyRound size={17} /> : <LogIn size={17} />}
           {loading ? "Procesando..." : mode === "login" ? "Ingresar" : mode === "signup" ? "Crear cuenta" : mode === "update" ? "Actualizar contraseña" : "Enviar recuperación"}
         </Button>
-        {mode === "login" ? (
-          <button
-            type="button"
-            onClick={() => {
-              setMode("reset");
-              setMessage(null);
-            }}
-            className="w-full text-sm font-bold text-[#6f5a2e] underline-offset-4 hover:underline"
-          >
-            Olvidé mi contraseña
-          </button>
-        ) : null}
       </form>
     </div>
   );

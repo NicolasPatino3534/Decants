@@ -1,24 +1,33 @@
 export const env = {
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  siteUrl: readEnv("NEXT_PUBLIC_SITE_URL", "http://localhost:3000"),
+  supabaseUrl: optionalEnv("NEXT_PUBLIC_SUPABASE_URL"),
   supabasePublishableKey:
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  stripeSecretKey: process.env.STRIPE_SECRET_KEY,
-  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-  stripePublishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-  mercadoPagoAccessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
-  mercadoPagoPublicKey: process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY,
-  mercadoPagoWebhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET,
-  paymentProvider: process.env.PAYMENT_PROVIDER ?? "mercadopago",
-  resendApiKey: process.env.RESEND_API_KEY,
-  resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "pedidos@decantscba.com",
-  notificationWebhookSecret: process.env.NOTIFICATION_WEBHOOK_SECRET,
-  adminBootstrapEmails: (process.env.ADMIN_BOOTSTRAP_EMAILS ?? "")
+    optionalEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") ?? optionalEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+  supabaseServiceRoleKey: optionalEnv("SUPABASE_SERVICE_ROLE_KEY"),
+  stripeSecretKey: optionalEnv("STRIPE_SECRET_KEY"),
+  stripeWebhookSecret: optionalEnv("STRIPE_WEBHOOK_SECRET"),
+  stripePublishableKey: optionalEnv("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"),
+  mercadoPagoAccessToken: optionalEnv("MERCADOPAGO_ACCESS_TOKEN"),
+  mercadoPagoPublicKey: optionalEnv("NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY"),
+  mercadoPagoWebhookSecret: optionalEnv("MERCADOPAGO_WEBHOOK_SECRET"),
+  paymentProvider: readEnv("PAYMENT_PROVIDER", "mercadopago"),
+  resendApiKey: optionalEnv("RESEND_API_KEY"),
+  resendFromEmail: readEnv("RESEND_FROM_EMAIL", "pedidos@decantscba.com"),
+  notificationWebhookSecret: optionalEnv("NOTIFICATION_WEBHOOK_SECRET"),
+  adminBootstrapEmails: (optionalEnv("ADMIN_BOOTSTRAP_EMAILS") ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean),
 };
+
+function optionalEnv(key: string) {
+  const value = process.env[key]?.trim();
+  return value || undefined;
+}
+
+function readEnv(key: string, fallback: string) {
+  return optionalEnv(key) ?? fallback;
+}
 
 export function hasSupabaseConfig() {
   return Boolean(env.supabaseUrl && env.supabasePublishableKey);

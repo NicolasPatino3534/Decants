@@ -1,9 +1,10 @@
 import { AuthForm } from "@/components/auth/auth-form";
 import { brand } from "@/lib/brand";
 
-export default async function AuthPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+export default async function AuthPage({ searchParams }: { searchParams: Promise<{ mode?: string; next?: string }> }) {
   const params = await searchParams;
   const nextPath = params.next?.startsWith("/") ? params.next : "/cuenta";
+  const initialMode = params.mode === "signup" ? "signup" : "login";
 
   return (
     <main className="mx-auto min-h-[70vh] max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
@@ -12,7 +13,7 @@ export default async function AuthPage({ searchParams }: { searchParams: Promise
         <p className="mt-3 text-neutral-600">Accedé a pedidos, tracking y datos guardados para comprar más rápido.</p>
       </div>
       <div className="mt-8">
-        <AuthForm nextPath={nextPath} />
+        <AuthForm initialMode={initialMode} nextPath={nextPath} />
       </div>
     </main>
   );

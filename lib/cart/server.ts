@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { clampCartQuantity } from "@/lib/cart/pricing";
 import type { CartLine } from "@/lib/types";
 
-type CartItemInput = {
+export type CartItemInput = {
   variantId: string;
   quantity: number;
 };
@@ -46,11 +46,24 @@ export async function buildCartLinesFromItems(supabase: SupabaseClient, items: C
   const normalizedItems = normalizeCartItems(items);
   if (normalizedItems.length === 0) return [] as CartLine[];
 
-  const legacy = await buildLegacyCartLines(supabase, normalizedItems);
-  if (legacy.length === normalizedItems.length) return legacy;
+  const [legacy, modern] = await Promise.all([
+    buildLegacyCartLines(supabase, normalizedItems),
+    buildProductVariantCartLines(supabase, normalizedItems),
+  ]);
 
-  const modern = await buildProductVariantCartLines(supabase, normalizedItems);
-  return modern.length > 0 ? modern : legacy;
+  return selectCartLinesForItems(normalizedItems, [...legacy, ...modern]);
+}
+
+export function selectCartLinesForItems(items: CartItemInput[], lines: CartLine[]) {
+  const byVariant = new Map<string, CartLine>();
+  lines.forEach((line) => {
+    byVariant.set(line.variantId, line);
+  });
+
+  return normalizeCartItems(items).flatMap((item) => {
+    const line = byVariant.get(item.variantId);
+    return line ? [line] : [];
+  });
 }
 
 export async function getPersistedCartLines(supabase: SupabaseClient, userId: string) {

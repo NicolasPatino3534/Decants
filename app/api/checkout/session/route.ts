@@ -3,7 +3,7 @@ import { calculateCartTotals } from "@/lib/cart/pricing";
 import { clearPersistedCart } from "@/lib/cart/server";
 import { checkoutSchema, type CheckoutInput } from "@/lib/checkout/schema";
 import { resolveCouponDiscount, resolveShippingMethod } from "@/lib/checkout/options";
-import { buildCheckoutLines, CheckoutStockError, normalizeCheckoutItems } from "@/lib/checkout/stock";
+import { buildCheckoutLines, CheckoutStockError, normalizeCheckoutItems, selectCheckoutVariantsForItems } from "@/lib/checkout/stock";
 import { env } from "@/lib/env";
 import { getMercadoPagoPreference } from "@/lib/payments/mercadopago";
 import { getStripe } from "@/lib/payments/stripe";
@@ -102,6 +102,7 @@ export async function POST(request: Request) {
     lines = buildCheckoutLines(items, variants);
   } catch (caught) {
     if (caught instanceof CheckoutStockError) {
+      logCheckoutStockValidationFailure(caught, items, variants);
       return NextResponse.json({ error: caught.message }, { status: caught.status });
     }
     console.error("checkout_stock_validation_error", caught);
@@ -296,50 +297,74 @@ export async function POST(request: Request) {
   }
 }
 
+function logCheckoutStockValidationFailure(
+  error: CheckoutStockError,
+  items: Array<{ variantId: string; quantity: number }>,
+  variants: CheckoutVariant[],
+) {
+  const resolvedVariantIds = new Set(variants.map((variant) => variant.id));
+  console.warn("checkout_stock_validation_failed", {
+    itemCount: items.length,
+    resolvedVariantCount: variants.length,
+    missingVariantCount: items.filter((item) => !resolvedVariantIds.has(item.variantId)).length,
+    message: error.message,
+  });
+}
+
 async function fetchCheckoutVariants(admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>, variantIds: string[]): Promise<CheckoutVariant[]> {
-  const legacy = await admin
-    .from("decant_variants")
-    .select("id,size_ml,sku,price_cents,stock_on_hand,is_active,products ( id, name, slug, brands ( name ) )")
-    .in("id", variantIds)
-    .eq("is_active", true);
+  if (variantIds.length === 0) return [];
 
-  if (!legacy.error && legacy.data && legacy.data.length > 0) {
-    return (legacy.data as unknown as LegacyVariantRow[]).map((variant) => ({
-      id: variant.id,
-      productId: variant.products?.id ?? "",
-      productName: variant.products?.name ?? "Decant",
-      productSlug: variant.products?.slug ?? "",
-      brandName: variant.products?.brands?.name ?? null,
-      sizeMl: Number(variant.size_ml),
-      sku: variant.sku,
-      priceCents: variant.price_cents,
-      stockOnHand: variant.stock_on_hand,
-      table: "decant_variants" as const,
-      stockColumn: "stock_on_hand" as const,
-    }));
-  }
+  const [legacy, modern] = await Promise.all([
+    admin
+      .from("decant_variants")
+      .select("id,size_ml,sku,price_cents,stock_on_hand,is_active,products ( id, name, slug, brands ( name ) )")
+      .in("id", variantIds)
+      .eq("is_active", true),
+    admin
+      .from("product_variants")
+      .select("id,size_ml,sku,price_cents,stock,active,products ( id, name, slug, perfume_brands ( name ) )")
+      .in("id", variantIds)
+      .eq("active", true),
+  ]);
 
-  const modern = await admin
-    .from("product_variants")
-    .select("id,size_ml,sku,price_cents,stock,active,products ( id, name, slug, perfume_brands ( name ) )")
-    .in("id", variantIds)
-    .eq("active", true);
+  const legacyVariants =
+    !legacy.error && legacy.data
+      ? (legacy.data as unknown as LegacyVariantRow[]).map((variant) => ({
+          id: variant.id,
+          productId: variant.products?.id ?? "",
+          productName: variant.products?.name ?? "Decant",
+          productSlug: variant.products?.slug ?? "",
+          brandName: variant.products?.brands?.name ?? null,
+          sizeMl: Number(variant.size_ml),
+          sku: variant.sku,
+          priceCents: variant.price_cents,
+          stockOnHand: variant.stock_on_hand,
+          table: "decant_variants" as const,
+          stockColumn: "stock_on_hand" as const,
+        }))
+      : [];
 
-  if (modern.error || !modern.data) return [];
+  const modernVariants =
+    !modern.error && modern.data
+      ? (modern.data as unknown as ProductVariantRow[]).map((variant) => ({
+          id: variant.id,
+          productId: variant.products?.id ?? "",
+          productName: variant.products?.name ?? "Decant",
+          productSlug: variant.products?.slug ?? "",
+          brandName: variant.products?.perfume_brands?.name ?? null,
+          sizeMl: Number(variant.size_ml),
+          sku: variant.sku,
+          priceCents: variant.price_cents,
+          stockOnHand: variant.stock,
+          table: "product_variants" as const,
+          stockColumn: "stock" as const,
+        }))
+      : [];
 
-  return (modern.data as unknown as ProductVariantRow[]).map((variant) => ({
-    id: variant.id,
-    productId: variant.products?.id ?? "",
-    productName: variant.products?.name ?? "Decant",
-    productSlug: variant.products?.slug ?? "",
-    brandName: variant.products?.perfume_brands?.name ?? null,
-    sizeMl: Number(variant.size_ml),
-    sku: variant.sku,
-    priceCents: variant.price_cents,
-    stockOnHand: variant.stock,
-    table: "product_variants" as const,
-    stockColumn: "stock" as const,
-  }));
+  return selectCheckoutVariantsForItems(
+    variantIds.map((variantId) => ({ variantId, quantity: 1 })),
+    [...legacyVariants, ...modernVariants],
+  );
 }
 
 async function reserveStock(

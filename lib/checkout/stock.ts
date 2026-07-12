@@ -27,6 +27,18 @@ export function normalizeCheckoutItems(items: CheckoutItemInput[]) {
   return Array.from(byVariant.entries()).map(([variantId, quantity]) => ({ variantId, quantity }));
 }
 
+export function selectCheckoutVariantsForItems<TVariant extends CheckoutStockVariant>(
+  items: CheckoutItemInput[],
+  variants: TVariant[],
+) {
+  const variantMap = new Map(variants.map((variant) => [variant.id, variant]));
+
+  return normalizeCheckoutItems(items).flatMap((item) => {
+    const variant = variantMap.get(item.variantId);
+    return variant ? [variant] : [];
+  });
+}
+
 export function buildCheckoutLines<TVariant extends CheckoutStockVariant>(
   items: CheckoutItemInput[],
   variants: TVariant[],
