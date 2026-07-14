@@ -15,7 +15,12 @@ export function StatusBadge({
   tone?: keyof typeof toneClass;
 }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold ring-1", toneClass[tone])}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold ring-1",
+        toneClass[tone],
+      )}
+    >
       {children}
     </span>
   );

@@ -9,18 +9,26 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  const supabase = createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+  const supabase = createServerClient(
+    env.supabaseUrl,
+    env.supabasePublishableKey,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
       },
     },
-  });
+  );
 
   const {
     data: { user },
@@ -39,7 +47,9 @@ export async function updateSession(request: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const hasAdminRole = hasAdminClaim(getJwtAppMetadata(session?.access_token)) || hasAdminClaim(user.app_metadata) || isBootstrapAdmin(user.email);
+    const hasAdminRole =
+      hasPrivilegedClaim(getJwtAppMetadata(session?.access_token)) ||
+      hasPrivilegedClaim(user.app_metadata);
 
     if (!hasAdminRole) {
       return NextResponse.redirect(redirectUrl);
@@ -49,21 +59,25 @@ export async function updateSession(request: NextRequest) {
   return response;
 }
 
-function hasAdminClaim(appMetadata?: Record<string, unknown> | null) {
+function hasPrivilegedClaim(appMetadata?: Record<string, unknown> | null) {
   if (!appMetadata) return false;
 
   const role = appMetadata.role ?? appMetadata.app_role;
-  if (role === "admin") return true;
+  if (isPrivilegedRole(role)) return true;
 
   const roles = appMetadata.roles;
-  if (Array.isArray(roles)) return roles.includes("admin");
-  if (typeof roles === "string") return roles.split(",").map((item) => item.trim()).includes("admin");
+  if (Array.isArray(roles)) return roles.some(isPrivilegedRole);
+  if (typeof roles === "string")
+    return roles
+      .split(",")
+      .map((item) => item.trim())
+      .some(isPrivilegedRole);
 
   return false;
 }
 
-function isBootstrapAdmin(email?: string) {
-  return Boolean(email && env.adminBootstrapEmails.includes(email.toLowerCase()));
+function isPrivilegedRole(value: unknown) {
+  return value === "owner" || value === "admin" || value === "staff";
 }
 
 function getJwtAppMetadata(accessToken?: string) {
@@ -72,8 +86,13 @@ function getJwtAppMetadata(accessToken?: string) {
 
   try {
     const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
-    const claims = JSON.parse(atob(padded)) as { app_metadata?: Record<string, unknown> };
+    const padded = base64.padEnd(
+      base64.length + ((4 - (base64.length % 4)) % 4),
+      "=",
+    );
+    const claims = JSON.parse(atob(padded)) as {
+      app_metadata?: Record<string, unknown>;
+    };
     return claims.app_metadata ?? null;
   } catch {
     return null;

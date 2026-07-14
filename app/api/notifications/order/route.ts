@@ -14,7 +14,10 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   if (!env.notificationWebhookSecret) {
-    return NextResponse.json({ error: "Endpoint de notificaciones no configurado." }, { status: 503 });
+    return NextResponse.json(
+      { error: "Endpoint de notificaciones no configurado." },
+      { status: 503 },
+    );
   }
 
   const secret = request.headers.get("x-internal-secret");

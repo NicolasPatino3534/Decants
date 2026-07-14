@@ -92,7 +92,9 @@ type LegacyAdminProductRow = {
   }> | null;
 };
 
-type LegacyAdminVariantRow = NonNullable<LegacyAdminProductRow["decant_variants"]>[number];
+type LegacyAdminVariantRow = NonNullable<
+  LegacyAdminProductRow["decant_variants"]
+>[number];
 
 type AdminOrderRow = {
   id: string;
@@ -182,34 +184,54 @@ export async function getAdminCatalog() {
     .order("created_at", { ascending: false });
 
   if (error || !data) return demoProducts;
-  return (data as unknown as LegacyAdminProductRow[]).map(mapLegacyAdminProduct);
+  return (data as unknown as LegacyAdminProductRow[]).map(
+    mapLegacyAdminProduct,
+  );
 }
 
 export async function getAdminProductById(id: string) {
   const products = await getAdminCatalog();
-  return products.find((product) => product.id === id || product.slug === id) ?? null;
+  return (
+    products.find((product) => product.id === id || product.slug === id) ?? null
+  );
 }
 
 export async function getAdminBrands() {
   const admin = createSupabaseAdminClient();
   if (!admin) return uniqueDemoBrands();
 
-  const { data, error } = await admin.from("brands").select("id,name,slug,country").order("name");
+  const { data, error } = await admin
+    .from("brands")
+    .select("id,name,slug,country")
+    .order("name");
   if (!error && data) return data as AdminBrand[];
 
-  const fallback = await admin.from("perfume_brands").select("id,name,slug,country").order("name");
-  return !fallback.error && fallback.data ? (fallback.data as AdminBrand[]) : uniqueDemoBrands();
+  const fallback = await admin
+    .from("perfume_brands")
+    .select("id,name,slug,country")
+    .order("name");
+  return !fallback.error && fallback.data
+    ? (fallback.data as AdminBrand[])
+    : uniqueDemoBrands();
 }
 
 export async function getAdminCategories() {
   const admin = createSupabaseAdminClient();
   if (!admin) return uniqueDemoCategories();
 
-  const { data, error } = await admin.from("fragrance_families").select("id,name,slug").order("name");
+  const { data, error } = await admin
+    .from("fragrance_families")
+    .select("id,name,slug")
+    .order("name");
   if (!error && data) return data as AdminCategory[];
 
-  const fallback = await admin.from("categories").select("id,name,slug,description").order("name");
-  return !fallback.error && fallback.data ? (fallback.data as AdminCategory[]) : uniqueDemoCategories();
+  const fallback = await admin
+    .from("categories")
+    .select("id,name,slug,description")
+    .order("name");
+  return !fallback.error && fallback.data
+    ? (fallback.data as AdminCategory[])
+    : uniqueDemoCategories();
 }
 
 export async function getAdminOrdersDetailed() {
@@ -230,18 +252,27 @@ export async function getAdminOrdersDetailed() {
       shippingAddress: {},
       notes: null,
       createdAt: order.createdAt,
-      items: order.items.map((item) => ({ ...item, totalCents: item.quantity * item.unitPriceCents })),
+      items: order.items.map((item) => ({
+        ...item,
+        totalCents: item.quantity * item.unitPriceCents,
+      })),
     }));
   }
 
-  const { data, error } = await admin.from("orders").select(orderSelect).order("created_at", { ascending: false }).limit(100);
+  const { data, error } = await admin
+    .from("orders")
+    .select(orderSelect)
+    .order("created_at", { ascending: false })
+    .limit(100);
   if (error || !data) return [];
   return (data as unknown as AdminOrderRow[]).map(mapAdminOrder);
 }
 
 export async function getAdminOrderById(id: string) {
   const orders = await getAdminOrdersDetailed();
-  return orders.find((order) => order.id === id || order.orderNumber === id) ?? null;
+  return (
+    orders.find((order) => order.id === id || order.orderNumber === id) ?? null
+  );
 }
 
 export async function getInventoryMovements(limit = 80) {
@@ -250,7 +281,9 @@ export async function getInventoryMovements(limit = 80) {
 
   const { data, error } = await admin
     .from("inventory_movements")
-    .select("id,quantity,reason,note,created_at,decant_variants ( sku, size_ml, products ( name ) )")
+    .select(
+      "id,quantity,reason,note,created_at,decant_variants ( sku, size_ml, products ( name ) )",
+    )
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -268,9 +301,19 @@ export async function getInventoryMovements(limit = 80) {
 }
 
 export async function getAdminDashboard() {
-  const [orders, products] = await Promise.all([getAdminOrdersDetailed(), getAdminCatalog()]);
-  const revenue = orders.filter((order) => order.paymentStatus === "paid").reduce((sum, order) => sum + order.totalCents, 0);
-  const pendingOrders = orders.filter((order) => order.status === "pending" || order.status === "pending_payment" || order.status === "payment_review").length;
+  const [orders, products] = await Promise.all([
+    getAdminOrdersDetailed(),
+    getAdminCatalog(),
+  ]);
+  const revenue = orders
+    .filter((order) => order.paymentStatus === "paid")
+    .reduce((sum, order) => sum + order.totalCents, 0);
+  const pendingOrders = orders.filter(
+    (order) =>
+      order.status === "pending" ||
+      order.status === "pending_payment" ||
+      order.status === "payment_review",
+  ).length;
   const lowStock = products.flatMap((product) =>
     product.variants
       .filter((variant) => variant.stockOnHand <= variant.lowStockThreshold)
@@ -281,12 +324,20 @@ export async function getAdminDashboard() {
 }
 
 function mapLegacyAdminProduct(row: LegacyAdminProductRow): Product {
-  const category = row.fragrance_families ?? { id: "unknown", name: "Sin categoria", slug: "sin-categoria" };
+  const category = row.fragrance_families ?? {
+    id: "unknown",
+    name: "Sin categoria",
+    slug: "sin-categoria",
+  };
   return {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    brand: row.brands ?? { id: "unknown", name: "Sin marca", slug: "sin-marca" },
+    brand: row.brands ?? {
+      id: "unknown",
+      name: "Sin marca",
+      slug: "sin-marca",
+    },
     category,
     family: category,
     concentration: row.concentration,
@@ -301,8 +352,14 @@ function mapLegacyAdminProduct(row: LegacyAdminProductRow): Product {
     recommendedSeason: row.recommended_season,
     status: row.status,
     featured: row.status === "active",
-    imageUrl: [...(row.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.storage_path ?? "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png",
-    variants: (row.decant_variants ?? []).map(mapVariant).sort((a, b) => a.sizeMl - b.sizeMl),
+    imageUrl:
+      [...(row.product_images ?? [])].sort(
+        (a, b) => a.sort_order - b.sort_order,
+      )[0]?.storage_path ??
+      "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png",
+    variants: (row.decant_variants ?? [])
+      .map(mapVariant)
+      .sort((a, b) => a.sizeMl - b.sizeMl),
   };
 }
 
@@ -337,7 +394,8 @@ function mapAdminOrder(row: AdminOrderRow): AdminOrder {
     items: row.order_items.map((item) => ({
       id: item.id,
       productName: item.product_name,
-      variantLabel: item.variant_label ?? `${Number(item.variant_size_ml ?? 0)}ml`,
+      variantLabel:
+        item.variant_label ?? `${Number(item.variant_size_ml ?? 0)}ml`,
       quantity: item.quantity,
       unitPriceCents: item.unit_price_cents,
       totalCents: item.total_cents,
@@ -346,9 +404,17 @@ function mapAdminOrder(row: AdminOrderRow): AdminOrder {
 }
 
 function uniqueDemoBrands() {
-  return Array.from(new Map(demoProducts.map((product) => [product.brand.id, product.brand])).values());
+  return Array.from(
+    new Map(
+      demoProducts.map((product) => [product.brand.id, product.brand]),
+    ).values(),
+  );
 }
 
 function uniqueDemoCategories() {
-  return Array.from(new Map(demoProducts.map((product) => [product.category.id, product.category])).values());
+  return Array.from(
+    new Map(
+      demoProducts.map((product) => [product.category.id, product.category]),
+    ).values(),
+  );
 }

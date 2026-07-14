@@ -14,6 +14,8 @@ export type CurrentProfile = {
 
 export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   if (!hasSupabaseConfig()) {
+    if (process.env.NODE_ENV === "production") return null;
+
     return {
       id: "demo-owner",
       email: "owner@decantscba.local",
@@ -33,13 +35,20 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   if (!user) return null;
 
   const [{ data: profile }, { data: roles }] = await Promise.all([
-    supabase.from("profiles").select("id,email,full_name,phone,role").eq("id", user.id).single(),
+    supabase
+      .from("profiles")
+      .select("id,email,full_name,phone,role")
+      .eq("id", user.id)
+      .single(),
     supabase.from("user_roles").select("role").eq("user_id", user.id),
   ]);
 
-  const profileRole = "role" in (profile ?? {}) ? (profile?.role as AppRole | null) : null;
+  const profileRole =
+    "role" in (profile ?? {}) ? (profile?.role as AppRole | null) : null;
   const roleList = roles?.map((row) => row.role as AppRole) ?? [];
-  const mergedRoles = Array.from(new Set([profileRole, ...roleList].filter(Boolean))) as AppRole[];
+  const mergedRoles = Array.from(
+    new Set([profileRole, ...roleList].filter(Boolean)),
+  ) as AppRole[];
 
   return {
     id: user.id,
@@ -51,7 +60,9 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
 }
 
 export function canAccessAdmin(roles: AppRole[]) {
-  return roles.some((role) => role === "owner" || role === "admin" || role === "staff");
+  return roles.some(
+    (role) => role === "owner" || role === "admin" || role === "staff",
+  );
 }
 
 export async function requireAdmin() {

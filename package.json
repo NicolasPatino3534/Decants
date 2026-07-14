@@ -2,10 +2,16 @@
   "name": "decants-cba",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
+  "packageManager": "npm@10.9.3",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "format": "prettier --write --ignore-unknown .",
+    "format:check": "prettier --check --ignore-unknown .",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -32,6 +38,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
     "@playwright/test": "1.61.1",
     "@tailwindcss/postcss": "4.3.0",
     "@types/node": "25.9.1",
@@ -40,8 +47,9 @@
     "autoprefixer": "10.5.0",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.7",
-    "playwright-core": "1.60.0",
+    "playwright-core": "1.61.1",
     "postcss": "8.5.15",
+    "prettier": "3.9.5",
     "supabase": "2.105.0",
     "tailwindcss": "4.3.0",
     "typescript": "6.0.3",

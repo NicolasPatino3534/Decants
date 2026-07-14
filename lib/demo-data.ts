@@ -1,7 +1,8 @@
 import type { Order, Product } from "@/lib/types";
 import { catalogProducts } from "@/lib/catalog-data";
 
-const hero = "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
+const hero =
+  "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
 
 const fallbackProducts: Product[] = [
   {
@@ -9,8 +10,16 @@ const fallbackProducts: Product[] = [
     name: "Citrus Woods",
     slug: "citrus-woods",
     brand: { id: "brand_decantscba", name: "DecantsCBA", slug: "decantscba" },
-    category: { id: "fam_woody", name: "Amaderada + Cítrica", slug: "amaderada-citrica" },
-    family: { id: "fam_woody", name: "Amaderada + Cítrica", slug: "amaderada-citrica" },
+    category: {
+      id: "fam_woody",
+      name: "Amaderada + Cítrica",
+      slug: "amaderada-citrica",
+    },
+    family: {
+      id: "fam_woody",
+      name: "Amaderada + Cítrica",
+      slug: "amaderada-citrica",
+    },
     concentration: "Eau de Parfum",
     description:
       "Una salida luminosa de bergamota y lima sobre maderas secas. Ideal para probar un perfil fresco con presencia.",
@@ -22,9 +31,33 @@ const fallbackProducts: Product[] = [
     featured: true,
     imageUrl: hero,
     variants: [
-      { id: "var_cw_2", sizeMl: 2, priceCents: 1600000, stockOnHand: 18, lowStockThreshold: 6, sku: "CW-2ML", active: true },
-      { id: "var_cw_5", sizeMl: 5, priceCents: 2400000, stockOnHand: 7, lowStockThreshold: 6, sku: "CW-5ML", active: true },
-      { id: "var_cw_10", sizeMl: 10, priceCents: 3200000, stockOnHand: 5, lowStockThreshold: 4, sku: "CW-10ML", active: true },
+      {
+        id: "var_cw_2",
+        sizeMl: 2,
+        priceCents: 1600000,
+        stockOnHand: 18,
+        lowStockThreshold: 6,
+        sku: "CW-2ML",
+        active: true,
+      },
+      {
+        id: "var_cw_5",
+        sizeMl: 5,
+        priceCents: 2400000,
+        stockOnHand: 7,
+        lowStockThreshold: 6,
+        sku: "CW-5ML",
+        active: true,
+      },
+      {
+        id: "var_cw_10",
+        sizeMl: 10,
+        priceCents: 3200000,
+        stockOnHand: 5,
+        lowStockThreshold: 4,
+        sku: "CW-10ML",
+        active: true,
+      },
     ],
   },
   {
@@ -32,8 +65,16 @@ const fallbackProducts: Product[] = [
     name: "Amber Spice",
     slug: "amber-spice",
     brand: { id: "brand_decantscba", name: "DecantsCBA", slug: "decantscba" },
-    category: { id: "fam_amber", name: "Ámbar + Especiada", slug: "ambar-especiada" },
-    family: { id: "fam_amber", name: "Ámbar + Especiada", slug: "ambar-especiada" },
+    category: {
+      id: "fam_amber",
+      name: "Ámbar + Especiada",
+      slug: "ambar-especiada",
+    },
+    family: {
+      id: "fam_amber",
+      name: "Ámbar + Especiada",
+      slug: "ambar-especiada",
+    },
     concentration: "Eau de Parfum",
     description:
       "Ámbar resinoso, canela y maderas cremosas. Un decant pensado para noches frías y salidas elegantes.",
@@ -45,9 +86,33 @@ const fallbackProducts: Product[] = [
     featured: true,
     imageUrl: hero,
     variants: [
-      { id: "var_as_2", sizeMl: 2, priceCents: 1700000, stockOnHand: 15, lowStockThreshold: 5, sku: "AS-2ML", active: true },
-      { id: "var_as_5", sizeMl: 5, priceCents: 2550000, stockOnHand: 4, lowStockThreshold: 6, sku: "AS-5ML", active: true },
-      { id: "var_as_10", sizeMl: 10, priceCents: 3400000, stockOnHand: 8, lowStockThreshold: 4, sku: "AS-10ML", active: true },
+      {
+        id: "var_as_2",
+        sizeMl: 2,
+        priceCents: 1700000,
+        stockOnHand: 15,
+        lowStockThreshold: 5,
+        sku: "AS-2ML",
+        active: true,
+      },
+      {
+        id: "var_as_5",
+        sizeMl: 5,
+        priceCents: 2550000,
+        stockOnHand: 4,
+        lowStockThreshold: 6,
+        sku: "AS-5ML",
+        active: true,
+      },
+      {
+        id: "var_as_10",
+        sizeMl: 10,
+        priceCents: 3400000,
+        stockOnHand: 8,
+        lowStockThreshold: 4,
+        sku: "AS-10ML",
+        active: true,
+      },
     ],
   },
   {
@@ -55,8 +120,16 @@ const fallbackProducts: Product[] = [
     name: "Fleur Blanche",
     slug: "fleur-blanche",
     brand: { id: "brand_maison", name: "Maison Nube", slug: "maison-nube" },
-    category: { id: "fam_floral", name: "Floral + Almizclada", slug: "floral-almizclada" },
-    family: { id: "fam_floral", name: "Floral + Almizclada", slug: "floral-almizclada" },
+    category: {
+      id: "fam_floral",
+      name: "Floral + Almizclada",
+      slug: "floral-almizclada",
+    },
+    family: {
+      id: "fam_floral",
+      name: "Floral + Almizclada",
+      slug: "floral-almizclada",
+    },
     concentration: "Eau de Parfum",
     description:
       "Flor blanca transparente, musk limpio y un fondo suave. Para descubrir una firma pulida y diaria.",
@@ -68,9 +141,33 @@ const fallbackProducts: Product[] = [
     featured: true,
     imageUrl: hero,
     variants: [
-      { id: "var_fb_2", sizeMl: 2, priceCents: 1600000, stockOnHand: 14, lowStockThreshold: 5, sku: "FB-2ML", active: true },
-      { id: "var_fb_5", sizeMl: 5, priceCents: 2400000, stockOnHand: 6, lowStockThreshold: 6, sku: "FB-5ML", active: true },
-      { id: "var_fb_10", sizeMl: 10, priceCents: 3200000, stockOnHand: 9, lowStockThreshold: 4, sku: "FB-10ML", active: true },
+      {
+        id: "var_fb_2",
+        sizeMl: 2,
+        priceCents: 1600000,
+        stockOnHand: 14,
+        lowStockThreshold: 5,
+        sku: "FB-2ML",
+        active: true,
+      },
+      {
+        id: "var_fb_5",
+        sizeMl: 5,
+        priceCents: 2400000,
+        stockOnHand: 6,
+        lowStockThreshold: 6,
+        sku: "FB-5ML",
+        active: true,
+      },
+      {
+        id: "var_fb_10",
+        sizeMl: 10,
+        priceCents: 3200000,
+        stockOnHand: 9,
+        lowStockThreshold: 4,
+        sku: "FB-10ML",
+        active: true,
+      },
     ],
   },
   {
@@ -91,14 +188,39 @@ const fallbackProducts: Product[] = [
     featured: false,
     imageUrl: hero,
     variants: [
-      { id: "var_on_2", sizeMl: 2, priceCents: 2100000, stockOnHand: 10, lowStockThreshold: 5, sku: "ON-2ML", active: true },
-      { id: "var_on_5", sizeMl: 5, priceCents: 3150000, stockOnHand: 3, lowStockThreshold: 6, sku: "ON-5ML", active: true },
-      { id: "var_on_10", sizeMl: 10, priceCents: 4200000, stockOnHand: 2, lowStockThreshold: 4, sku: "ON-10ML", active: true },
+      {
+        id: "var_on_2",
+        sizeMl: 2,
+        priceCents: 2100000,
+        stockOnHand: 10,
+        lowStockThreshold: 5,
+        sku: "ON-2ML",
+        active: true,
+      },
+      {
+        id: "var_on_5",
+        sizeMl: 5,
+        priceCents: 3150000,
+        stockOnHand: 3,
+        lowStockThreshold: 6,
+        sku: "ON-5ML",
+        active: true,
+      },
+      {
+        id: "var_on_10",
+        sizeMl: 10,
+        priceCents: 4200000,
+        stockOnHand: 2,
+        lowStockThreshold: 4,
+        sku: "ON-10ML",
+        active: true,
+      },
     ],
   },
 ];
 
-export const demoProducts: Product[] = catalogProducts.length > 0 ? catalogProducts : fallbackProducts;
+export const demoProducts: Product[] =
+  catalogProducts.length > 0 ? catalogProducts : fallbackProducts;
 
 export const demoOrders: Order[] = [
   {
@@ -112,7 +234,13 @@ export const demoOrders: Order[] = [
     totalCents: 3200000,
     createdAt: "2026-06-01T11:23:00.000Z",
     items: [
-      { id: "oi_1", productName: "Citrus Woods", variantLabel: "10ml", quantity: 1, unitPriceCents: 3200000 },
+      {
+        id: "oi_1",
+        productName: "Citrus Woods",
+        variantLabel: "10ml",
+        quantity: 1,
+        unitPriceCents: 3200000,
+      },
     ],
   },
   {
@@ -126,8 +254,20 @@ export const demoOrders: Order[] = [
     totalCents: 4800000,
     createdAt: "2026-06-01T10:02:00.000Z",
     items: [
-      { id: "oi_2", productName: "Amber Spice", variantLabel: "5ml", quantity: 1, unitPriceCents: 2550000 },
-      { id: "oi_3", productName: "Fleur Blanche", variantLabel: "5ml", quantity: 1, unitPriceCents: 2400000 },
+      {
+        id: "oi_2",
+        productName: "Amber Spice",
+        variantLabel: "5ml",
+        quantity: 1,
+        unitPriceCents: 2550000,
+      },
+      {
+        id: "oi_3",
+        productName: "Fleur Blanche",
+        variantLabel: "5ml",
+        quantity: 1,
+        unitPriceCents: 2400000,
+      },
     ],
   },
   {
@@ -141,7 +281,13 @@ export const demoOrders: Order[] = [
     totalCents: 1600000,
     createdAt: "2026-05-31T21:15:00.000Z",
     items: [
-      { id: "oi_4", productName: "Fleur Blanche", variantLabel: "2ml", quantity: 1, unitPriceCents: 1600000 },
+      {
+        id: "oi_4",
+        productName: "Fleur Blanche",
+        variantLabel: "2ml",
+        quantity: 1,
+        unitPriceCents: 1600000,
+      },
     ],
   },
 ];

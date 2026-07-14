@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { buildCartLinesFromItems, clearPersistedCart, getPersistedCartLines, replacePersistedCart } from "@/lib/cart/server";
+import {
+  buildCartLinesFromItems,
+  clearPersistedCart,
+  getPersistedCartLines,
+  replacePersistedCart,
+} from "@/lib/cart/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -37,25 +42,44 @@ export async function PUT(request: Request) {
   }
 
   const supabase = await createSupabaseServerClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase no está configurado." }, { status: 503 });
+  if (!supabase)
+    return NextResponse.json(
+      { error: "Supabase no está configurado." },
+      { status: 503 },
+    );
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const catalogSupabase = createSupabaseAdminClient() ?? supabase;
-  const lines = await buildCartLinesFromItems(catalogSupabase, parsed.data.items);
+  const lines = await buildCartLinesFromItems(
+    catalogSupabase,
+    parsed.data.items,
+  );
   if (!user) return NextResponse.json({ lines, authenticated: false });
 
-  const result = await replacePersistedCart(supabase, user.id, lines, catalogSupabase);
+  const result = await replacePersistedCart(
+    supabase,
+    user.id,
+    lines,
+    catalogSupabase,
+  );
   if (!result.ok) {
     return NextResponse.json(
-      { lines, authenticated: true, warning: "No se pudo sincronizar el carrito en Supabase." },
+      {
+        lines,
+        authenticated: true,
+        warning: "No se pudo sincronizar el carrito en Supabase.",
+      },
       { status: 202 },
     );
   }
 
-  return NextResponse.json({ lines: result.lines ?? lines, authenticated: true });
+  return NextResponse.json({
+    lines: result.lines ?? lines,
+    authenticated: true,
+  });
 }
 
 export async function DELETE() {

@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { requireCustomer } from "@/lib/auth/roles";
 import { getAccountOrders } from "@/lib/data/orders";
 import { formatMoney } from "@/lib/format";
+import { orderStatusLabel } from "@/lib/orders/status-labels";
 
 export default async function AccountPage() {
   const profile = await requireCustomer();
@@ -19,20 +20,56 @@ export default async function AccountPage() {
           </div>
         </div>
         <div className="mt-7 grid gap-5">
+          {orders.length === 0 ? (
+            <div className="rounded-md border border-line bg-paper p-8 text-center shadow-soft">
+              <Package className="mx-auto text-amber" size={34} />
+              <h2 className="font-display mt-4 text-3xl text-ink">
+                Todavía no tenés pedidos
+              </h2>
+              <p className="mt-2 text-sm text-muted">
+                Explorá el catálogo y elegí un decant para empezar.
+              </p>
+              <Link
+                href="/catalogo"
+                className="mt-5 inline-flex h-11 items-center justify-center rounded-md bg-amber px-4 text-sm font-bold text-[var(--on-accent)]"
+              >
+                Explorar catálogo
+              </Link>
+            </div>
+          ) : null}
           {orders.map((order) => (
-            <Link key={order.id} href={`/cuenta/pedidos/${order.id}`} className="rounded-md border border-line bg-paper p-5 transition hover:shadow-soft">
+            <Link
+              key={order.id}
+              href={`/cuenta/pedidos/${order.id}`}
+              className="rounded-md border border-line bg-paper p-5 transition hover:shadow-soft"
+            >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-soft">Pedido #{order.orderNumber}</p>
-                  <h2 className="mt-1 text-xl font-black text-ink">{formatMoney(order.totalCents)}</h2>
-                  <p className="mt-2 text-sm text-muted">{order.items.map((item) => `${item.productName} ${item.variantLabel}`).join(", ")}</p>
+                  <p className="text-sm font-semibold text-soft">
+                    Pedido #{order.orderNumber}
+                  </p>
+                  <h2 className="mt-1 text-xl font-black text-ink">
+                    {formatMoney(order.totalCents)}
+                  </h2>
+                  <p className="mt-2 text-sm text-muted">
+                    {order.items
+                      .map((item) => `${item.productName} ${item.variantLabel}`)
+                      .join(", ")}
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <StatusBadge tone={order.paymentStatus === "paid" ? "green" : "amber"}>
-                    <Package size={13} /> {order.paymentStatus}
+                  <StatusBadge
+                    tone={order.paymentStatus === "paid" ? "green" : "amber"}
+                  >
+                    <Package size={13} />{" "}
+                    {orderStatusLabel(order.paymentStatus)}
                   </StatusBadge>
-                  <StatusBadge tone={order.shipmentStatus === "delivered" ? "green" : "amber"}>
-                    <Truck size={13} /> {order.shipmentStatus}
+                  <StatusBadge
+                    tone={
+                      order.shipmentStatus === "delivered" ? "green" : "amber"
+                    }
+                  >
+                    <Truck size={13} /> {orderStatusLabel(order.shipmentStatus)}
                   </StatusBadge>
                 </div>
               </div>

@@ -13,7 +13,14 @@ export type OrderStatus =
   | "cancelled"
   | "rejected"
   | "refunded";
-export type PaymentStatus = "pending" | "payment_review" | "paid" | "failed" | "rejected" | "cancelled" | "refunded";
+export type PaymentStatus =
+  | "pending"
+  | "payment_review"
+  | "paid"
+  | "failed"
+  | "rejected"
+  | "cancelled"
+  | "refunded";
 export type ShipmentStatus =
   | "pending"
   | "preparing"

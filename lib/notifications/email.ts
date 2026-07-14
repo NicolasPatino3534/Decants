@@ -8,6 +8,7 @@ type SendOrderEmailInput = {
   subject: string;
   html: string;
   template: string;
+  idempotencyKey?: string;
 };
 
 export async function sendOrderEmail(input: SendOrderEmailInput) {
@@ -31,6 +32,9 @@ export async function sendOrderEmail(input: SendOrderEmailInput) {
     headers: {
       Authorization: `Bearer ${env.resendApiKey}`,
       "Content-Type": "application/json",
+      ...(input.idempotencyKey
+        ? { "Idempotency-Key": input.idempotencyKey }
+        : {}),
     },
     body: JSON.stringify({
       from: `${brand.displayName} <${env.resendFromEmail}>`,
@@ -40,7 +44,10 @@ export async function sendOrderEmail(input: SendOrderEmailInput) {
     }),
   });
 
-  const payload = (await response.json().catch(() => ({}))) as { id?: string; message?: string };
+  const payload = (await response.json().catch(() => ({}))) as {
+    id?: string;
+    message?: string;
+  };
 
   if (admin) {
     await admin.from("email_events").insert({
@@ -50,7 +57,7 @@ export async function sendOrderEmail(input: SendOrderEmailInput) {
       recipient: input.to,
       status: response.ok ? "sent" : "failed",
       provider_message_id: payload.id,
-      error: response.ok ? null : payload.message ?? "unknown_error",
+      error: response.ok ? null : (payload.message ?? "unknown_error"),
     });
   }
 

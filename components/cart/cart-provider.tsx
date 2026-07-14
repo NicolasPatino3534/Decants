@@ -1,14 +1,31 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { calculateSubtotal, clampCartQuantity, mergeCartLines } from "@/lib/cart/pricing";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  calculateSubtotal,
+  clampCartQuantity,
+  mergeCartLines,
+} from "@/lib/cart/pricing";
 import type { CartLine, DecantVariant, Product } from "@/lib/types";
 
 type CartContextValue = {
   lines: CartLine[];
+  hydrated: boolean;
   count: number;
   subtotalCents: number;
-  addItem: (product: Product, variant: DecantVariant, quantity?: number) => void;
+  addItem: (
+    product: Product,
+    variant: DecantVariant,
+    quantity?: number,
+  ) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   removeItem: (variantId: string) => void;
   clearCart: () => void;
@@ -55,8 +72,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const syncCart = useCallback(async () => {
     try {
-      const response = await fetch("/api/cart", { headers: { Accept: "application/json" } });
-      const payload = (await response.json()) as { lines?: CartLine[]; authenticated?: boolean };
+      const response = await fetch("/api/cart", {
+        headers: { Accept: "application/json" },
+      });
+      const payload = (await response.json()) as {
+        lines?: CartLine[];
+        authenticated?: boolean;
+      };
       if (!payload.authenticated) {
         const latestLocalLines = readStoredCart();
         linesRef.current = latestLocalLines;
@@ -69,11 +91,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const merged = mergeCartLines(payload.lines ?? [], readStoredCart());
       const syncResponse = await fetch("/api/cart", {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ items: merged.map((line) => ({ variantId: line.variantId, quantity: line.quantity })) }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          items: merged.map((line) => ({
+            variantId: line.variantId,
+            quantity: line.quantity,
+          })),
+        }),
       });
-      const syncPayload = (await syncResponse.json().catch(() => ({}))) as { lines?: CartLine[] };
-      const refreshedLines = syncResponse.ok && Array.isArray(syncPayload.lines) ? syncPayload.lines : merged;
+      const syncPayload = (await syncResponse.json().catch(() => ({}))) as {
+        lines?: CartLine[];
+      };
+      const refreshedLines =
+        syncResponse.ok && Array.isArray(syncPayload.lines)
+          ? syncPayload.lines
+          : merged;
 
       skipNextSyncRef.current = true;
       linesRef.current = refreshedLines;
@@ -82,7 +117,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return refreshedLines;
     } catch {
       // Local cart remains the source of truth if server sync is unavailable.
-      return linesRef.current;
+      const latestLocalLines = readStoredCart();
+      linesRef.current = latestLocalLines;
+      setLines(latestLocalLines);
+      return latestLocalLines;
     } finally {
       setHydrated(true);
     }
@@ -106,46 +144,66 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const timeout = window.setTimeout(async () => {
       await fetch("/api/cart", {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ items: lines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })) }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          items: lines.map((line) => ({
+            variantId: line.variantId,
+            quantity: line.quantity,
+          })),
+        }),
       }).catch(() => undefined);
     }, 350);
 
     return () => window.clearTimeout(timeout);
   }, [hydrated, lines, serverSyncEnabled]);
 
-  const addItem = useCallback((product: Product, variant: DecantVariant, quantity = 1) => {
-    const current = linesRef.current;
-    const existing = current.find((line) => line.variantId === variant.id);
-    const nextLines = existing
-      ? current.map((line) =>
-          line.variantId === variant.id
-            ? { ...line, stockOnHand: variant.stockOnHand, quantity: clampCartQuantity(line.quantity + quantity, variant.stockOnHand) }
-            : line,
-        )
-      : [
-          ...current,
-          {
-            productId: product.id,
-            productSlug: product.slug,
-            productName: product.name,
-            imageUrl: product.imageUrl,
-            variantId: variant.id,
-            sizeMl: variant.sizeMl,
-            priceCents: variant.priceCents,
-            stockOnHand: variant.stockOnHand,
-            quantity: clampCartQuantity(quantity, variant.stockOnHand),
-          },
-        ];
+  const addItem = useCallback(
+    (product: Product, variant: DecantVariant, quantity = 1) => {
+      const current = linesRef.current;
+      const existing = current.find((line) => line.variantId === variant.id);
+      const nextLines = existing
+        ? current.map((line) =>
+            line.variantId === variant.id
+              ? {
+                  ...line,
+                  stockOnHand: variant.stockOnHand,
+                  quantity: clampCartQuantity(
+                    line.quantity + quantity,
+                    variant.stockOnHand,
+                  ),
+                }
+              : line,
+          )
+        : [
+            ...current,
+            {
+              productId: product.id,
+              productSlug: product.slug,
+              productName: product.name,
+              imageUrl: product.imageUrl,
+              variantId: variant.id,
+              sizeMl: variant.sizeMl,
+              priceCents: variant.priceCents,
+              stockOnHand: variant.stockOnHand,
+              quantity: clampCartQuantity(quantity, variant.stockOnHand),
+            },
+          ];
 
-    linesRef.current = nextLines;
-    writeStoredCart(nextLines);
-    setLines(nextLines);
-  }, []);
+      linesRef.current = nextLines;
+      writeStoredCart(nextLines);
+      setLines(nextLines);
+    },
+    [],
+  );
 
   const updateQuantity = useCallback((variantId: string, quantity: number) => {
     const nextLines = linesRef.current.map((line) =>
-      line.variantId === variantId ? { ...line, quantity: clampCartQuantity(quantity, line.stockOnHand) } : line,
+      line.variantId === variantId
+        ? { ...line, quantity: clampCartQuantity(quantity, line.stockOnHand) }
+        : line,
     );
     linesRef.current = nextLines;
     writeStoredCart(nextLines);
@@ -153,7 +211,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const removeItem = useCallback((variantId: string) => {
-    const nextLines = linesRef.current.filter((line) => line.variantId !== variantId);
+    const nextLines = linesRef.current.filter(
+      (line) => line.variantId !== variantId,
+    );
     linesRef.current = nextLines;
     writeStoredCart(nextLines);
     setLines(nextLines);
@@ -171,8 +231,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<CartContextValue>(() => {
     const count = lines.reduce((sum, line) => sum + line.quantity, 0);
     const subtotalCents = calculateSubtotal(lines);
-    return { lines, count, subtotalCents, addItem, updateQuantity, removeItem, clearCart, syncCart };
-  }, [addItem, clearCart, lines, removeItem, syncCart, updateQuantity]);
+    return {
+      lines,
+      hydrated,
+      count,
+      subtotalCents,
+      addItem,
+      updateQuantity,
+      removeItem,
+      clearCart,
+      syncCart,
+    };
+  }, [
+    addItem,
+    clearCart,
+    hydrated,
+    lines,
+    removeItem,
+    syncCart,
+    updateQuantity,
+  ]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -36,14 +36,17 @@ describe("cart line resolution", () => {
       [legacyLine, modernLine],
     );
 
-    expect(selected.map((line) => line.variantId)).toEqual(["modern_variant", "legacy_variant"]);
+    expect(selected.map((line) => line.variantId)).toEqual([
+      "modern_variant",
+      "legacy_variant",
+    ]);
   });
 
   it("prefers the latest resolved line for duplicate variant ids", () => {
-    const selected = selectCartLinesForItems([{ variantId: "modern_variant", quantity: 2 }], [
-      { ...modernLine, priceCents: 1 },
-      modernLine,
-    ]);
+    const selected = selectCartLinesForItems(
+      [{ variantId: "modern_variant", quantity: 2 }],
+      [{ ...modernLine, priceCents: 1 }, modernLine],
+    );
 
     expect(selected[0]?.priceCents).toBe(240000);
   });

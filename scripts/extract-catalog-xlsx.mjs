@@ -9,7 +9,13 @@ function readU16(buffer, offset) {
 }
 
 function readU32(buffer, offset) {
-  return (buffer[offset] | (buffer[offset + 1] << 8) | (buffer[offset + 2] << 16) | (buffer[offset + 3] << 24)) >>> 0;
+  return (
+    (buffer[offset] |
+      (buffer[offset + 1] << 8) |
+      (buffer[offset + 2] << 16) |
+      (buffer[offset + 3] << 24)) >>>
+    0
+  );
 }
 
 function unzip(buffer) {
@@ -29,7 +35,9 @@ function unzip(buffer) {
       const extraLength = readU16(buffer, centralOffset + 30);
       const commentLength = readU16(buffer, centralOffset + 32);
       const localOffset = readU32(buffer, centralOffset + 42);
-      const name = buffer.subarray(centralOffset + 46, centralOffset + 46 + nameLength).toString("utf8");
+      const name = buffer
+        .subarray(centralOffset + 46, centralOffset + 46 + nameLength)
+        .toString("utf8");
       const localNameLength = readU16(buffer, localOffset + 26);
       const localExtraLength = readU16(buffer, localOffset + 28);
       const start = localOffset + 30 + localNameLength + localExtraLength;
@@ -57,14 +65,21 @@ function decodeXml(value) {
 
 function columnIndex(cellRef) {
   const letters = cellRef.match(/[A-Z]+/)?.[0] ?? "A";
-  return [...letters].reduce((total, char) => total * 26 + char.charCodeAt(0) - 64, 0) - 1;
+  return (
+    [...letters].reduce(
+      (total, char) => total * 26 + char.charCodeAt(0) - 64,
+      0,
+    ) - 1
+  );
 }
 
 function sharedStrings(files) {
   const xml = files.get("xl/sharedStrings.xml");
   if (!xml) return [];
   return [...xml.matchAll(/<si>([\s\S]*?)<\/si>/g)].map((match) => {
-    const text = [...match[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map((part) => decodeXml(part[1])).join("");
+    const text = [...match[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)]
+      .map((part) => decodeXml(part[1]))
+      .join("");
     return text.trim();
   });
 }
@@ -81,24 +96,33 @@ function sheetNames(files) {
     }),
   );
 
-  return [...workbook.matchAll(/<[^<\s:]*:?sheet\b([^>]*)\/?>/g)].map((match) => {
-    const attrs = match[1];
-    const name = attrs.match(/\bname="([^"]+)"/)?.[1] ?? "Sheet";
-    const relId = attrs.match(/\br:id="([^"]+)"/)?.[1] ?? "";
-    const target = relMap.get(relId) ?? "";
-    return {
-      name: decodeXml(name),
-      path: target.startsWith("/") ? target.replace(/^\//, "") : `xl/${target}`,
-    };
-  });
+  return [...workbook.matchAll(/<[^<\s:]*:?sheet\b([^>]*)\/?>/g)].map(
+    (match) => {
+      const attrs = match[1];
+      const name = attrs.match(/\bname="([^"]+)"/)?.[1] ?? "Sheet";
+      const relId = attrs.match(/\br:id="([^"]+)"/)?.[1] ?? "";
+      const target = relMap.get(relId) ?? "";
+      return {
+        name: decodeXml(name),
+        path: target.startsWith("/")
+          ? target.replace(/^\//, "")
+          : `xl/${target}`,
+      };
+    },
+  );
 }
 
 function cellValue(cellXml, type, shared) {
   if (type === "inlineStr") {
-    return decodeXml([...cellXml.matchAll(/<[^<\s:]*:?t[^>]*>([\s\S]*?)<\/[^<\s:]*:?t>/g)].map((match) => match[1]).join("")).trim();
+    return decodeXml(
+      [...cellXml.matchAll(/<[^<\s:]*:?t[^>]*>([\s\S]*?)<\/[^<\s:]*:?t>/g)]
+        .map((match) => match[1])
+        .join(""),
+    ).trim();
   }
 
-  const value = cellXml.match(/<[^<\s:]*:?v>([\s\S]*?)<\/[^<\s:]*:?v>/)?.[1] ?? "";
+  const value =
+    cellXml.match(/<[^<\s:]*:?v>([\s\S]*?)<\/[^<\s:]*:?v>/)?.[1] ?? "";
   if (type === "s") return shared[Number(value)] ?? "";
   return decodeXml(value).trim();
 }
@@ -107,9 +131,13 @@ function parseSheet(xml, shared) {
   const rows = [];
   const normalizedXml = xml.replace(/<([^<\s:]*:?c)([^>]*)\/>/g, "<$1$2></$1>");
 
-  for (const rowMatch of normalizedXml.matchAll(/<[^<\s:]*:?row[^>]*>([\s\S]*?)<\/[^<\s:]*:?row>/g)) {
+  for (const rowMatch of normalizedXml.matchAll(
+    /<[^<\s:]*:?row[^>]*>([\s\S]*?)<\/[^<\s:]*:?row>/g,
+  )) {
     const row = [];
-    for (const cellMatch of rowMatch[1].matchAll(/<[^<\s:]*:?c([^>]*)>([\s\S]*?)<\/[^<\s:]*:?c>/g)) {
+    for (const cellMatch of rowMatch[1].matchAll(
+      /<[^<\s:]*:?c([^>]*)>([\s\S]*?)<\/[^<\s:]*:?c>/g,
+    )) {
       const attrs = cellMatch[1];
       const ref = attrs.match(/r="([^"]+)"/)?.[1] ?? "A1";
       const type = attrs.match(/t="([^"]+)"/)?.[1] ?? "";

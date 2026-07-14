@@ -5,7 +5,12 @@ export type AccountDisplaySource = {
   fallback?: string;
 };
 
-export function getAccountDisplayName({ fullName, username, email, fallback = "tu cuenta" }: AccountDisplaySource) {
+export function getAccountDisplayName({
+  fullName,
+  username,
+  email,
+  fallback = "tu cuenta",
+}: AccountDisplaySource) {
   const trimmedName = fullName?.trim();
   if (trimmedName) {
     return trimmedName.split(/\s+/).slice(0, 2).join(" ");

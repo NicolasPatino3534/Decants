@@ -9,5 +9,8 @@ next-dev.out.log
 next-dev.err.log
 next-prod.live.log
 dev-server*.log
+production-server*.log
+playwright-report/
+test-results/
 *.tsbuildinfo
 .vercel/

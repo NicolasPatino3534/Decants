@@ -19,14 +19,20 @@ function parseMoney(value) {
 }
 
 function parseSize(value) {
-  const number = Number(String(value).replace(",", ".").match(/\d+(?:\.\d+)?/)?.[0] ?? 0);
+  const number = Number(
+    String(value)
+      .replace(",", ".")
+      .match(/\d+(?:\.\d+)?/)?.[0] ?? 0,
+  );
   return Number.isFinite(number) ? number : 0;
 }
 
 function parseName(rawName) {
   const brandMatch = String(rawName).match(/\(([^)]+)\)/);
   const brand = brandMatch?.[1]?.trim() || "Decants CBA";
-  const name = String(rawName).replace(/\s*\[[^\]]+\]/g, "").trim();
+  const name = String(rawName)
+    .replace(/\s*\[[^\]]+\]/g, "")
+    .trim();
   return { name, brand };
 }
 
@@ -54,7 +60,7 @@ function categoryName(value) {
     ARABE: "Arabe",
     GENERAL: "General",
     "NICHO-AUTOR": "Nicho autor",
-    "DISEÑADOR": "Disenador",
+    DISEÑADOR: "Disenador",
     PROMOS: "Promos",
   };
   return categories[value] ?? value;
@@ -63,14 +69,31 @@ function categoryName(value) {
 const productsById = new Map();
 
 for (const row of rows.slice(1)) {
-  const [sourceId, rawName, rawCategory, rawSize, rawPrice, regularPrice, salePrice, offer, description, productUrl, imageUrl] = row;
+  const [
+    sourceId,
+    rawName,
+    rawCategory,
+    rawSize,
+    rawPrice,
+    regularPrice,
+    salePrice,
+    offer,
+    description,
+    productUrl,
+    imageUrl,
+  ] = row;
   if (!sourceId || !rawName || !rawSize) continue;
 
   const { name, brand } = parseName(rawName);
-  const productSlug = slugify(productUrl ? String(productUrl).split("/").filter(Boolean).pop() : `${name}-${sourceId}`);
+  const productSlug = slugify(
+    productUrl
+      ? String(productUrl).split("/").filter(Boolean).pop()
+      : `${name}-${sourceId}`,
+  );
   const category = categoryName(rawCategory);
   const categorySlug = slugify(category);
-  const price = offer === "Si" && salePrice ? salePrice : rawPrice || regularPrice;
+  const price =
+    offer === "Si" && salePrice ? salePrice : rawPrice || regularPrice;
   const sizeMl = parseSize(rawSize);
 
   if (!productsById.has(sourceId)) {
@@ -80,7 +103,11 @@ for (const row of rows.slice(1)) {
       name,
       slug: productSlug,
       brand: { id: `brand_${brandSlug}`, name: brand, slug: brandSlug },
-      category: { id: `cat_${categorySlug}`, name: category, slug: categorySlug },
+      category: {
+        id: `cat_${categorySlug}`,
+        name: category,
+        slug: categorySlug,
+      },
       family: { id: `cat_${categorySlug}`, name: category, slug: categorySlug },
       concentration: "Decant",
       description: description || `${name} disponible en decants.`,

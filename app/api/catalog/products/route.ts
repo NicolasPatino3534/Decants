@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { filterProducts, type ProductFilters, type ProductSort } from "@/lib/catalog/filters";
+import {
+  filterProducts,
+  type ProductFilters,
+  type ProductSort,
+} from "@/lib/catalog/filters";
 import { fetchProductsFromSupabase } from "@/lib/data/products";
 import { demoProducts } from "@/lib/demo-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -8,16 +12,32 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const filters = parseProductFilters(new URL(request.url).searchParams);
 
-  const supabase = createSupabaseAdminClient() ?? (await createSupabaseServerClient());
+  const supabase =
+    createSupabaseAdminClient() ?? (await createSupabaseServerClient());
 
   if (!supabase) {
-    return NextResponse.json({ products: filterProducts(demoProducts, filters), source: "demo" });
+    return NextResponse.json({
+      products: filterProducts(demoProducts, filters),
+      source: "demo",
+    });
   }
 
-  const { products, error } = await fetchProductsFromSupabase(supabase, filters);
+  const { products, error } = await fetchProductsFromSupabase(
+    supabase,
+    filters,
+  );
   if (error) {
-    console.error("catalog_products_supabase_error", { message: error.message });
-    return NextResponse.json({ products: [], source: "supabase", error: "No se pudo cargar el catálogo." }, { status: 502 });
+    console.error("catalog_products_supabase_error", {
+      message: error.message,
+    });
+    return NextResponse.json(
+      {
+        products: [],
+        source: "supabase",
+        error: "No se pudo cargar el catálogo.",
+      },
+      { status: 502 },
+    );
   }
 
   return NextResponse.json({ products, source: "supabase" });
@@ -50,10 +70,19 @@ function parseNumberParam(params: URLSearchParams, key: string) {
 }
 
 function parseGender(value: string | undefined) {
-  return value === "unisex" || value === "feminine" || value === "masculine" ? value : undefined;
+  return value === "unisex" || value === "feminine" || value === "masculine"
+    ? value
+    : undefined;
 }
 
 function parseSort(value: string | undefined): ProductSort | undefined {
-  const allowed: ProductSort[] = ["featured", "price-asc", "price-desc", "name-asc", "name-desc", "best-selling"];
+  const allowed: ProductSort[] = [
+    "featured",
+    "price-asc",
+    "price-desc",
+    "name-asc",
+    "name-desc",
+    "best-selling",
+  ];
   return allowed.find((sort) => sort === value);
 }

@@ -1,10 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, BadgeCheck, CheckCircle2, CreditCard, Lock, MapPin, PackageCheck, ShoppingBag, Truck } from "lucide-react";
+import {
+  AlertCircle,
+  BadgeCheck,
+  CheckCircle2,
+  CreditCard,
+  Lock,
+  MapPin,
+  PackageCheck,
+  ShoppingBag,
+  Truck,
+} from "lucide-react";
 import { useCart } from "@/components/cart/cart-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { calculateCartTotals, fallbackShippingMethods } from "@/lib/cart/pricing";
+import {
+  calculateCartTotals,
+  fallbackShippingMethods,
+} from "@/lib/cart/pricing";
 import { formatMoney } from "@/lib/format";
 import type { ShippingMethod } from "@/lib/types";
 
@@ -14,20 +27,34 @@ type CheckoutCustomer = {
   phone: string;
 };
 
-export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutCustomer }) {
-  const { lines, clearCart, syncCart } = useCart();
+export function CheckoutClient({
+  initialCustomer,
+}: {
+  initialCustomer: CheckoutCustomer;
+}) {
+  const { lines, hydrated, syncCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>(fallbackShippingMethods);
-  const [shippingMethodId, setShippingMethodId] = useState(fallbackShippingMethods[0].id);
+  const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>(
+    fallbackShippingMethods,
+  );
+  const [shippingMethodId, setShippingMethodId] = useState(
+    fallbackShippingMethods[0].id,
+  );
   const [couponCode, setCouponCode] = useState("");
   const [idempotencyKey] = useState(createIdempotencyKey);
 
   const selectedShipping = useMemo(
-    () => shippingMethods.find((method) => method.id === shippingMethodId) ?? shippingMethods[0] ?? fallbackShippingMethods[0],
+    () =>
+      shippingMethods.find((method) => method.id === shippingMethodId) ??
+      shippingMethods[0] ??
+      fallbackShippingMethods[0],
     [shippingMethodId, shippingMethods],
   );
-  const totals = calculateCartTotals({ lines, shippingCents: lines.length > 0 ? selectedShipping.basePriceCents : 0 });
+  const totals = calculateCartTotals({
+    lines,
+    shippingCents: lines.length > 0 ? selectedShipping.basePriceCents : 0,
+  });
 
   useEffect(() => {
     let active = true;
@@ -51,7 +78,9 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
 
     const refreshedLines = await syncCart();
     if (refreshedLines.length === 0) {
-      setError("El carrito tenía productos que ya no están disponibles. Volvé al catálogo y agregalos nuevamente.");
+      setError(
+        "El carrito tenía productos que ya no están disponibles. Volvé al catálogo y agregalos nuevamente.",
+      );
       setLoading(false);
       return;
     }
@@ -73,27 +102,57 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
       },
       shippingMethodId,
       couponCode,
-      items: refreshedLines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })),
+      items: refreshedLines.map((line) => ({
+        variantId: line.variantId,
+        quantity: line.quantity,
+      })),
     };
 
     try {
       const response = await fetch("/api/checkout/session", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
-      const result = (await response.json()) as { url?: string; error?: string };
+      const result = (await response.json()) as {
+        url?: string;
+        error?: string;
+      };
       if (!response.ok || !result.url) {
         throw new Error(result.error ?? "No se pudo iniciar el checkout.");
       }
 
-      clearCart();
       window.location.href = result.url;
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "No se pudo iniciar el checkout.");
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "No se pudo iniciar el checkout.",
+      );
       setLoading(false);
     }
+  }
+
+  if (!hydrated) {
+    return (
+      <main
+        className="premium-shell mx-auto grid min-h-[70vh] place-items-center px-4 py-16"
+        aria-busy="true"
+      >
+        <div className="w-full max-w-md rounded-md border border-line bg-paper p-8 shadow-soft">
+          <div className="mx-auto h-12 w-12 animate-pulse rounded-md bg-warm" />
+          <div className="mx-auto mt-5 h-9 w-3/4 animate-pulse rounded bg-mist" />
+          <div className="mx-auto mt-4 h-4 w-full animate-pulse rounded bg-mist" />
+          <p className="sr-only" role="status">
+            Cargando tu pedido
+          </p>
+        </div>
+      </main>
+    );
   }
 
   if (lines.length === 0) {
@@ -101,8 +160,12 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
       <main className="premium-shell mx-auto grid min-h-[70vh] place-items-center px-4 py-16 text-center">
         <div className="max-w-md rounded-md border border-line bg-paper p-8 shadow-soft">
           <ShoppingBag className="mx-auto text-amber" size={34} />
-          <h1 className="font-display mt-5 text-4xl text-ink">No hay ítems para confirmar</h1>
-          <p className="mt-3 text-sm text-muted">Agregá un decant al carrito para continuar.</p>
+          <h1 className="font-display mt-5 text-4xl text-ink">
+            No hay ítems para confirmar
+          </h1>
+          <p className="mt-3 text-sm text-muted">
+            Agregá un decant al carrito para continuar.
+          </p>
           <ButtonLink href="/catalogo" className="mt-6">
             Volver al catálogo
           </ButtonLink>
@@ -115,22 +178,55 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
     <main className="premium-shell">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_400px] lg:px-8 lg:py-12">
         <section>
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--accent-muted)]">Pedido seguro</p>
-          <h1 className="font-display mt-2 text-5xl text-ink">Finalizar compra</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--accent-muted)]">
+            Pedido seguro
+          </p>
+          <h1 className="font-display mt-2 text-5xl text-ink">
+            Finalizar compra
+          </h1>
           <ol className="mt-5 grid gap-2 text-sm font-bold text-muted sm:grid-cols-3">
-            <Step icon={<ShoppingBag size={16} />} label="Carrito revisado" active />
+            <Step
+              icon={<ShoppingBag size={16} />}
+              label="Carrito revisado"
+              active
+            />
             <Step icon={<MapPin size={16} />} label="Datos de envío" active />
             <Step icon={<CreditCard size={16} />} label="Confirmación" />
           </ol>
-          <form id="checkout-form" action={startCheckout} className="mt-6 grid gap-5 rounded-md border border-line bg-paper p-5 shadow-soft">
+          <form
+            id="checkout-form"
+            action={startCheckout}
+            className="mt-6 grid gap-5 rounded-md border border-line bg-paper p-5 shadow-soft"
+          >
             <section>
               <h2 className="flex items-center gap-2 text-lg font-black text-ink">
                 <BadgeCheck size={18} className="text-amber" /> Tus datos
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <Field name="name" label="Nombre completo" autoComplete="name" defaultValue={initialCustomer.name} required />
-                <Field name="email" label="Email" type="email" autoComplete="email" defaultValue={initialCustomer.email} required readOnly />
-                <Field name="phone" label="Teléfono" type="tel" autoComplete="tel" defaultValue={initialCustomer.phone} required />
+                <Field
+                  name="name"
+                  label="Nombre completo"
+                  autoComplete="name"
+                  defaultValue={initialCustomer.name}
+                  required
+                />
+                <Field
+                  name="email"
+                  label="Email"
+                  type="email"
+                  autoComplete="email"
+                  defaultValue={initialCustomer.email}
+                  required
+                  readOnly
+                />
+                <Field
+                  name="phone"
+                  label="Teléfono"
+                  type="tel"
+                  autoComplete="tel"
+                  defaultValue={initialCustomer.phone}
+                  required
+                />
               </div>
             </section>
 
@@ -139,11 +235,37 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
                 <Truck size={18} className="text-amber" /> Entrega
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <Field name="postalCode" label="Código postal" autoComplete="postal-code" required />
-                <Field name="street" label="Dirección" autoComplete="street-address" className="md:col-span-2" required />
-                <Field name="city" label="Ciudad" autoComplete="address-level2" required />
-                <Field name="state" label="Provincia" autoComplete="address-level1" required />
-                <Field name="reference" label="Referencia" autoComplete="off" className="md:col-span-2" />
+                <Field
+                  name="postalCode"
+                  label="Código postal"
+                  autoComplete="postal-code"
+                  required
+                />
+                <Field
+                  name="street"
+                  label="Dirección"
+                  autoComplete="street-address"
+                  className="md:col-span-2"
+                  required
+                />
+                <Field
+                  name="city"
+                  label="Ciudad"
+                  autoComplete="address-level2"
+                  required
+                />
+                <Field
+                  name="state"
+                  label="Provincia"
+                  autoComplete="address-level1"
+                  required
+                />
+                <Field
+                  name="reference"
+                  label="Referencia"
+                  autoComplete="off"
+                  className="md:col-span-2"
+                />
               </div>
             </section>
 
@@ -153,10 +275,14 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
               </h2>
               <div className="mt-4 grid gap-4">
                 <label>
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-soft">Método de envío</span>
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-soft">
+                    Método de envío
+                  </span>
                   <select
                     value={shippingMethodId}
-                    onChange={(event) => setShippingMethodId(event.target.value)}
+                    onChange={(event) =>
+                      setShippingMethodId(event.target.value)
+                    }
                     className="h-11 w-full rounded-md border border-line bg-paper px-3 text-sm font-semibold text-ink outline-none focus:border-amber"
                   >
                     {shippingMethods.map((method) => (
@@ -171,7 +297,9 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
                 </label>
 
                 <label>
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-soft">Cupón de descuento</span>
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-soft">
+                    Cupón de descuento
+                  </span>
                   <input
                     value={couponCode}
                     onChange={(event) => setCouponCode(event.target.value)}
@@ -184,10 +312,14 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
 
             <div className="flex items-center gap-2 rounded-md bg-warm p-3 text-sm font-semibold text-[var(--accent-muted)]">
               <Truck size={17} />
-              El envío se coordina por WhatsApp cuando el pedido pasa a preparación.
+              El envío se coordina por WhatsApp cuando el pedido pasa a
+              preparación.
             </div>
             {error ? (
-              <p className="flex items-center gap-2 rounded-md border border-danger/40 bg-paper p-3 text-sm font-semibold text-danger">
+              <p
+                role="alert"
+                className="flex items-center gap-2 rounded-md border border-danger/40 bg-paper p-3 text-sm font-semibold text-danger"
+              >
                 <AlertCircle size={17} /> {error}
               </p>
             ) : null}
@@ -204,28 +336,56 @@ export function CheckoutClient({ initialCustomer }: { initialCustomer: CheckoutC
           </div>
           <div className="mt-4 divide-y divide-line">
             {lines.map((line) => (
-              <div key={line.variantId} className="flex justify-between gap-4 py-3 text-sm">
+              <div
+                key={line.variantId}
+                className="flex justify-between gap-4 py-3 text-sm"
+              >
                 <span className="text-muted">
-                  {line.productName} <span className="text-soft">{line.sizeMl}ml x {line.quantity}</span>
+                  {line.productName}{" "}
+                  <span className="text-soft">
+                    {line.sizeMl}ml x {line.quantity}
+                  </span>
                 </span>
-                <span className="font-bold text-ink">{formatMoney(line.priceCents * line.quantity)}</span>
+                <span className="font-bold text-ink">
+                  {formatMoney(line.priceCents * line.quantity)}
+                </span>
               </div>
             ))}
           </div>
           <div className="mt-4 space-y-3 border-t border-line pt-4 text-sm">
-            <SummaryRow label="Subtotal" value={formatMoney(totals.subtotalCents)} />
-            <SummaryRow label="Descuento" value={`-${formatMoney(totals.discountCents)}`} />
-            <SummaryRow label="Envío" value={formatMoney(totals.shippingCents)} />
+            <SummaryRow
+              label="Subtotal"
+              value={formatMoney(totals.subtotalCents)}
+            />
+            <SummaryRow
+              label="Descuento"
+              value={`-${formatMoney(totals.discountCents)}`}
+            />
+            <SummaryRow
+              label="Envío"
+              value={formatMoney(totals.shippingCents)}
+            />
             <div className="flex justify-between text-base text-ink">
               <span className="font-bold">Total</span>
-              <span className="font-black">{formatMoney(totals.totalCents)}</span>
+              <span className="font-black">
+                {formatMoney(totals.totalCents)}
+              </span>
             </div>
           </div>
           <div className="mt-5 grid gap-2 text-xs font-semibold text-muted">
-            <span className="flex items-center gap-2 rounded-md bg-mist p-3"><CheckCircle2 size={15} /> Costos visibles antes de confirmar</span>
-            <span className="flex items-center gap-2 rounded-md bg-mist p-3"><Lock size={15} /> Confirmación protegida</span>
+            <span className="flex items-center gap-2 rounded-md bg-mist p-3">
+              <CheckCircle2 size={15} /> Costos visibles antes de confirmar
+            </span>
+            <span className="flex items-center gap-2 rounded-md bg-mist p-3">
+              <Lock size={15} /> Confirmación protegida
+            </span>
           </div>
-          <Button form="checkout-form" type="submit" disabled={loading} className="mt-5 h-12 w-full">
+          <Button
+            form="checkout-form"
+            type="submit"
+            disabled={loading}
+            className="mt-5 h-12 w-full"
+          >
             <Lock size={17} />
             {loading ? "Confirmando..." : "Confirmar pedido"}
           </Button>
@@ -256,7 +416,9 @@ function Field({
 }) {
   return (
     <label className={className}>
-      <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-soft">{label}</span>
+      <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-soft">
+        {label}
+      </span>
       <input
         name={name}
         type={type}
@@ -270,9 +432,19 @@ function Field({
   );
 }
 
-function Step({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
+function Step({
+  icon,
+  label,
+  active = false,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+}) {
   return (
-    <li className={`flex items-center gap-2 rounded-md border p-3 ${active ? "border-line bg-warm text-[var(--accent-muted)]" : "border-line bg-paper text-muted"}`}>
+    <li
+      className={`flex items-center gap-2 rounded-md border p-3 ${active ? "border-line bg-warm text-[var(--accent-muted)]" : "border-line bg-paper text-muted"}`}
+    >
       {icon}
       {label}
     </li>
@@ -289,6 +461,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 }
 
 function createIdempotencyKey() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    return crypto.randomUUID();
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }

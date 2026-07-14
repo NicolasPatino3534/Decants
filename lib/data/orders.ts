@@ -85,9 +85,17 @@ export async function getAccountOrders(userId: string) {
 
 export async function getOrderById(id: string) {
   const supabase = await createSupabaseServerClient();
-  if (!supabase) return demoOrders.find((order) => order.id === id || order.orderNumber === id) ?? demoOrders[0] ?? null;
+  if (!supabase)
+    return (
+      demoOrders.find((order) => order.id === id || order.orderNumber === id) ??
+      null
+    );
 
-  const { data, error } = await supabase.from("orders").select(orderSelect).eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("orders")
+    .select(orderSelect)
+    .eq("id", id)
+    .maybeSingle();
   if (error || !data) return null;
   return mapOrder(data as unknown as OrderRow);
 }

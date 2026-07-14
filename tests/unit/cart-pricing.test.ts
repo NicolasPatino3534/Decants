@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { calculateCartTotals, clampCartQuantity, mergeCartLines } from "@/lib/cart/pricing";
+import {
+  calculateCartTotals,
+  clampCartQuantity,
+  mergeCartLines,
+} from "@/lib/cart/pricing";
 import type { CartLine } from "@/lib/types";
 
 const baseLine: CartLine = {

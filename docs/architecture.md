@@ -50,6 +50,7 @@ lib/
 ## 2. Rutas principales
 
 Públicas:
+
 - `/`: home e-commerce con entrada al catálogo.
 - `/catalogo`: listado de perfumes con filtros simples.
 - `/producto/[slug]`: detalle de perfume y variantes de decant.
@@ -57,12 +58,14 @@ Públicas:
 - `/auth`: registro, inicio de sesión y recuperación de contraseña.
 
 Privadas de usuario:
+
 - `/checkout`: datos de contacto y dirección.
 - `/checkout/success`: confirmación del pedido.
 - `/cuenta`: pedidos del cliente autenticado.
 - `/cuenta/pedidos/[id]`: detalle, ítems y estado de tracking.
 
 Privadas de administrador:
+
 - `/admin`: KPIs, pedidos recientes y stock bajo.
 - `/admin/productos`: alta y gestión de productos.
 - `/admin/pedidos`: cambio de estados y contacto por WhatsApp.
@@ -73,11 +76,13 @@ Privadas de administrador:
 ## 3. Modelo general de datos
 
 Usuarios y seguridad:
+
 - `profiles`: perfil vinculado a `auth.users`.
 - `user_roles`: roles `customer`, `staff`, `admin`, `owner`.
 - RLS permite que clientes lean solo sus datos y que staff/admin accedan al panel operativo.
 
 Catálogo:
+
 - `brands`: marcas o casas.
 - `fragrance_families`: familias olfativas.
 - `products`: perfumes publicados o borrador.
@@ -85,6 +90,7 @@ Catálogo:
 - `decant_variants`: variantes por ml, precio, SKU y stock.
 
 Stock y pedidos:
+
 - `inventory_movements`: ajustes, ventas, devoluciones y daños.
 - `addresses`: direcciones guardadas del usuario.
 - `orders`: cabecera del pedido, totales y dirección congelada.
@@ -132,6 +138,7 @@ ADMIN_BOOTSTRAP_EMAILS=
 ```
 
 Notas:
+
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` o `NEXT_PUBLIC_SUPABASE_ANON_KEY` se usa en cliente y server SSR.
 - `SUPABASE_SERVICE_ROLE_KEY` solo debe existir en servidor, nunca en componentes cliente.
 - `MERCADOPAGO_ACCESS_TOKEN` y `MERCADOPAGO_WEBHOOK_SECRET` solo deben existir en servidor.

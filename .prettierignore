@@ -1,0 +1,11 @@
+.next
+.vercel
+node_modules
+playwright-report
+test-results
+*.log
+*.tsbuildinfo
+*.xlsx
+lib/catalog-data.ts
+.env*
+!.env.example

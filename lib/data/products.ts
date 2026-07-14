@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { cache } from "react";
 import { demoProducts } from "@/lib/demo-data";
-import { filterProducts, sortProducts, type ProductFilters } from "@/lib/catalog/filters";
+import {
+  filterProducts,
+  sortProducts,
+  type ProductFilters,
+} from "@/lib/catalog/filters";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Brand, Category, Product, ProductVariant } from "@/lib/types";
@@ -64,7 +69,11 @@ type LegacyProductRow = {
   status: Product["status"];
   brands: Brand | null;
   fragrance_families: Category | null;
-  product_images: Array<{ storage_path: string; alt: string | null; sort_order: number }> | null;
+  product_images: Array<{
+    storage_path: string;
+    alt: string | null;
+    sort_order: number;
+  }> | null;
   decant_variants: Array<{
     id: string;
     size_ml: number | string;
@@ -119,25 +128,40 @@ const legacyProductSelect = `
 `;
 
 export async function getProducts(filters: ProductFilters = {}) {
-  const supabase = (createSupabaseAdminClient() as SupabaseClient | null) ?? (await createSupabaseServerClient());
+  const supabase =
+    (createSupabaseAdminClient() as SupabaseClient | null) ??
+    (await createSupabaseServerClient());
   if (!supabase) return filterProducts(demoProducts, filters);
 
-  const { products, error } = await fetchProductsFromSupabase(supabase, filters);
+  const { products, error } = await fetchProductsFromSupabase(
+    supabase,
+    filters,
+  );
   if (error) return [];
   return products;
 }
 
-export async function getProductBySlug(slug: string) {
-  const supabase = (createSupabaseAdminClient() as SupabaseClient | null) ?? (await createSupabaseServerClient());
-  if (!supabase) return demoProducts.find((product) => product.slug === slug) ?? null;
+export const getProductBySlug = cache(async function getProductBySlug(
+  slug: string,
+) {
+  const supabase =
+    (createSupabaseAdminClient() as SupabaseClient | null) ??
+    (await createSupabaseServerClient());
+  if (!supabase)
+    return demoProducts.find((product) => product.slug === slug) ?? null;
 
-  const { product, error } = await fetchProductBySlugFromSupabase(supabase, slug);
+  const { product, error } = await fetchProductBySlugFromSupabase(
+    supabase,
+    slug,
+  );
   if (error) return null;
   return product;
-}
+});
 
 export async function getAdminProducts() {
-  const supabase = (createSupabaseAdminClient() as SupabaseClient | null) ?? (await createSupabaseServerClient());
+  const supabase =
+    (createSupabaseAdminClient() as SupabaseClient | null) ??
+    (await createSupabaseServerClient());
   if (!supabase) return demoProducts;
 
   const { data, error } = await supabase
@@ -146,10 +170,16 @@ export async function getAdminProducts() {
     .order("created_at", { ascending: false });
 
   if (error || !data) return demoProducts;
-  return sortProducts((data as unknown as ProductRow[]).map((row) => mapProduct(row, supabase)), "name-asc");
+  return sortProducts(
+    (data as unknown as ProductRow[]).map((row) => mapProduct(row, supabase)),
+    "name-asc",
+  );
 }
 
-export async function fetchProductsFromSupabase(supabase: SupabaseClient, filters: ProductFilters = {}) {
+export async function fetchProductsFromSupabase(
+  supabase: SupabaseClient,
+  filters: ProductFilters = {},
+) {
   let query = supabase
     .from("products")
     .select(productSelect)
@@ -158,30 +188,41 @@ export async function fetchProductsFromSupabase(supabase: SupabaseClient, filter
     .eq("categories.active", true)
     .eq("product_variants.active", true);
 
-  if (filters.query?.trim()) query = query.ilike("name", `%${filters.query.trim()}%`);
   if (filters.brand) query = query.eq("perfume_brands.slug", filters.brand);
   if (filters.category) query = query.eq("categories.slug", filters.category);
   if (filters.family) query = query.eq("categories.slug", filters.family);
   if (filters.gender) query = query.eq("gender", filters.gender);
-  if (filters.sizeMl) query = query.eq("product_variants.size_ml", filters.sizeMl);
-  if (filters.minPriceCents != null) query = query.gte("product_variants.price_cents", filters.minPriceCents);
-  if (filters.maxPriceCents != null) query = query.lte("product_variants.price_cents", filters.maxPriceCents);
+  if (filters.sizeMl)
+    query = query.eq("product_variants.size_ml", filters.sizeMl);
+  if (filters.minPriceCents != null)
+    query = query.gte("product_variants.price_cents", filters.minPriceCents);
+  if (filters.maxPriceCents != null)
+    query = query.lte("product_variants.price_cents", filters.maxPriceCents);
 
-  const { data, error } = await query.order("featured", { ascending: false }).order("name");
+  const { data, error } = await query
+    .order("featured", { ascending: false })
+    .order("name");
 
   if (error || !data) {
-    if (shouldUseLegacyCatalog(error)) return fetchLegacyProductsFromSupabase(supabase, filters);
-    return { products: [] as Product[], error: error ?? new Error("No se pudieron cargar los productos.") };
+    if (shouldUseLegacyCatalog(error))
+      return fetchLegacyProductsFromSupabase(supabase, filters);
+    return {
+      products: [] as Product[],
+      error: error ?? new Error("No se pudieron cargar los productos."),
+    };
   }
 
   const products = (data as unknown as ProductRow[])
     .map((row) => mapProduct(row, supabase))
     .filter((product) => product.variants.length > 0);
 
-  return { products: sortProducts(products, filters.sort), error: null };
+  return { products: filterProducts(products, filters), error: null };
 }
 
-export async function fetchProductBySlugFromSupabase(supabase: SupabaseClient, slug: string) {
+export async function fetchProductBySlugFromSupabase(
+  supabase: SupabaseClient,
+  slug: string,
+) {
   const { data, error } = await supabase
     .from("products")
     .select(productSelect)
@@ -193,14 +234,21 @@ export async function fetchProductBySlugFromSupabase(supabase: SupabaseClient, s
     .maybeSingle();
 
   if (error) {
-    if (shouldUseLegacyCatalog(error)) return fetchLegacyProductBySlugFromSupabase(supabase, slug);
+    if (shouldUseLegacyCatalog(error))
+      return fetchLegacyProductBySlugFromSupabase(supabase, slug);
     return { product: null, error };
   }
   if (!data) return { product: null, error: null };
-  return { product: mapProduct(data as unknown as ProductRow, supabase), error: null };
+  return {
+    product: mapProduct(data as unknown as ProductRow, supabase),
+    error: null,
+  };
 }
 
-async function fetchLegacyProductsFromSupabase(supabase: SupabaseClient, filters: ProductFilters = {}) {
+async function fetchLegacyProductsFromSupabase(
+  supabase: SupabaseClient,
+  filters: ProductFilters = {},
+) {
   const { data, error } = await supabase
     .from("products")
     .select(legacyProductSelect)
@@ -208,7 +256,10 @@ async function fetchLegacyProductsFromSupabase(supabase: SupabaseClient, filters
     .order("name");
 
   if (error || !data) {
-    return { products: [] as Product[], error: error ?? new Error("No se pudieron cargar los productos.") };
+    return {
+      products: [] as Product[],
+      error: error ?? new Error("No se pudieron cargar los productos."),
+    };
   }
 
   const products = (data as unknown as LegacyProductRow[])
@@ -218,7 +269,10 @@ async function fetchLegacyProductsFromSupabase(supabase: SupabaseClient, filters
   return { products: filterProducts(products, filters), error: null };
 }
 
-async function fetchLegacyProductBySlugFromSupabase(supabase: SupabaseClient, slug: string) {
+async function fetchLegacyProductBySlugFromSupabase(
+  supabase: SupabaseClient,
+  slug: string,
+) {
   const { data, error } = await supabase
     .from("products")
     .select(legacyProductSelect)
@@ -228,17 +282,30 @@ async function fetchLegacyProductBySlugFromSupabase(supabase: SupabaseClient, sl
 
   if (error) return { product: null, error };
   if (!data) return { product: null, error: null };
-  return { product: mapLegacyProduct(data as unknown as LegacyProductRow, supabase), error: null };
+  return {
+    product: mapLegacyProduct(data as unknown as LegacyProductRow, supabase),
+    error: null,
+  };
 }
 
 function mapProduct(row: ProductRow, supabase: SupabaseClient): Product {
-  const category = row.categories ?? { id: "unknown", name: "Sin categoria", slug: "sin-categoria", description: null };
+  const category = row.categories ?? {
+    id: "unknown",
+    name: "Sin categoria",
+    slug: "sin-categoria",
+    description: null,
+  };
 
   return {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    brand: row.perfume_brands ?? { id: "unknown", name: "Sin marca", slug: "sin-marca", country: null },
+    brand: row.perfume_brands ?? {
+      id: "unknown",
+      name: "Sin marca",
+      slug: "sin-marca",
+      country: null,
+    },
     category,
     family: category,
     concentration: row.concentration,
@@ -258,14 +325,26 @@ function mapProduct(row: ProductRow, supabase: SupabaseClient): Product {
   };
 }
 
-function mapLegacyProduct(row: LegacyProductRow, supabase: SupabaseClient): Product {
-  const category = row.fragrance_families ?? { id: "unknown", name: "Sin categoria", slug: "sin-categoria", description: null };
+function mapLegacyProduct(
+  row: LegacyProductRow,
+  supabase: SupabaseClient,
+): Product {
+  const category = row.fragrance_families ?? {
+    id: "unknown",
+    name: "Sin categoria",
+    slug: "sin-categoria",
+    description: null,
+  };
 
   return {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    brand: row.brands ?? { id: "unknown", name: "Sin marca", slug: "sin-marca" },
+    brand: row.brands ?? {
+      id: "unknown",
+      name: "Sin marca",
+      slug: "sin-marca",
+    },
     category,
     family: category,
     concentration: row.concentration,
@@ -310,24 +389,54 @@ function mapVariants(variants: ProductVariantRow[] | null): ProductVariant[] {
     .sort((a, b) => a.sizeMl - b.sizeMl);
 }
 
-function resolveProductImageUrl(images: ProductImageRow[] | null, supabase: SupabaseClient) {
-  const image = [...(images ?? [])].sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order)[0];
-  if (!image) return "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
+function resolveProductImageUrl(
+  images: ProductImageRow[] | null,
+  supabase: SupabaseClient,
+) {
+  const image = [...(images ?? [])].sort(
+    (a, b) =>
+      Number(b.is_primary) - Number(a.is_primary) ||
+      a.sort_order - b.sort_order,
+  )[0];
+  if (!image)
+    return "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
   if (image.public_url) return image.public_url;
-  if (image.storage_path.startsWith("http") || image.storage_path.startsWith("/")) return image.storage_path;
-  return supabase.storage.from(productImagesBucket).getPublicUrl(image.storage_path).data.publicUrl;
+  if (
+    image.storage_path.startsWith("http") ||
+    image.storage_path.startsWith("/")
+  )
+    return image.storage_path;
+  return supabase.storage
+    .from(productImagesBucket)
+    .getPublicUrl(image.storage_path).data.publicUrl;
 }
 
-function resolveLegacyProductImageUrl(images: LegacyProductRow["product_images"], supabase: SupabaseClient) {
-  const image = [...(images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
-  if (!image) return "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
-  if (image.storage_path.startsWith("http") || image.storage_path.startsWith("/")) return image.storage_path;
-  return supabase.storage.from(productImagesBucket).getPublicUrl(image.storage_path).data.publicUrl;
+function resolveLegacyProductImageUrl(
+  images: LegacyProductRow["product_images"],
+  supabase: SupabaseClient,
+) {
+  const image = [...(images ?? [])].sort(
+    (a, b) => a.sort_order - b.sort_order,
+  )[0];
+  if (!image)
+    return "https://d22fxaf9t8d39k.cloudfront.net/700ef8daf59477c9b3d0feb3b8dd3b06f50e0c58d05151bea3b3d1d28ff17a9b389501.png";
+  if (
+    image.storage_path.startsWith("http") ||
+    image.storage_path.startsWith("/")
+  )
+    return image.storage_path;
+  return supabase.storage
+    .from(productImagesBucket)
+    .getPublicUrl(image.storage_path).data.publicUrl;
 }
 
 function shouldUseLegacyCatalog(error: unknown) {
   if (!error || typeof error !== "object") return false;
   const code = "code" in error ? String(error.code) : "";
   const message = "message" in error ? String(error.message) : "";
-  return code === "PGRST200" || message.includes("perfume_brands") || message.includes("product_variants");
+  return (
+    code === "PGRST200" ||
+    message.includes("perfume_brands") ||
+    message.includes("product_variants")
+  );
 }

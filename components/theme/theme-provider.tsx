@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 type ThemePreference = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
@@ -17,20 +24,25 @@ const storageKey = "decantscba-theme";
 
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 function getInitialThemePreference(): ThemePreference {
   if (typeof window === "undefined") return "system";
 
   const savedTheme = window.localStorage.getItem(storageKey);
-  return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "system";
+  return savedTheme === "light" || savedTheme === "dark"
+    ? savedTheme
+    : "system";
 }
 
 function getInitialResolvedTheme(): ResolvedTheme {
   if (typeof document !== "undefined") {
     const currentTheme = document.documentElement.dataset.theme;
-    if (currentTheme === "light" || currentTheme === "dark") return currentTheme;
+    if (currentTheme === "light" || currentTheme === "dark")
+      return currentTheme;
   }
 
   return getSystemTheme();
@@ -44,8 +56,12 @@ function applyTheme(theme: ThemePreference) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemePreference>(getInitialThemePreference);
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(getInitialResolvedTheme);
+  const [theme, setThemeState] = useState<ThemePreference>(
+    getInitialThemePreference,
+  );
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(
+    getInitialResolvedTheme,
+  );
 
   useEffect(() => {
     applyTheme(theme);
@@ -72,13 +88,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const currentTheme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+    const currentTheme =
+      document.documentElement.dataset.theme === "dark" ? "dark" : "light";
     setTheme(currentTheme === "dark" ? "light" : "dark");
   }, [setTheme]);
 
-  const value = useMemo(() => ({ theme, resolvedTheme, setTheme, toggleTheme }), [resolvedTheme, setTheme, theme, toggleTheme]);
+  const value = useMemo(
+    () => ({ theme, resolvedTheme, setTheme, toggleTheme }),
+    [resolvedTheme, setTheme, theme, toggleTheme],
+  );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

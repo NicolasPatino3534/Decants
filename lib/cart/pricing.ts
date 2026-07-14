@@ -68,7 +68,10 @@ export function mergeCartLines(primary: CartLine[], secondary: CartLine[]) {
       ...existing,
       ...line,
       stockOnHand,
-      quantity: clampCartQuantity(existing.quantity + line.quantity, stockOnHand),
+      quantity: clampCartQuantity(
+        existing.quantity + line.quantity,
+        stockOnHand,
+      ),
     });
   });
 

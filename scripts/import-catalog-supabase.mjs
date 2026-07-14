@@ -6,7 +6,9 @@ const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local.");
+  throw new Error(
+    "Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local.",
+  );
 }
 
 const catalogSource = await fs.readFile("lib/catalog-data.ts", "utf8");
@@ -18,23 +20,44 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-const brands = uniqueBy(products.map((product) => product.brand), "slug");
-const categories = uniqueBy(products.map((product) => product.category), "slug");
+const brands = uniqueBy(
+  products.map((product) => product.brand),
+  "slug",
+);
+const categories = uniqueBy(
+  products.map((product) => product.category),
+  "slug",
+);
 
 const perfumeBrands = await upsertAndSelect(
   "perfume_brands",
-  brands.map(({ name, slug, country = null }) => ({ name, slug, country, active: true })),
+  brands.map(({ name, slug, country = null }) => ({
+    name,
+    slug,
+    country,
+    active: true,
+  })),
   "slug",
 );
 await upsertAndSelect(
   "brands",
-  perfumeBrands.map(({ id, name, slug, country }) => ({ id, name, slug, country })),
+  perfumeBrands.map(({ id, name, slug, country }) => ({
+    id,
+    name,
+    slug,
+    country,
+  })),
   "slug",
 );
 
 const categoryRows = await upsertAndSelect(
   "categories",
-  categories.map(({ name, slug, description = null }) => ({ name, slug, description, active: true })),
+  categories.map(({ name, slug, description = null }) => ({
+    name,
+    slug,
+    description,
+    active: true,
+  })),
   "slug",
 );
 await upsertAndSelect(
@@ -44,7 +67,9 @@ await upsertAndSelect(
 );
 
 const brandIds = new Map(perfumeBrands.map((brand) => [brand.slug, brand.id]));
-const categoryIds = new Map(categoryRows.map((category) => [category.slug, category.id]));
+const categoryIds = new Map(
+  categoryRows.map((category) => [category.slug, category.id]),
+);
 const productRows = products.map((product) => ({
   brand_id: brandIds.get(product.brand.slug),
   family_id: categoryIds.get(product.category.slug),
@@ -65,7 +90,9 @@ const productRows = products.map((product) => ({
   featured: product.featured,
 }));
 const importedProducts = await upsertAndSelect("products", productRows, "slug");
-const productIds = new Map(importedProducts.map((product) => [product.slug, product.id]));
+const productIds = new Map(
+  importedProducts.map((product) => [product.slug, product.id]),
+);
 
 const variants = products.flatMap((product) =>
   product.variants.map((variant) => ({
@@ -82,7 +109,10 @@ await upsertAndSelect("product_variants", variants, "sku");
 
 const importedIds = [...productIds.values()];
 for (const ids of chunks(importedIds, 100)) {
-  const { error } = await supabase.from("product_images").delete().in("product_id", ids);
+  const { error } = await supabase
+    .from("product_images")
+    .delete()
+    .in("product_id", ids);
   if (error) throw error;
 }
 
@@ -118,12 +148,17 @@ await syncShippingMethods([
   },
 ]);
 
-console.log(`Imported ${products.length} products and ${variants.length} variants.`);
+console.log(
+  `Imported ${products.length} products and ${variants.length} variants.`,
+);
 
 async function upsertAndSelect(table, rows, onConflict) {
   const results = [];
   for (const batch of chunks(rows, 100)) {
-    const { data, error } = await supabase.from(table).upsert(batch, { onConflict }).select();
+    const { data, error } = await supabase
+      .from(table)
+      .upsert(batch, { onConflict })
+      .select();
     if (error) throw new Error(`${table}: ${error.message}`);
     results.push(...data);
   }
@@ -144,7 +179,8 @@ async function syncShippingMethods(methods) {
       .select("id")
       .eq("name", method.name)
       .maybeSingle();
-    if (selectError) throw new Error(`shipping_methods: ${selectError.message}`);
+    if (selectError)
+      throw new Error(`shipping_methods: ${selectError.message}`);
 
     const query = existing
       ? supabase.from("shipping_methods").update(method).eq("id", existing.id)
@@ -174,7 +210,10 @@ async function readEnvFile(path) {
       .map((line) => {
         const separator = line.indexOf("=");
         const key = line.slice(0, separator).trim();
-        const value = line.slice(separator + 1).trim().replace(/^(['"])(.*)\1$/, "$2");
+        const value = line
+          .slice(separator + 1)
+          .trim()
+          .replace(/^(['"])(.*)\1$/, "$2");
         return [key, value];
       }),
   );

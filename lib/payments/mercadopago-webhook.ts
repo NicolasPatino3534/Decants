@@ -16,9 +16,16 @@ export function getMercadoPagoWebhookDataId(requestUrl: URL) {
   return requestUrl.searchParams.get("data.id");
 }
 
-export function getMercadoPagoPaymentId(payload: Record<string, unknown>, requestUrl: URL) {
-  const queryId = requestUrl.searchParams.get("data.id") ?? requestUrl.searchParams.get("id");
-  const data = payload.data && typeof payload.data === "object" ? (payload.data as Record<string, unknown>) : null;
+export function getMercadoPagoPaymentId(
+  payload: Record<string, unknown>,
+  requestUrl: URL,
+) {
+  const queryId =
+    requestUrl.searchParams.get("data.id") ?? requestUrl.searchParams.get("id");
+  const data =
+    payload.data && typeof payload.data === "object"
+      ? (payload.data as Record<string, unknown>)
+      : null;
   const bodyId = data?.id ?? payload.id;
   const resourceId = getPaymentIdFromResource(payload.resource);
   const id = queryId ?? bodyId ?? resourceId;
@@ -27,15 +34,19 @@ export function getMercadoPagoPaymentId(payload: Record<string, unknown>, reques
 }
 
 export function getMercadoPagoOrderId(payment: MercadoPagoPaymentLike) {
-  const metadataOrderId = payment.metadata?.order_id ?? payment.metadata?.orderId;
+  const metadataOrderId =
+    payment.metadata?.order_id ?? payment.metadata?.orderId;
   if (typeof metadataOrderId === "string") return metadataOrderId;
-  return typeof payment.external_reference === "string" ? payment.external_reference : null;
+  return typeof payment.external_reference === "string"
+    ? payment.external_reference
+    : null;
 }
 
 export function getMercadoPagoPaymentAction(status: string | null | undefined) {
   if (status === "approved") return "approved";
   if (status === "in_process" || status === "pending") return "review";
-  if (["cancelled", "rejected", "refunded", "charged_back"].includes(status ?? "")) return "failed";
+  if (status === "refunded" || status === "charged_back") return "reversed";
+  if (status === "cancelled" || status === "rejected") return "failed";
   return "ignored";
 }
 

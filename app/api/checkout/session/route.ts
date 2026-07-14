@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server";
 import { calculateCartTotals } from "@/lib/cart/pricing";
-import { clearPersistedCart } from "@/lib/cart/server";
 import { checkoutSchema, type CheckoutInput } from "@/lib/checkout/schema";
-import { resolveCouponDiscount, resolveShippingMethod } from "@/lib/checkout/options";
-import { buildCheckoutLines, CheckoutStockError, normalizeCheckoutItems, selectCheckoutVariantsForItems } from "@/lib/checkout/stock";
-import { env } from "@/lib/env";
+import {
+  CheckoutShippingMethodError,
+  resolveCouponDiscount,
+  resolveShippingMethod,
+} from "@/lib/checkout/options";
+import {
+  buildCheckoutLines,
+  CheckoutStockError,
+  normalizeCheckoutItems,
+  selectCheckoutVariantsForItems,
+} from "@/lib/checkout/stock";
+import { env, getPaymentConfigurationError } from "@/lib/env";
 import { getMercadoPagoPreference } from "@/lib/payments/mercadopago";
 import { getStripe } from "@/lib/payments/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -31,7 +39,13 @@ type LegacyVariantRow = {
   price_cents: number;
   stock_on_hand: number;
   is_active: boolean;
-  products: { id: string; name: string; slug: string; brands?: { name: string } | null } | null;
+  products: {
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    brands?: { name: string } | null;
+  } | null;
 };
 
 type ProductVariantRow = {
@@ -41,7 +55,13 @@ type ProductVariantRow = {
   price_cents: number;
   stock: number;
   active: boolean;
-  products: { id: string; name: string; slug: string; perfume_brands?: { name: string } | null } | null;
+  products: {
+    id: string;
+    name: string;
+    slug: string;
+    active: boolean;
+    perfume_brands?: { name: string } | null;
+  } | null;
 };
 
 type ReservedStock = {
@@ -58,15 +78,48 @@ type ReserveCheckoutStockRow = {
   next_stock: number;
 };
 
+const PAYMENT_SESSION_TTL_MS = 35 * 60 * 1000;
+const RESERVATION_RELEASE_GRACE_MS = 10 * 60 * 1000;
+
 export async function POST(request: Request) {
-  const parsed = checkoutSchema.safeParse(await request.json());
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "El cuerpo de la solicitud no es JSON válido." },
+      { status: 400 },
+    );
+  }
+
+  const parsed = checkoutSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Datos de checkout inválidos." }, { status: 400 });
+    return NextResponse.json(
+      {
+        error:
+          parsed.error.issues[0]?.message ?? "Datos de checkout inválidos.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const configurationIssue = getPaymentConfigurationError();
+  if (configurationIssue) {
+    console.error("checkout_payment_configuration_error", {
+      provider: env.paymentProvider,
+    });
+    return NextResponse.json(
+      { error: "El sistema de pagos no está disponible temporalmente." },
+      { status: 503 },
+    );
   }
 
   const admin = createSupabaseAdminClient();
   if (!admin) {
-    return NextResponse.json({ error: "Supabase admin no está configurado para crear pedidos." }, { status: 503 });
+    return NextResponse.json(
+      { error: "Supabase admin no está configurado para crear pedidos." },
+      { status: 503 },
+    );
   }
 
   const supabase = await createSupabaseServerClient();
@@ -74,50 +127,98 @@ export async function POST(request: Request) {
     data: { user },
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
   if (!user) {
-    return NextResponse.json({ error: "Necesitás iniciar sesión para comprar." }, { status: 401 });
+    return NextResponse.json(
+      { error: "Necesitás iniciar sesión para comprar." },
+      { status: 401 },
+    );
   }
 
   const { data: profile } = supabase
-    ? await supabase.from("profiles").select("email,full_name,phone").eq("id", user.id).maybeSingle()
+    ? await supabase
+        .from("profiles")
+        .select("email,full_name,phone")
+        .eq("id", user.id)
+        .maybeSingle()
     : { data: null };
   const checkoutInput: CheckoutInput = {
     ...parsed.data,
     customer: {
       ...parsed.data.customer,
-      email: (profile?.email ?? user.email ?? parsed.data.customer.email).toLowerCase(),
+      email: (
+        profile?.email ??
+        user.email ??
+        parsed.data.customer.email
+      ).toLowerCase(),
       name: parsed.data.customer.name || profile?.full_name || "",
       phone: parsed.data.customer.phone || profile?.phone || "",
     },
   };
 
-  const existing = await findExistingOrderByIdempotencyKey(admin, checkoutInput);
+  const existing = await findExistingOrderByIdempotencyKey(
+    admin,
+    checkoutInput,
+  );
   if (existing) {
-    return NextResponse.json({ url: `${env.siteUrl}/checkout/success?order=${existing.id}`, orderId: existing.id, duplicate: true });
+    return NextResponse.json({
+      url: `${env.siteUrl}/checkout/success?order=${existing.id}`,
+      orderId: existing.id,
+      duplicate: true,
+    });
   }
 
   const items = normalizeCheckoutItems(checkoutInput.items);
-  const variants = await fetchCheckoutVariants(admin, items.map((item) => item.variantId));
-  let lines: Array<{ variant: CheckoutVariant; quantity: number; totalCents: number }>;
+  const variants = await fetchCheckoutVariants(
+    admin,
+    items.map((item) => item.variantId),
+  );
+  let lines: Array<{
+    variant: CheckoutVariant;
+    quantity: number;
+    totalCents: number;
+  }>;
   try {
     lines = buildCheckoutLines(items, variants);
   } catch (caught) {
     if (caught instanceof CheckoutStockError) {
       logCheckoutStockValidationFailure(caught, items, variants);
-      return NextResponse.json({ error: caught.message }, { status: caught.status });
+      return NextResponse.json(
+        { error: caught.message },
+        { status: caught.status },
+      );
     }
     console.error("checkout_stock_validation_error", caught);
-    return NextResponse.json({ error: "No se pudo validar el stock." }, { status: 500 });
+    return NextResponse.json(
+      { error: "No se pudo validar el stock." },
+      { status: 500 },
+    );
   }
 
   const subtotalCents = lines.reduce((sum, line) => sum + line.totalCents, 0);
-  const [shippingMethod, coupon] = await Promise.all([
-    resolveShippingMethod(admin, checkoutInput.shippingMethodId),
-    resolveCouponDiscount({
-      supabase: admin,
-      couponCode: checkoutInput.couponCode,
-      subtotalCents,
-    }),
-  ]);
+  let shippingMethod;
+  try {
+    shippingMethod = await resolveShippingMethod(
+      admin,
+      checkoutInput.shippingMethodId,
+    );
+  } catch (caught) {
+    if (caught instanceof CheckoutShippingMethodError) {
+      return NextResponse.json(
+        { error: caught.message },
+        { status: caught.status },
+      );
+    }
+    console.error("checkout_shipping_method_resolution_error");
+    return NextResponse.json(
+      { error: "No se pudo validar el método de envío." },
+      { status: 500 },
+    );
+  }
+
+  const coupon = await resolveCouponDiscount({
+    supabase: admin,
+    couponCode: checkoutInput.couponCode,
+    subtotalCents,
+  });
 
   if (coupon.error) {
     return NextResponse.json({ error: coupon.error }, { status: 400 });
@@ -138,32 +239,75 @@ export async function POST(request: Request) {
     discountCents: coupon.discountCents,
   });
 
+  const paymentExpiresAt = new Date(Date.now() + PAYMENT_SESSION_TTL_MS);
+  const reservationExpiresAt = new Date(
+    paymentExpiresAt.getTime() + RESERVATION_RELEASE_GRACE_MS,
+  );
+  const reservationGuard = await acquireCheckoutReservationGuard(admin, {
+    userId: user.id,
+    idempotencyKey: checkoutInput.idempotencyKey,
+    expiresAt: reservationExpiresAt,
+  });
+  if (!reservationGuard.ok) {
+    return NextResponse.json(
+      { error: reservationGuard.error },
+      { status: reservationGuard.status },
+    );
+  }
+
+  const couponReservation = await reserveCheckoutCoupon(admin, {
+    couponId: coupon.couponId,
+    userId: user.id,
+    idempotencyKey: checkoutInput.idempotencyKey,
+    expiresAt: reservationExpiresAt,
+  });
+  if (!couponReservation.ok) {
+    await releaseCheckoutSecurityGuards(
+      admin,
+      user.id,
+      checkoutInput.idempotencyKey,
+    );
+    return NextResponse.json(
+      { error: couponReservation.error },
+      { status: couponReservation.status },
+    );
+  }
+
   const reservedStock = await reserveStock(admin, lines);
   if (!reservedStock.ok) {
+    await releaseCheckoutSecurityGuards(
+      admin,
+      user.id,
+      checkoutInput.idempotencyKey,
+    );
     return NextResponse.json({ error: reservedStock.error }, { status: 409 });
   }
 
   let orderIdForRollback: string | null = null;
+  let orderItemsPersisted = false;
 
   try {
     const order = await createOrder(admin, {
       input: checkoutInput,
       userId: user.id,
-      shippingMethodId: isUuid(shippingMethod.id) ? shippingMethod.id : null,
+      shippingMethodId: shippingMethod.id,
       couponId: coupon.couponId,
       totals,
+      reservationExpiresAt,
     });
     orderIdForRollback = order.id;
 
     await createOrderItems(admin, order.id, lines);
+    orderItemsPersisted = true;
     await createInventoryReservationMovements(admin, order.id, lines);
-    await incrementCouponUsage(admin, coupon.couponId);
-    if (supabase) await clearPersistedCart(supabase, user.id);
 
     if (env.paymentProvider === "mercadopago") {
       const preferenceClient = getMercadoPagoPreference();
       if (!preferenceClient) {
-        throw new CheckoutError("Mercado Pago no esta configurado. Revisa MERCADOPAGO_ACCESS_TOKEN.", 503);
+        throw new CheckoutError(
+          "Mercado Pago no esta configurado. Revisa MERCADOPAGO_ACCESS_TOKEN.",
+          503,
+        );
       }
       const mercadoPagoSiteUrl = getMercadoPagoSiteUrl();
 
@@ -193,20 +337,34 @@ export async function POST(request: Request) {
             },
             auto_return: "approved",
             external_reference: order.id,
-            metadata: { orderId: order.id, idempotencyKey: checkoutInput.idempotencyKey },
+            metadata: {
+              orderId: order.id,
+              idempotencyKey: checkoutInput.idempotencyKey,
+            },
             notification_url: `${mercadoPagoSiteUrl}/api/webhooks/mercadopago`,
             statement_descriptor: "DECANTS CBA",
+            expires: true,
+            expiration_date_to: paymentExpiresAt.toISOString(),
           },
-          requestOptions: { idempotencyKey: `mercadopago-preference-${order.id}` },
+          requestOptions: {
+            idempotencyKey: `mercadopago-preference-${order.id}`,
+          },
         });
       } catch (caught) {
         console.error("mercadopago_preference_error", caught);
-        throw new CheckoutError("Mercado Pago no esta disponible. Intenta nuevamente en unos minutos.", 502);
+        throw new CheckoutError(
+          "Mercado Pago no esta disponible. Intenta nuevamente en unos minutos.",
+          502,
+        );
       }
 
-      const checkoutUrl = preference.init_point ?? preference.sandbox_init_point;
+      const checkoutUrl =
+        preference.init_point ?? preference.sandbox_init_point;
       if (!preference.id || !checkoutUrl) {
-        throw new CheckoutError("Mercado Pago no devolvio una URL de checkout.", 502);
+        throw new CheckoutError(
+          "Mercado Pago no devolvio una URL de checkout.",
+          502,
+        );
       }
 
       await createPayment(admin, {
@@ -216,18 +374,46 @@ export async function POST(request: Request) {
         totalCents: totals.totalCents,
       });
 
-      return NextResponse.json({ url: checkoutUrl, orderId: order.id, payment: "mercadopago" });
+      return NextResponse.json({
+        url: checkoutUrl,
+        orderId: order.id,
+        payment: "mercadopago",
+      });
     }
 
-    const stripe = getStripe();
-    if (!stripe) {
+    if (env.paymentProvider === "manual") {
+      if (process.env.NODE_ENV === "production") {
+        throw new CheckoutError(
+          "El pago manual no está habilitado en producción.",
+          503,
+        );
+      }
       await createPayment(admin, {
         orderId: order.id,
         provider: "manual",
         providerSessionId: null,
         totalCents: totals.totalCents,
       });
-      return NextResponse.json({ url: `${env.siteUrl}/checkout/success?order=${order.id}&pending=1`, orderId: order.id, payment: "manual" });
+      return NextResponse.json({
+        url: `${env.siteUrl}/checkout/success?order=${order.id}&pending=1`,
+        orderId: order.id,
+        payment: "manual",
+      });
+    }
+
+    if (env.paymentProvider !== "stripe") {
+      throw new CheckoutError(
+        "PAYMENT_PROVIDER no tiene un valor válido.",
+        503,
+      );
+    }
+
+    const stripe = getStripe();
+    if (!stripe) {
+      throw new CheckoutError(
+        "Stripe no está configurado. Revisá STRIPE_SECRET_KEY.",
+        503,
+      );
     }
 
     let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>;
@@ -244,7 +430,11 @@ export async function POST(request: Request) {
           customer_email: checkoutInput.customer.email,
           success_url: `${env.siteUrl}/checkout/success?order=${order.id}`,
           cancel_url: `${env.siteUrl}/checkout`,
-          metadata: { orderId: order.id, idempotencyKey: checkoutInput.idempotencyKey },
+          metadata: {
+            orderId: order.id,
+            idempotencyKey: checkoutInput.idempotencyKey,
+          },
+          expires_at: Math.floor(paymentExpiresAt.getTime() / 1000),
           ...(discounts.length > 0 ? { discounts } : {}),
           line_items: [
             ...lines.map((line) => ({
@@ -271,7 +461,10 @@ export async function POST(request: Request) {
       );
     } catch (caught) {
       console.error("stripe_checkout_session_error", caught);
-      throw new CheckoutError("El proveedor de pagos no está disponible. Intentá nuevamente en unos minutos.", 502);
+      throw new CheckoutError(
+        "El proveedor de pagos no está disponible. Intentá nuevamente en unos minutos.",
+        502,
+      );
     }
 
     if (!session.url) {
@@ -285,15 +478,57 @@ export async function POST(request: Request) {
       totalCents: totals.totalCents,
     });
 
-    return NextResponse.json({ url: session.url, orderId: order.id, payment: "stripe" });
+    return NextResponse.json({
+      url: session.url,
+      orderId: order.id,
+      payment: "stripe",
+    });
   } catch (caught) {
-    await releaseStock(admin, reservedStock.reserved);
-    if (orderIdForRollback) await markOrderCheckoutFailed(admin, orderIdForRollback);
+    if (orderIdForRollback && orderItemsPersisted) {
+      const { error: releaseError } = await admin.rpc(
+        "release_order_stock_reservation",
+        {
+          p_order_id: orderIdForRollback,
+          p_payment_status: "failed",
+          p_note: "Checkout interrumpido antes de redirigir al proveedor",
+        },
+      );
+      if (releaseError) {
+        console.error("checkout_transactional_stock_release_error", {
+          orderId: orderIdForRollback,
+          code: releaseError.code,
+        });
+      }
+    } else {
+      await releaseStock(admin, reservedStock.reserved);
+      if (orderIdForRollback)
+        await markOrderCheckoutFailed(admin, orderIdForRollback);
+    }
+    await releaseCheckoutSecurityGuards(
+      admin,
+      user.id,
+      checkoutInput.idempotencyKey,
+    );
+    if (caught instanceof CheckoutDuplicateError) {
+      return NextResponse.json(
+        {
+          error:
+            "Este checkout ya se está procesando. Revisá tus pedidos antes de reintentar.",
+        },
+        { status: 409 },
+      );
+    }
     if (caught instanceof CheckoutError) {
-      return NextResponse.json({ error: caught.message }, { status: caught.status });
+      return NextResponse.json(
+        { error: caught.message },
+        { status: caught.status },
+      );
     }
     console.error("checkout_create_order_error", caught);
-    return NextResponse.json({ error: "No se pudo crear el pedido." }, { status: 500 });
+    return NextResponse.json(
+      { error: "No se pudo crear el pedido." },
+      { status: 500 },
+    );
   }
 }
 
@@ -306,25 +541,36 @@ function logCheckoutStockValidationFailure(
   console.warn("checkout_stock_validation_failed", {
     itemCount: items.length,
     resolvedVariantCount: variants.length,
-    missingVariantCount: items.filter((item) => !resolvedVariantIds.has(item.variantId)).length,
+    missingVariantCount: items.filter(
+      (item) => !resolvedVariantIds.has(item.variantId),
+    ).length,
     message: error.message,
   });
 }
 
-async function fetchCheckoutVariants(admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>, variantIds: string[]): Promise<CheckoutVariant[]> {
+async function fetchCheckoutVariants(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  variantIds: string[],
+): Promise<CheckoutVariant[]> {
   if (variantIds.length === 0) return [];
 
   const [legacy, modern] = await Promise.all([
     admin
       .from("decant_variants")
-      .select("id,size_ml,sku,price_cents,stock_on_hand,is_active,products ( id, name, slug, brands ( name ) )")
+      .select(
+        "id,size_ml,sku,price_cents,stock_on_hand,is_active,products!inner ( id, name, slug, status, brands ( name ) )",
+      )
       .in("id", variantIds)
-      .eq("is_active", true),
+      .eq("is_active", true)
+      .eq("products.status", "active"),
     admin
       .from("product_variants")
-      .select("id,size_ml,sku,price_cents,stock,active,products ( id, name, slug, perfume_brands ( name ) )")
+      .select(
+        "id,size_ml,sku,price_cents,stock,active,products!inner ( id, name, slug, active, perfume_brands ( name ) )",
+      )
       .in("id", variantIds)
-      .eq("active", true),
+      .eq("active", true)
+      .eq("products.active", true),
   ]);
 
   const legacyVariants =
@@ -367,11 +613,104 @@ async function fetchCheckoutVariants(admin: NonNullable<ReturnType<typeof create
   );
 }
 
+async function acquireCheckoutReservationGuard(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  {
+    userId,
+    idempotencyKey,
+    expiresAt,
+  }: { userId: string; idempotencyKey: string; expiresAt: Date },
+) {
+  const { data, error } = await admin.rpc(
+    "acquire_checkout_reservation_guard",
+    {
+      p_user_id: userId,
+      p_idempotency_key: idempotencyKey,
+      p_expires_at: expiresAt.toISOString(),
+      p_max_open: 3,
+    },
+  );
+
+  if (error) {
+    console.error("checkout_reservation_guard_error", { code: error.code });
+    return {
+      ok: false as const,
+      status: 503,
+      error: "La reserva de checkout no est\u00e1 disponible temporalmente.",
+    };
+  }
+  if (data !== true) {
+    return {
+      ok: false as const,
+      status: 429,
+      error:
+        "Alcanzaste el l\u00edmite de checkouts pendientes. Finaliz\u00e1 o esper\u00e1 que venzan antes de reintentar.",
+    };
+  }
+  return { ok: true as const };
+}
+
+async function reserveCheckoutCoupon(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  {
+    couponId,
+    userId,
+    idempotencyKey,
+    expiresAt,
+  }: {
+    couponId: string | null;
+    userId: string;
+    idempotencyKey: string;
+    expiresAt: Date;
+  },
+) {
+  if (!couponId) return { ok: true as const };
+
+  const { data, error } = await admin.rpc("reserve_checkout_coupon", {
+    p_coupon_id: couponId,
+    p_user_id: userId,
+    p_idempotency_key: idempotencyKey,
+    p_expires_at: expiresAt.toISOString(),
+  });
+  if (error) {
+    console.error("checkout_coupon_reservation_error", { code: error.code });
+    return {
+      ok: false as const,
+      status: 503,
+      error: "No se pudo reservar el cup\u00f3n temporalmente.",
+    };
+  }
+  if (data !== true) {
+    return {
+      ok: false as const,
+      status: 409,
+      error: "El cup\u00f3n alcanz\u00f3 su l\u00edmite de usos.",
+    };
+  }
+  return { ok: true as const };
+}
+
+async function releaseCheckoutSecurityGuards(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  userId: string,
+  idempotencyKey: string,
+) {
+  const { error } = await admin.rpc("release_checkout_security_guards", {
+    p_user_id: userId,
+    p_idempotency_key: idempotencyKey,
+  });
+  if (error) {
+    console.error("checkout_security_guard_release_error", {
+      code: error.code,
+    });
+  }
+}
+
 async function reserveStock(
   admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
   lines: Array<{ variant: CheckoutVariant; quantity: number }>,
 ) {
-  const { data, error } = await admin.rpc("reserve_checkout_stock", {
+  const { data, error } = await admin.rpc("reserve_checkout_stock_mirrored", {
     p_items: lines.map((line) => ({
       variant_id: line.variant.id,
       table_name: line.variant.table,
@@ -389,17 +728,35 @@ async function reserveStock(
         return {
           variant: line.variant,
           quantity: line.quantity,
-          previousStock: Number(reserved?.previous_stock ?? line.variant.stockOnHand),
-          nextStock: Number(reserved?.next_stock ?? line.variant.stockOnHand - line.quantity),
+          previousStock: Number(
+            reserved?.previous_stock ?? line.variant.stockOnHand,
+          ),
+          nextStock: Number(
+            reserved?.next_stock ?? line.variant.stockOnHand - line.quantity,
+          ),
         };
       }),
     };
   }
 
   if (error && !isMissingRpcError(error)) {
+    console.warn("checkout_atomic_stock_reservation_rejected", {
+      code: error.code,
+    });
     return {
       ok: false as const,
-      error: error.message || "El stock cambió. Revisá el carrito.",
+      error: "El stock cambió. Revisá el carrito antes de continuar.",
+      reserved: [],
+    };
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    console.error("checkout_atomic_stock_reservation_unavailable", {
+      code: error?.code,
+    });
+    return {
+      ok: false as const,
+      error: "La reserva de stock no está disponible temporalmente.",
       reserved: [],
     };
   }
@@ -424,17 +781,87 @@ async function reserveStockOptimistic(
 
     if (error || !data || data.length === 0) {
       await releaseStock(admin, reserved);
-      return { ok: false as const, error: `El stock de ${line.variant.productName} cambió. Revisá el carrito.`, reserved: [] };
+      return {
+        ok: false as const,
+        error: `El stock de ${line.variant.productName} cambió. Revisá el carrito.`,
+        reserved: [],
+      };
     }
 
-    reserved.push({ variant: line.variant, quantity: line.quantity, previousStock: line.variant.stockOnHand, nextStock });
+    await syncMirroredVariantStock(admin, line.variant, nextStock);
+    reserved.push({
+      variant: line.variant,
+      quantity: line.quantity,
+      previousStock: line.variant.stockOnHand,
+      nextStock,
+    });
   }
 
   return { ok: true as const, reserved };
 }
 
-async function releaseStock(admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>, reserved: ReservedStock[]) {
-  await Promise.all(reserved.map((item) => incrementVariantStock(admin, item.variant, item.quantity)));
+async function releaseStock(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  reserved: ReservedStock[],
+) {
+  if (reserved.length === 0) return;
+  const { error } = await admin.rpc("release_checkout_stock_mirrored", {
+    p_items: reserved.map((item) => ({
+      variant_id: item.variant.id,
+      quantity: item.quantity,
+    })),
+  });
+  if (!error) return;
+
+  if (process.env.NODE_ENV === "production") {
+    console.error("checkout_atomic_stock_rollback_error", {
+      code: error.code,
+    });
+    return;
+  }
+
+  await Promise.all(
+    reserved.flatMap((item) => [
+      incrementVariantStock(
+        admin,
+        { ...item.variant, table: "product_variants", stockColumn: "stock" },
+        item.quantity,
+      ),
+      incrementVariantStock(
+        admin,
+        {
+          ...item.variant,
+          table: "decant_variants",
+          stockColumn: "stock_on_hand",
+        },
+        item.quantity,
+      ),
+    ]),
+  );
+}
+
+async function syncMirroredVariantStock(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  variant: CheckoutVariant,
+  nextStock: number,
+) {
+  const table =
+    variant.table === "product_variants"
+      ? "decant_variants"
+      : "product_variants";
+  const stockColumn =
+    variant.table === "product_variants" ? "stock_on_hand" : "stock";
+  const { error } = await admin
+    .from(table)
+    .update({ [stockColumn]: nextStock })
+    .eq("id", variant.id);
+  if (error && !/relation .* does not exist/i.test(error.message)) {
+    console.error("checkout_stock_mirror_error", {
+      variantId: variant.id,
+      table,
+      code: error.code,
+    });
+  }
 }
 
 async function incrementVariantStock(
@@ -442,8 +869,14 @@ async function incrementVariantStock(
   variant: CheckoutVariant,
   quantity: number,
 ) {
-  const rpcName = variant.table === "product_variants" ? "increment_variant_stock" : "increment_decant_variant_stock";
-  const { data, error } = await admin.rpc(rpcName, { p_variant_id: variant.id, p_quantity: quantity });
+  const rpcName =
+    variant.table === "product_variants"
+      ? "increment_variant_stock"
+      : "increment_decant_variant_stock";
+  const { data, error } = await admin.rpc(rpcName, {
+    p_variant_id: variant.id,
+    p_quantity: quantity,
+  });
 
   if (!error && data !== false) return true;
   if (error && !isMissingRpcError(error)) {
@@ -459,7 +892,9 @@ async function incrementVariantStock(
 
   if (selectError || !current) return false;
 
-  const currentStock = Number((current as Record<string, unknown>)[variant.stockColumn] ?? 0);
+  const currentStock = Number(
+    (current as Record<string, unknown>)[variant.stockColumn] ?? 0,
+  );
   const { error: updateError } = await admin
     .from(variant.table)
     .update({ [variant.stockColumn]: currentStock + quantity })
@@ -487,7 +922,9 @@ async function createStripeDiscounts(
       amount_off: discountCents,
       currency: "ars",
       duration: "once",
-      name: couponCode?.trim() ? `Descuento ${couponCode.trim().toUpperCase()}` : "Descuento de checkout",
+      name: couponCode?.trim()
+        ? `Descuento ${couponCode.trim().toUpperCase()}`
+        : "Descuento de checkout",
       metadata: { orderId },
     },
     { idempotencyKey: `checkout-discount-${orderId}-${discountCents}` },
@@ -504,12 +941,19 @@ async function createOrder(
     shippingMethodId,
     couponId,
     totals,
+    reservationExpiresAt,
   }: {
     input: CheckoutInput;
     userId: string | null;
     shippingMethodId: string | null;
     couponId: string | null;
-    totals: { subtotalCents: number; discountCents: number; shippingCents: number; totalCents: number };
+    totals: {
+      subtotalCents: number;
+      discountCents: number;
+      shippingCents: number;
+      totalCents: number;
+    };
+    reservationExpiresAt: Date;
   },
 ) {
   const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
@@ -533,34 +977,36 @@ async function createOrder(
       phone: input.customer.phone,
     },
     checkout_idempotency_key: input.idempotencyKey,
+    reservation_expires_at: reservationExpiresAt.toISOString(),
     notes: `checkout:${input.idempotencyKey}`,
   };
 
-  let { data, error } = await admin.from("orders").insert(insertPayload).select("id").single();
+  const { data, error } = await admin
+    .from("orders")
+    .insert(insertPayload)
+    .select("id")
+    .single();
 
   if (
-    error &&
-    (error.message.includes("shipping_method_id") || error.message.includes("coupon_id") || error.message.includes("checkout_idempotency_key"))
+    error?.code === "23505" &&
+    /checkout_idempotency_key|idempotency/i.test(error.message)
   ) {
-    const {
-      shipping_method_id: _shippingMethodId,
-      coupon_id: _couponId,
-      checkout_idempotency_key: _checkoutIdempotencyKey,
-      ...legacyPayload
-    } = insertPayload;
-    const retry = await admin.from("orders").insert(legacyPayload).select("id").single();
-    data = retry.data;
-    error = retry.error;
+    throw new CheckoutDuplicateError();
   }
 
-  if (error || !data) throw new CheckoutError("No se pudo crear el pedido.", 500);
+  if (error || !data)
+    throw new CheckoutError("No se pudo crear el pedido.", 500);
   return data as { id: string };
 }
 
 async function createOrderItems(
   admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
   orderId: string,
-  lines: Array<{ variant: CheckoutVariant; quantity: number; totalCents: number }>,
+  lines: Array<{
+    variant: CheckoutVariant;
+    quantity: number;
+    totalCents: number;
+  }>,
 ) {
   const modernPayload = lines.map((line) => ({
     order_id: orderId,
@@ -620,7 +1066,12 @@ async function createOrderItems(
   throw new CheckoutError("No se pudieron crear los items del pedido.", 500);
 }
 
-function serializePostgrestError(error: { code?: string; message?: string; details?: string | null; hint?: string | null }) {
+function serializePostgrestError(error: {
+  code?: string;
+  message?: string;
+  details?: string | null;
+  hint?: string | null;
+}) {
   return {
     code: error.code,
     message: error.message,
@@ -643,7 +1094,7 @@ async function createPayment(
     totalCents: number;
   },
 ) {
-  await admin.from("payments").insert({
+  const { error } = await admin.from("payments").insert({
     order_id: orderId,
     provider,
     provider_session_id: providerSessionId,
@@ -651,16 +1102,25 @@ async function createPayment(
     amount_cents: totalCents,
     currency: "ars",
   });
+  if (error)
+    throw new CheckoutError("No se pudo registrar el pago del pedido.", 500);
 }
 
-async function markOrderCheckoutFailed(admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>, orderId: string) {
+async function markOrderCheckoutFailed(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  orderId: string,
+) {
   await admin
     .from("orders")
     .update({ status: "cancelled", payment_status: "failed" })
     .eq("id", orderId)
     .eq("payment_status", "pending");
 
-  await admin.from("payments").update({ status: "failed" }).eq("order_id", orderId).eq("status", "pending");
+  await admin
+    .from("payments")
+    .update({ status: "failed" })
+    .eq("order_id", orderId)
+    .eq("status", "pending");
 }
 
 async function createInventoryReservationMovements(
@@ -676,7 +1136,9 @@ async function createInventoryReservationMovements(
     note: "Stock reservado al confirmar checkout",
   }));
 
-  const { error } = await admin.from("inventory_movements").insert(modernPayload);
+  const { error } = await admin
+    .from("inventory_movements")
+    .insert(modernPayload);
   if (!error) return;
 
   const legacyPayload = lines.map((line) => ({
@@ -688,14 +1150,10 @@ async function createInventoryReservationMovements(
   await admin.from("inventory_movements").insert(legacyPayload);
 }
 
-async function incrementCouponUsage(admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>, couponId: string | null) {
-  if (!couponId) return;
-  const { data } = await admin.from("coupons").select("used_count").eq("id", couponId).maybeSingle();
-  const usedCount = Number(data?.used_count ?? 0);
-  await admin.from("coupons").update({ used_count: usedCount + 1 }).eq("id", couponId);
-}
-
-async function findExistingOrderByIdempotencyKey(admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>, input: CheckoutInput) {
+async function findExistingOrderByIdempotencyKey(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  input: CheckoutInput,
+) {
   const byColumn = await admin
     .from("orders")
     .select("id,status,payment_status")
@@ -703,7 +1161,11 @@ async function findExistingOrderByIdempotencyKey(admin: NonNullable<ReturnType<t
     .eq("checkout_idempotency_key", input.idempotencyKey)
     .maybeSingle();
 
-  if (!byColumn.error && byColumn.data && canReuseExistingOrder(byColumn.data)) {
+  if (
+    !byColumn.error &&
+    byColumn.data &&
+    canReuseExistingOrder(byColumn.data)
+  ) {
     return byColumn.data as { id: string };
   }
 
@@ -711,14 +1173,10 @@ async function findExistingOrderByIdempotencyKey(admin: NonNullable<ReturnType<t
     .from("orders")
     .select("id,status,payment_status")
     .eq("customer_email", input.customer.email)
-    .ilike("notes", `%checkout:${input.idempotencyKey}%`)
+    .eq("notes", `checkout:${input.idempotencyKey}`)
     .maybeSingle();
 
   return data && canReuseExistingOrder(data) ? (data as { id: string }) : null;
-}
-
-function isUuid(value: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
 function centsToMoney(cents: number) {
@@ -727,22 +1185,45 @@ function centsToMoney(cents: number) {
 
 function getMercadoPagoSiteUrl() {
   const siteUrl = env.siteUrl.replace(/\/$/, "");
-  if (process.env.NODE_ENV === "production" && !siteUrl.startsWith("https://")) {
-    throw new CheckoutError("NEXT_PUBLIC_SITE_URL debe ser una URL HTTPS publica para usar Mercado Pago en produccion.", 503);
+  if (
+    process.env.NODE_ENV === "production" &&
+    !siteUrl.startsWith("https://")
+  ) {
+    throw new CheckoutError(
+      "NEXT_PUBLIC_SITE_URL debe ser una URL HTTPS publica para usar Mercado Pago en produccion.",
+      503,
+    );
   }
   return siteUrl;
 }
 
 function isMissingRpcError(error: { code?: string; message?: string }) {
-  return error.code === "PGRST202" || /function .* does not exist|could not find the function/i.test(error.message ?? "");
+  return (
+    error.code === "PGRST202" ||
+    /function .* does not exist|could not find the function/i.test(
+      error.message ?? "",
+    )
+  );
 }
 
-function canReuseExistingOrder(order: { status?: string | null; payment_status?: string | null }) {
-  return order.status !== "cancelled" && order.payment_status !== "failed" && order.payment_status !== "cancelled";
+function canReuseExistingOrder(order: {
+  status?: string | null;
+  payment_status?: string | null;
+}) {
+  return (
+    order.status !== "cancelled" &&
+    order.payment_status !== "failed" &&
+    order.payment_status !== "cancelled"
+  );
 }
 
 class CheckoutError extends Error {
-  constructor(message: string, readonly status: number) {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
     super(message);
   }
 }
+
+class CheckoutDuplicateError extends Error {}

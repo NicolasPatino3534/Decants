@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildCheckoutLines, CheckoutStockError, normalizeCheckoutItems, selectCheckoutVariantsForItems } from "@/lib/checkout/stock";
+import {
+  buildCheckoutLines,
+  CheckoutStockError,
+  normalizeCheckoutItems,
+  selectCheckoutVariantsForItems,
+} from "@/lib/checkout/stock";
 
 const variants = [
   {
@@ -29,7 +34,10 @@ describe("checkout stock integration logic", () => {
   });
 
   it("builds checkout lines with server prices", () => {
-    const lines = buildCheckoutLines([{ variantId: "variant_2ml", quantity: 2 }], variants);
+    const lines = buildCheckoutLines(
+      [{ variantId: "variant_2ml", quantity: 2 }],
+      variants,
+    );
 
     expect(lines).toEqual([
       {
@@ -41,18 +49,28 @@ describe("checkout stock integration logic", () => {
   });
 
   it("allows checkout when requested quantity exactly matches stock", () => {
-    const lines = buildCheckoutLines([{ variantId: "variant_2ml", quantity: 3 }], variants);
+    const lines = buildCheckoutLines(
+      [{ variantId: "variant_2ml", quantity: 3 }],
+      variants,
+    );
 
     expect(lines[0]?.quantity).toBe(3);
     expect(lines[0]?.totalCents).toBe(4800000);
   });
 
   it("prevents checkout when stock is insufficient", () => {
-    expect(() => buildCheckoutLines([{ variantId: "variant_5ml", quantity: 2 }], variants)).toThrow(CheckoutStockError);
+    expect(() =>
+      buildCheckoutLines([{ variantId: "variant_5ml", quantity: 2 }], variants),
+    ).toThrow(CheckoutStockError);
   });
 
   it("returns a controlled stock error for missing or inactive variants", () => {
-    expect(() => buildCheckoutLines([{ variantId: "archived_variant", quantity: 1 }], variants)).toThrow(CheckoutStockError);
+    expect(() =>
+      buildCheckoutLines(
+        [{ variantId: "archived_variant", quantity: 1 }],
+        variants,
+      ),
+    ).toThrow(CheckoutStockError);
   });
 
   it("keeps checkout variants from mixed catalog sources", () => {
@@ -81,6 +99,9 @@ describe("checkout stock integration logic", () => {
       ],
     );
 
-    expect(selected.map((variant) => variant.id)).toEqual(["legacy_variant", "modern_variant"]);
+    expect(selected.map((variant) => variant.id)).toEqual([
+      "legacy_variant",
+      "modern_variant",
+    ]);
   });
 });

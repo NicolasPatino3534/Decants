@@ -1,1 +1,5 @@
-export { getAdminProducts, getProductBySlug, getProducts } from "@/lib/data/products";
+export {
+  getAdminProducts,
+  getProductBySlug,
+  getProducts,
+} from "@/lib/data/products";

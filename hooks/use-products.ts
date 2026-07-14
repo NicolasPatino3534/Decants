@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ProductFilters } from "@/lib/catalog/filters";
 import type { Product } from "@/lib/types";
 
@@ -9,19 +9,31 @@ type ProductsResponse = {
   error?: string;
 };
 
-export function useProducts(filters: ProductFilters, initialProducts: Product[] = []) {
+export function useProducts(
+  filters: ProductFilters,
+  initialProducts: Product[] = [],
+) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+  const isFirstLoad = useRef(true);
   const queryString = useMemo(() => buildProductQuery(filters), [filters]);
 
+  const refetch = useCallback(() => setRetryKey((value) => value + 1), []);
+
   useEffect(() => {
+    if (isFirstLoad.current && initialProducts.length > 0) {
+      isFirstLoad.current = false;
+      return;
+    }
+    isFirstLoad.current = false;
+
     const controller = new AbortController();
+    setIsLoading(true);
+    setError(null);
 
     async function loadProducts() {
-      setIsLoading(true);
-      setError(null);
-
       try {
         const response = await fetch(`/api/catalog/products?${queryString}`, {
           signal: controller.signal,
@@ -30,27 +42,39 @@ export function useProducts(filters: ProductFilters, initialProducts: Product[] 
         const payload = (await response.json()) as ProductsResponse;
 
         if (!response.ok || payload.error) {
-          throw new Error(payload.error ?? "No se pudieron cargar los productos.");
+          throw new Error(
+            payload.error ?? "No se pudieron cargar los productos.",
+          );
         }
 
         setProducts(payload.products);
       } catch (caught) {
         if (controller.signal.aborted) return;
-        setError(caught instanceof Error ? caught.message : "No se pudieron cargar los productos.");
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "No se pudieron cargar los productos.",
+        );
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
       }
     }
 
-    loadProducts();
+    const timeout = window.setTimeout(() => void loadProducts(), 300);
 
-    return () => controller.abort();
-  }, [queryString]);
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [initialProducts.length, queryString, retryKey]);
 
-  return { products, isLoading, error };
+  return { products, isLoading, error, refetch };
 }
 
-export function useProduct(slug: string, initialProduct: Product | null = null) {
+export function useProduct(
+  slug: string,
+  initialProduct: Product | null = null,
+) {
   const [product, setProduct] = useState<Product | null>(initialProduct);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,11 +88,17 @@ export function useProduct(slug: string, initialProduct: Product | null = null) 
       setError(null);
 
       try {
-        const response = await fetch(`/api/catalog/products/${encodeURIComponent(slug)}`, {
-          signal: controller.signal,
-          headers: { Accept: "application/json" },
-        });
-        const payload = (await response.json()) as { product: Product | null; error?: string };
+        const response = await fetch(
+          `/api/catalog/products/${encodeURIComponent(slug)}`,
+          {
+            signal: controller.signal,
+            headers: { Accept: "application/json" },
+          },
+        );
+        const payload = (await response.json()) as {
+          product: Product | null;
+          error?: string;
+        };
 
         if (!response.ok || payload.error) {
           throw new Error(payload.error ?? "No se pudo cargar el producto.");
@@ -77,7 +107,11 @@ export function useProduct(slug: string, initialProduct: Product | null = null) 
         setProduct(payload.product);
       } catch (caught) {
         if (controller.signal.aborted) return;
-        setError(caught instanceof Error ? caught.message : "No se pudo cargar el producto.");
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "No se pudo cargar el producto.",
+        );
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
       }

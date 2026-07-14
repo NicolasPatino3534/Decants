@@ -1,117 +1,258 @@
-# Production Readiness Notes
+# Runbook de producción y go-live
 
-## Current Stack
+## Estado actual
 
-- Next.js App Router with React and Tailwind CSS.
-- Supabase for database, auth, RLS, storage, and service-role admin access.
-- Mercado Pago Checkout Pro is the primary payment provider.
-- Stripe checkout/webhook code remains available as a fallback if `PAYMENT_PROVIDER` is changed.
-- Resend email provider prepared.
-- Vercel-compatible build through `npm run build`.
+**NO LISTO PARA PRODUCCIÓN** mientras no exista evidencia del entorno real para los puntos marcados como bloqueantes en este documento. Una compilación o un test local exitoso no valida credenciales, firmas de webhook, políticas RLS, backups ni entrega de correo.
 
-## GitHub And Local Setup
+Stack operativo:
 
-- Repository cloned from `NicolasPatino3534/Decants`.
-- Default branch: `master`.
-- Remote: `https://github.com/NicolasPatino3534/Decants.git`.
-- The local project builds and runs in this folder.
+- Next.js App Router sobre Vercel.
+- Supabase para PostgreSQL, Auth, RLS y Storage.
+- Mercado Pago Checkout Pro como configuración esperada; Stripe queda como alternativa, no como segundo proveedor simultáneo.
+- Resend para correo transaccional.
+- Vercel Cron para liberar reservas de stock vencidas.
+- Playwright y Vitest para QA automatizado.
 
-## Admin Scope
+Flujo crítico:
 
-The temporary admin panel is available at `/admin` and intentionally contains only:
+```text
+Usuario -> Catálogo -> Producto/variante -> Carrito -> Checkout
+        -> reserva atómica de stock -> proveedor de pago -> webhook firmado
+        -> conciliación del pedido -> confirmación o liberación de reserva
+```
 
-- Balance
-- Pedidos
-- Catalogo
+## 1. Responsables y evidencia
 
-Older admin routes for stock, shipments, customers, brands, categories, and products now redirect into the simplified sections instead of exposing separate panel areas.
+Antes de la salida, asignar una persona responsable y adjuntar evidencia fechada para cada área:
 
-Important: the admin panel is temporarily open without login, accounts, or roles. This is not safe for production. Before deploying publicly, restore authentication, role checks, and server-action authorization.
+| Área            | Evidencia mínima                                                  |
+| --------------- | ----------------------------------------------------------------- |
+| Infraestructura | URL del despliegue, dominio, fecha y commit desplegado            |
+| Base de datos   | salida de migraciones, revisión de RLS y prueba de restauración   |
+| Pagos           | IDs sandbox de aprobado, rechazado, cancelado y webhook duplicado |
+| Stock           | capturas o registros de reserva, vencimiento y liberación         |
+| Seguridad       | revisión de roles, secretos y dependencia auditada                |
+| QA              | enlace a ejecución de CI y reporte Playwright                     |
+| Operación       | alertas, contactos de guardia y procedimiento de rollback         |
 
-## Security Notes
+No guardar secretos, payloads completos de pago, cookies ni datos personales en esa evidencia.
 
-- `.env.example` contains placeholders only. No real keys should be committed.
-- `SUPABASE_SERVICE_ROLE_KEY`, `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, and `NOTIFICATION_WEBHOOK_SECRET` must stay server-only in Vercel environment variables.
-- `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` is public and can be exposed to the browser, but it is not currently required by the redirect-based Checkout Pro flow.
-- `/api/checkout/session` uses Mercado Pago when `PAYMENT_PROVIDER=mercadopago`.
-- `/api/webhooks/mercadopago` validates Mercado Pago signatures when `MERCADOPAGO_WEBHOOK_SECRET` is configured, then fetches the payment from Mercado Pago before updating orders.
-- `/api/webhooks/stripe` validates Stripe signatures with `STRIPE_WEBHOOK_SECRET`.
-- `/api/notifications/order` now requires `x-internal-secret` matching `NOTIFICATION_WEBHOOK_SECRET`.
-- `npm audit` still reports 2 moderate findings from `postcss` vendored under `next`. `next` was updated to `16.2.9`; do not run `npm audit fix --force` without reviewing the proposed major/breaking change.
+## 2. Variables de entorno
 
-## Local Commands
+Usar `.env.example` como inventario, generar valores distintos por ambiente y cargarlos directamente en el proveedor de despliegue. Nunca enviarlos por chat ni versionarlos.
+
+### Obligatorias para producción
+
+| Variable                                                                 | Uso y control                                                             |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                                                   | URL HTTPS canónica, sin path; debe coincidir con callbacks y webhooks     |
+| `NEXT_PUBLIC_SUPABASE_URL`                                               | URL del proyecto Supabase de producción                                   |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` o `NEXT_PUBLIC_SUPABASE_ANON_KEY` | clave pública del proyecto correcto                                       |
+| `SUPABASE_SERVICE_ROLE_KEY`                                              | solo servidor; rotar si alguna vez se expuso                              |
+| `PAYMENT_PROVIDER`                                                       | exactamente `mercadopago` o `stripe`; `manual` no es válido en producción |
+| `CRON_SECRET`                                                            | secreto aleatorio para autorizar la liberación de stock                   |
+| `NOTIFICATION_WEBHOOK_SECRET`                                            | secreto independiente para `/api/notifications/order`                     |
+| `RESEND_API_KEY`                                                         | solo servidor                                                             |
+| `RESEND_FROM_EMAIL`                                                      | remitente de un dominio verificado en Resend                              |
+
+Si `PAYMENT_PROVIDER=mercadopago`, también son obligatorios `MERCADOPAGO_ACCESS_TOKEN` y `MERCADOPAGO_WEBHOOK_SECRET`. Si se usa Stripe, son obligatorios `STRIPE_SECRET_KEY` y `STRIPE_WEBHOOK_SECRET`. Las claves `NEXT_PUBLIC_*_PUBLIC_KEY` son públicas y hoy no son necesarias para el checkout redirigido del servidor, pero deben pertenecer al mismo ambiente si se configuran.
+
+`EMAIL_PROVIDER` aparece en el ejemplo por compatibilidad, pero el código actual usa Resend directamente. `ADMIN_BOOTSTRAP_EMAILS` no concede roles automáticamente: el primer rol administrativo debe asignarse mediante una operación confiable y auditada en Supabase.
+
+### Validación segura
+
+1. Confirmar solo presencia y ambiente de cada variable, nunca imprimir su valor.
+2. Rotar secretos creados para desarrollo antes del go-live.
+3. Abrir `GET /api/health` en el despliegue. Debe responder `200` y `status: "ok"`; `503/degraded` bloquea la salida.
+4. Verificar que ninguna variable privada tenga prefijo `NEXT_PUBLIC_`.
+
+## 3. Base de datos y migraciones
+
+No aplicar por primera vez las migraciones directamente sobre producción.
+
+1. Crear o refrescar un ambiente de staging sin datos personales.
+2. Revisar el script `supabase:link` de `package.json`: actualmente contiene una referencia de proyecto fija. No ejecutarlo hasta que un responsable confirme por escrito que corresponde al ambiente de la ventana de cambio. Después, vincular y comprobar:
+
+   ```bash
+   npm run supabase:link
+   npm run supabase:migrations
+   ```
+
+   No asumir el ambiente por el nombre del comando; contrastar el proyecto vinculado con el dashboard antes de `supabase:push`.
+
+3. Aplicar en staging todas las migraciones versionadas, en orden:
+
+   ```bash
+   npm run supabase:push
+   npm run supabase:advisors
+   ```
+
+4. Validar en staging:
+
+   - tablas modernas y de compatibilidad de catálogo;
+   - RLS habilitado y políticas efectivas;
+   - `reserve_checkout_stock_mirrored(jsonb)` ejecutable solo por `service_role`;
+   - trigger que impide que un usuario cambie su propio `profiles.role`;
+   - `release_expired_checkout_reservations(integer)` ejecutable solo por `service_role`;
+   - índices y columnas `reservation_expires_at` y `stock_released_at`;
+   - bucket `product-images`, límites y políticas esperadas.
+
+5. Crear un backup antes de la ventana productiva y probar una restauración en un proyecto aislado. Confirmar retención, cifrado, responsable y RPO/RTO acordados con el cliente. Un backup no se considera operativo hasta completar un restore drill.
+6. Aplicar las migraciones en producción, guardar la salida y volver a ejecutar advisors.
+
+`supabase/seed.sql` es solo para demo/desarrollo y no debe ejecutarse en producción.
+
+## 4. Autenticación y administración
+
+El layout y las acciones del admin requieren un usuario con rol `owner`, `admin` o `staff`. Antes de publicar:
+
+1. Crear un usuario administrativo nominal; no compartir cuentas.
+2. Asignar el rol desde una sesión confiable de administración de base de datos.
+3. Confirmar que un cliente autenticado recibe denegación al abrir `/admin` y al invocar acciones administrativas.
+4. Confirmar que un usuario no puede leer pedidos ajenos ni modificar `profiles.role`.
+5. Probar registro, verificación/recuperación de contraseña, login, persistencia, logout y revocación.
+6. Revisar en Supabase las URLs permitidas de redirección y dejar solo HTTPS del dominio y previews autorizados.
+7. Documentar baja de accesos y rotación de credenciales ante salida de personal.
+
+## 5. Pagos y webhooks
+
+Activar un solo proveedor por ambiente y usar exclusivamente sandbox hasta aprobar todos los casos.
+
+### Mercado Pago
+
+1. Crear la aplicación y credenciales del ambiente correcto.
+2. Configurar el webhook HTTPS en:
+
+   ```text
+   https://DOMINIO/api/webhooks/mercadopago
+   ```
+
+3. Suscribir los eventos de pago requeridos por la aplicación y guardar el secreto de firma en `MERCADOPAGO_WEBHOOK_SECRET`.
+4. Ejecutar desde el proveedor una notificación de prueba y confirmar firma válida, consulta del pago al proveedor y respuesta `2xx`.
+
+### Stripe alternativo
+
+Configurar el endpoint `https://DOMINIO/api/webhooks/stripe` y suscribir, como mínimo, los eventos usados por el código: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired` y `payment_intent.payment_failed`.
+
+### Matriz sandbox obligatoria
+
+Registrar ID de pedido interno, ID sandbox del proveedor y resultado para:
+
+- pago aprobado, rechazado y cancelado;
+- pago pendiente seguido de aprobación;
+- refresh y doble clic al pagar;
+- webhook duplicado y fuera de orden;
+- monto, moneda o sesión que no concilia;
+- pago tardío después de liberar stock;
+- reintento de un mismo checkout.
+
+Comprobar que la redirección del navegador nunca marca por sí sola un pedido como pagado, que los totales se recalculan en servidor y que un evento no descuenta stock dos veces. Revisar los logs sin copiar payloads completos ni tokens.
+
+La finalización transaccional, el evento idempotente y el outbox están implementados en la migración `20260713220000_atomic_checkout_and_payment_finalization.sql`. Sigue siendo bloqueante validarlos contra PostgreSQL real en staging y ejecutar la matriz sandbox antes de habilitar cobros reales.
+
+## 6. Stock, reservas y cron
+
+`vercel.json` programa `GET /api/cron/release-stock` cada 10 minutos. Antes del go-live:
+
+1. Confirmar que el plan y la configuración del proyecto ejecutan esa frecuencia.
+2. Definir `CRON_SECRET`; Vercel debe enviar `Authorization: Bearer <CRON_SECRET>`.
+3. Invocar el endpoint de forma controlada en staging y confirmar `200`, `ok: true` y cantidad liberada.
+4. Crear un pedido sandbox pendiente, dejar vencer `reservation_expires_at` y comprobar una única devolución de stock y `stock_released_at` poblado.
+5. Probar dos compradores sobre la última unidad, variante inactiva, producto archivado, carrito obsoleto y cantidad manipulada.
+6. Crear una alerta si el cron falla, deja de ejecutarse o aumenta el número de reservas vencidas sin liberar.
+
+Si el cron no está confirmado, el checkout real debe permanecer deshabilitado: el stock puede quedar reservado indefinidamente.
+
+El límite atómico de reservas abiertas y la reserva/consumo atómico de cupones están implementados en `20260713220000_atomic_checkout_and_payment_finalization.sql`. Antes de habilitar ventas se debe comprobar en staging que el límite rechaza el cuarto checkout abierto, que la capacidad del cupón no se excede bajo concurrencia y que las reservas vencidas se liberan.
+
+## 7. Correo, dominio y almacenamiento
+
+- Verificar SPF, DKIM y dominio remitente en Resend.
+- Enviar a una cuenta de prueba un correo de pedido exitoso y uno fallido; validar contenido, links y registro en `email_events`.
+- Configurar dominio, HTTPS y redirección única entre `www` y apex.
+- Confirmar que callbacks y canonical usan el mismo dominio definitivo.
+- Probar upload JPEG, PNG y WebP menor a 5 MB y rechazo de tipo/tamaño inválido.
+- Revisar que el bucket no permita escritura pública anónima ni listado innecesario.
+
+## 8. CI y controles técnicos
+
+`.github/workflows/quality.yml` ejecuta en pull requests y pushes a ramas principales:
+
+- instalación reproducible con `npm ci`;
+- control de espacios finales, lint, typecheck, unit e integration tests;
+- build de producción;
+- Playwright en Chromium, Firefox y WebKit, incluidos los viewports configurados;
+- publicación de artefactos Playwright solo cuando hay fallos.
+
+El merge queda bloqueado si un job falla. Configurar esos jobs como required checks en la protección de rama. El job también ejecuta `npm run format:check`; usar `npm run format` localmente para aplicar el formato antes de abrir el PR.
+
+Antes de cada release ejecutar además:
 
 ```bash
-npm install
-npm run dev
-npm run typecheck
-npm run lint
-npm run test
-npm run build
+git diff --check
+npm audit
 ```
 
-Local URL:
+No usar `npm audit fix --force` sin revisar el cambio propuesto. Las vulnerabilidades moderadas transitivas deben registrarse con paquete, impacto, mitigación y fecha de reevaluación.
 
-```txt
-http://localhost:3000
-```
+## 9. Observabilidad y respuesta a incidentes
 
-Without Supabase environment variables, the app uses demo data for preview.
+Como mínimo, configurar:
 
-## Vercel Deploy
+- retención y acceso restringido a logs de Vercel y Supabase;
+- alertas por errores `5xx`, fallos de webhook, fallo del cron y checkout degradado;
+- seguimiento de entregas/fallos en Mercado Pago o Stripe y Resend;
+- alarma por pedidos `payment_review`, pendientes demasiado tiempo o stock negativo;
+- synthetic check sobre home, catálogo, checkout y `/api/health`;
+- responsable y canal de escalamiento con horarios definidos.
 
-1. Import the GitHub repository into Vercel.
-2. Set the framework preset to Next.js.
-3. Build command: `npm run build`.
-4. Install command: `npm install`.
-5. Add production environment variables from `.env.example`.
-6. Configure Supabase migrations and storage bucket before accepting real orders.
-7. Configure Mercado Pago Webhooks in the Mercado Pago developer panel:
-   - Mode: production for the live domain, test for preview/tunnel testing.
-   - URL: `https://YOUR_DOMAIN/api/webhooks/mercadopago`
-   - Event: `Pagos (legacy)` / payments.
-   - Copy the generated secret into `MERCADOPAGO_WEBHOOK_SECRET` in Vercel.
-8. Configure these required payment variables in Vercel:
-   - `PAYMENT_PROVIDER=mercadopago`
-   - `MERCADOPAGO_ACCESS_TOKEN`
-   - `MERCADOPAGO_WEBHOOK_SECRET`
-   - `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY`
-   - `NEXT_PUBLIC_SITE_URL=https://YOUR_DOMAIN`
-9. Configure Stripe webhook URL in Stripe only if Stripe is re-enabled:
-   `/api/webhooks/stripe`
-10. Re-enable admin authentication before publishing `/admin` to real users.
+Los logs deben usar IDs internos/códigos, no contraseñas, tokens, cookies, direcciones completas ni datos completos de pago. No hay una plataforma de error tracking verificada en el repositorio: elegirla, configurar retención/privacidad y probar una alerta antes del go-live.
 
-## Google Ads And Meta Ads
+Rollback operativo:
 
-Yes, the project can technically integrate Google Ads and Meta Ads.
+1. Pausar el checkout si hay riesgo de cobro o stock inconsistente.
+2. Desactivar o promover el deployment anterior en Vercel.
+3. No revertir migraciones destructivamente sin un plan probado; restaurar desde backup si corresponde.
+4. Conciliar manualmente pedidos con el panel del proveedor antes de reabrir ventas.
+5. Documentar línea de tiempo, pedidos afectados y acción preventiva.
 
-Recommended approach: use Google Tag Manager to centralize pixels and conversion events, then send ecommerce events from the storefront and checkout success flow.
+## 10. Smoke test de release
 
-Owner needs to prepare:
+Ejecutar sobre staging y luego, sin cargos reales, sobre producción:
 
-- Google Ads account.
-- Google Tag Manager container.
-- Google Analytics 4 property.
-- Meta Business Manager access.
-- Meta Pixel or Dataset in Events Manager.
-- Domain access for verification.
-- Conversion IDs, labels, pixel ID, and business access for the implementer.
+- home, catálogo y producto cargan sin errores de consola ni requests `5xx`;
+- búsqueda, cambio de variante, alta/cambio/eliminación del carrito;
+- registro/login/logout y acceso privado;
+- usuario común bloqueado en admin; administrador autorizado puede operar;
+- checkout sandbox aprobado, rechazado y cancelado;
+- webhook firmado actualiza una sola vez y el pedido pertenece al usuario correcto;
+- stock exacto, sin stock y liberación por vencimiento;
+- página de éxito refleja el estado real del pedido;
+- correo transaccional llega desde el dominio validado;
+- `/api/health` devuelve `200` sin exponer secretos;
+- mobile, tablet y desktop no presentan overflow ni controles inaccesibles.
 
-Recommended events:
+Guardar commit, ambiente, navegador, fecha, resultado y evidencia no sensible.
 
-- `page_view`
-- `view_item`
-- `add_to_cart`
-- `begin_checkout`
-- `purchase`
-- Optional: search, contact/WhatsApp click, coupon applied.
+## 11. Checklist de aprobación
 
-Simple owner-facing explanation:
+Todos los ítems son obligatorios salvo que el cliente acepte por escrito un riesgo no bloqueante:
 
-> Si, se puede conectar Google Ads y Meta Ads. Para hacerlo necesitamos que el dueño tenga acceso a Google Ads, Google Tag Manager o Google Analytics, y Meta Business Manager. Despues se instalan los codigos de seguimiento en la web para medir visitas, conversiones, compras, formularios y eventos importantes. Esto permite saber que campanas generan resultados y optimizar la inversion publicitaria.
+- [ ] Dominio definitivo y HTTPS verificados.
+- [ ] Variables productivas presentes, separadas por ambiente y rotadas.
+- [ ] CI verde para el commit exacto a desplegar.
+- [ ] Migraciones y Supabase advisors verificados en staging y producción.
+- [ ] RLS, roles de admin y aislamiento de pedidos probados.
+- [ ] Backup automático habilitado y restore drill completado.
+- [ ] Proveedor de pago productivo configurado; suite sandbox aprobada.
+- [ ] Firma, reintentos e idempotencia del webhook verificados.
+- [ ] Cron de reservas ejecutado y alertado.
+- [ ] Resend, SPF/DKIM y remitente verificados.
+- [ ] Logs, alertas, health check y responsables operativos configurados.
+- [ ] Playwright en Chromium, Firefox y WebKit aprobado.
+- [ ] Lint, typecheck, unit, integration, build y audit registrados.
+- [ ] Smoke test final aprobado.
+- [ ] Rollback ensayado y contacto de incidente confirmado.
+- [ ] Usuario administrador nominal creado y cuenta demo descartada.
 
-Official references:
-
-- Google Analytics ecommerce events: https://developers.google.com/analytics/devguides/collection/ga4/ecommerce
-- Google Ads enhanced conversions with Google Tag Manager: https://support.google.com/google-ads/answer/13262500
-- Meta Pixel setup: https://www.facebook.com/business/help/952192354843755
+Hasta completar esta lista, el estado debe seguir siendo **NO LISTO PARA PRODUCCIÓN**.

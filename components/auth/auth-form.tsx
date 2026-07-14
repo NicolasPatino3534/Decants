@@ -8,35 +8,50 @@ import { Button } from "@/components/ui/button";
 
 type VisibleAuthMode = "login" | "signup";
 
-export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: VisibleAuthMode; nextPath: string }) {
+export function AuthForm({
+  initialMode = "login",
+  nextPath,
+}: {
+  initialMode?: VisibleAuthMode;
+  nextPath: string;
+}) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
-  const [mode, setMode] = useState<VisibleAuthMode | "reset" | "update">(initialMode);
+  const [mode, setMode] = useState<VisibleAuthMode | "reset" | "update">(
+    initialMode,
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!supabase) return;
     const recoveryHash = window.location.hash.includes("type=recovery");
-    const recoveryQuery = new URLSearchParams(window.location.search).get("type") === "recovery";
+    const recoveryQuery =
+      new URLSearchParams(window.location.search).get("type") === "recovery";
     if (recoveryHash || recoveryQuery) {
       window.queueMicrotask(() => {
         setMode("update");
-        setMessage("Ingresá una contraseña nueva para terminar la recuperación.");
+        setMessage(
+          "Ingresá una contraseña nueva para terminar la recuperación.",
+        );
       });
     }
   }, [supabase]);
 
   async function submit(formData: FormData) {
     if (!supabase) {
-      setMessage("Configurá Supabase en .env para usar autenticación real. La vista local entra en modo demo.");
+      setMessage(
+        "Configurá Supabase en .env para usar autenticación real. La vista local entra en modo demo.",
+      );
       return;
     }
 
     setLoading(true);
     setMessage(null);
 
-    const email = String(formData.get("email") ?? "").trim().toLowerCase();
+    const email = String(formData.get("email") ?? "")
+      .trim()
+      .toLowerCase();
     const password = String(formData.get("password") ?? "");
     const fullName = String(formData.get("fullName") ?? "").trim();
     const phone = String(formData.get("phone") ?? "").trim();
@@ -77,7 +92,11 @@ export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: Vi
       });
 
       setLoading(false);
-      setMessage(result.error ? toSpanishAuthMessage(result.error.message) : "Te enviamos un email para recuperar la contraseña.");
+      setMessage(
+        result.error
+          ? toSpanishAuthMessage(result.error.message)
+          : "Te enviamos un email para recuperar la contraseña.",
+      );
       return;
     }
 
@@ -118,12 +137,16 @@ export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: Vi
     }
 
     if (mode === "signup" && result.data.user?.identities?.length === 0) {
-      setMessage("Ese email ya tiene una cuenta. Iniciá sesión con tu contraseña.");
+      setMessage(
+        "Ese email ya tiene una cuenta. Iniciá sesión con tu contraseña.",
+      );
       return;
     }
 
     if (mode === "signup" && !result.data.session) {
-      setMessage("Cuenta creada. Revisá tu email para confirmarla antes de iniciar sesión.");
+      setMessage(
+        "Cuenta creada. Revisá tu email para confirmarla antes de iniciar sesión.",
+      );
       return;
     }
 
@@ -161,17 +184,104 @@ export function AuthForm({ initialMode = "login", nextPath }: { initialMode?: Vi
           </button>
         </div>
       )}
-      <form action={submit} className="mt-5 space-y-4">
-        {mode === "signup" ? <AuthField name="fullName" label="Nombre completo" autoComplete="name" required /> : null}
-        {mode === "signup" ? <AuthField name="phone" label="Teléfono" type="tel" autoComplete="tel" required /> : null}
-        {mode !== "update" ? <AuthField name="email" label="Email" type="email" autoComplete="email" required /> : null}
-        {mode !== "reset" ? <AuthField name="password" label={mode === "update" ? "Nueva contraseña" : "Contraseña"} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required /> : null}
-        {mode === "signup" || mode === "update" ? <AuthField name="passwordConfirm" label="Repetir contraseña" type="password" autoComplete="new-password" required /> : null}
-        {message ? <p className="rounded-md bg-mist p-3 text-sm font-semibold text-muted">{message}</p> : null}
+      <form action={submit} className="mt-5 space-y-4" aria-busy={loading}>
+        {mode === "signup" ? (
+          <AuthField
+            name="fullName"
+            label="Nombre completo"
+            autoComplete="name"
+            required
+          />
+        ) : null}
+        {mode === "signup" ? (
+          <AuthField
+            name="phone"
+            label="Teléfono"
+            type="tel"
+            autoComplete="tel"
+            required
+          />
+        ) : null}
+        {mode !== "update" ? (
+          <AuthField
+            name="email"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            required
+          />
+        ) : null}
+        {mode !== "reset" ? (
+          <AuthField
+            name="password"
+            label={mode === "update" ? "Nueva contraseña" : "Contraseña"}
+            type="password"
+            autoComplete={
+              mode === "login" ? "current-password" : "new-password"
+            }
+            required
+          />
+        ) : null}
+        {mode === "signup" || mode === "update" ? (
+          <AuthField
+            name="passwordConfirm"
+            label="Repetir contraseña"
+            type="password"
+            autoComplete="new-password"
+            required
+          />
+        ) : null}
+        {message ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className="rounded-md bg-mist p-3 text-sm font-semibold text-muted"
+          >
+            {message}
+          </p>
+        ) : null}
         <Button disabled={loading} className="w-full">
-          {mode === "reset" ? <Mail size={17} /> : mode === "signup" ? <KeyRound size={17} /> : <LogIn size={17} />}
-          {loading ? "Procesando..." : mode === "login" ? "Ingresar" : mode === "signup" ? "Crear cuenta" : mode === "update" ? "Actualizar contraseña" : "Enviar recuperación"}
+          {mode === "reset" ? (
+            <Mail size={17} />
+          ) : mode === "signup" ? (
+            <KeyRound size={17} />
+          ) : (
+            <LogIn size={17} />
+          )}
+          {loading
+            ? "Procesando..."
+            : mode === "login"
+              ? "Ingresar"
+              : mode === "signup"
+                ? "Crear cuenta"
+                : mode === "update"
+                  ? "Actualizar contraseña"
+                  : "Enviar recuperación"}
         </Button>
+        {mode === "login" ? (
+          <button
+            type="button"
+            className="w-full text-sm font-bold text-[var(--accent-muted)] hover:underline"
+            onClick={() => {
+              setMode("reset");
+              setMessage(null);
+            }}
+          >
+            Olvidé mi contraseña
+          </button>
+        ) : null}
+        {mode === "reset" ? (
+          <button
+            type="button"
+            className="w-full text-sm font-bold text-[var(--accent-muted)] hover:underline"
+            onClick={() => {
+              setMode("login");
+              setMessage(null);
+            }}
+          >
+            Volver a iniciar sesión
+          </button>
+        ) : null}
       </form>
     </div>
   );
@@ -206,8 +316,10 @@ function AuthField({
 
 function toSpanishAuthMessage(message: string) {
   const lower = message.toLowerCase();
-  if (lower.includes("invalid login credentials")) return "Email o contraseña incorrectos.";
-  if (lower.includes("user already registered") || lower.includes("already")) return "Ese email ya tiene una cuenta.";
+  if (lower.includes("invalid login credentials"))
+    return "Email o contraseña incorrectos.";
+  if (lower.includes("user already registered") || lower.includes("already"))
+    return "Ese email ya tiene una cuenta.";
   if (lower.includes("password")) return "Revisá la contraseña ingresada.";
   if (lower.includes("email")) return "Revisá el email ingresado.";
   return message;

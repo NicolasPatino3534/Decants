@@ -2,21 +2,37 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, LockKeyhole, Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  LockKeyhole,
+  Minus,
+  Plus,
+  ShieldCheck,
+  ShoppingBag,
+  Trash2,
+  Truck,
+} from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { calculateCartTotals, fallbackShippingMethods } from "@/lib/cart/pricing";
+import {
+  calculateCartTotals,
+  fallbackShippingMethods,
+} from "@/lib/cart/pricing";
 import { formatMoney } from "@/lib/format";
 
 export function CartPageClient() {
-  const { lines, updateQuantity, removeItem, clearCart } = useCart();
+  const { lines, hydrated, updateQuantity, removeItem, clearCart } = useCart();
   const [confirmClear, setConfirmClear] = useState(false);
-  const [removingVariantId, setRemovingVariantId] = useState<string | null>(null);
+  const [removingVariantId, setRemovingVariantId] = useState<string | null>(
+    null,
+  );
   const [changedVariantId, setChangedVariantId] = useState<string | null>(null);
   const totals = calculateCartTotals({
     lines,
-    shippingCents: lines.length > 0 ? fallbackShippingMethods[0].basePriceCents : 0,
+    shippingCents:
+      lines.length > 0 ? fallbackShippingMethods[0].basePriceCents : 0,
   });
 
   function animateQuantity(variantId: string, nextQuantity: number) {
@@ -33,6 +49,10 @@ export function CartPageClient() {
     }, 180);
   }
 
+  if (!hydrated) {
+    return <CartLoadingState label="Cargando tu carrito" />;
+  }
+
   if (lines.length === 0) {
     return (
       <main className="premium-shell mx-auto grid min-h-[70vh] place-items-center px-4 py-16 text-center">
@@ -40,9 +60,12 @@ export function CartPageClient() {
           <div className="mx-auto grid h-12 w-12 place-items-center rounded-md bg-warm text-[var(--accent-muted)]">
             <ShoppingBag size={20} />
           </div>
-          <h1 className="font-display mt-5 text-4xl text-ink">Tu carrito está vacío</h1>
+          <h1 className="font-display mt-5 text-4xl text-ink">
+            Tu carrito está vacío
+          </h1>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Elegí tus decants favoritos y armá un set para probarlos antes de comprar botella completa.
+            Elegí tus decants favoritos y armá un set para probarlos antes de
+            comprar botella completa.
           </p>
           <ButtonLink href="/catalogo" className="mt-6">
             Explorar catálogo
@@ -56,16 +79,24 @@ export function CartPageClient() {
     <main className="premium-shell">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_380px] lg:px-8 lg:py-12">
         <section>
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--accent-muted)]">Carrito</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--accent-muted)]">
+            Carrito
+          </p>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <h1 className="font-display text-5xl text-ink">Tu selección</h1>
             {!confirmClear ? (
-              <Button variant="secondary" className="w-fit" onClick={() => setConfirmClear(true)}>
+              <Button
+                variant="secondary"
+                className="w-fit"
+                onClick={() => setConfirmClear(true)}
+              >
                 Vaciar carrito
               </Button>
             ) : (
               <div className="cart-confirm flex flex-wrap items-center gap-2 rounded-md border border-line bg-paper p-2">
-                <span className="px-2 text-sm font-semibold text-[var(--accent-muted)]">¿Vaciar todo?</span>
+                <span className="px-2 text-sm font-semibold text-[var(--accent-muted)]">
+                  ¿Vaciar todo?
+                </span>
                 <Button
                   variant="danger"
                   className="h-9"
@@ -76,16 +107,26 @@ export function CartPageClient() {
                 >
                   Confirmar
                 </Button>
-                <Button variant="subtle" className="h-9" onClick={() => setConfirmClear(false)}>
+                <Button
+                  variant="subtle"
+                  className="h-9"
+                  onClick={() => setConfirmClear(false)}
+                >
                   Cancelar
                 </Button>
               </div>
             )}
           </div>
           <div className="mt-5 grid gap-2 rounded-md border border-line bg-warm p-3 text-sm font-semibold text-[var(--accent-muted)] sm:grid-cols-3">
-            <span className="flex items-center gap-2"><ShieldCheck size={16} /> Compra segura</span>
-            <span className="flex items-center gap-2"><BadgeCheck size={16} /> Stock validado</span>
-            <span className="flex items-center gap-2"><Truck size={16} /> Envío con tracking</span>
+            <span className="flex items-center gap-2">
+              <ShieldCheck size={16} /> Compra segura
+            </span>
+            <span className="flex items-center gap-2">
+              <BadgeCheck size={16} /> Stock validado
+            </span>
+            <span className="flex items-center gap-2">
+              <Truck size={16} /> Envío con tracking
+            </span>
           </div>
           <div className="mt-6 divide-y divide-line rounded-md border border-line bg-paper">
             {lines.map((line, index) => (
@@ -105,31 +146,50 @@ export function CartPageClient() {
                   />
                 </div>
                 <div>
-                  <Link href={`/producto/${line.productSlug}`} className="font-display text-xl text-ink hover:underline">
+                  <Link
+                    href={`/producto/${line.productSlug}`}
+                    className="font-display text-xl text-ink hover:underline"
+                  >
                     {line.productName}
                   </Link>
                   <p className="mt-1 text-sm text-muted">{line.sizeMl}ml</p>
-                  {line.stockOnHand != null ? <p className="mt-1 text-xs text-soft">{line.stockOnHand} disponibles</p> : null}
-                  <p className="mt-3 text-sm font-bold text-ink">{formatMoney(line.priceCents)}</p>
+                  {line.stockOnHand != null ? (
+                    <p className="mt-1 text-xs text-soft">
+                      {line.stockOnHand} disponibles
+                    </p>
+                  ) : null}
+                  <p className="mt-3 text-sm font-bold text-ink">
+                    {formatMoney(line.priceCents)}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 sm:justify-end">
                   <Button
                     variant="subtle"
                     className="h-10 w-10 px-0 text-ink"
                     aria-label={`Restar ${line.productName}`}
-                    onClick={() => animateQuantity(line.variantId, line.quantity - 1)}
+                    onClick={() =>
+                      animateQuantity(line.variantId, line.quantity - 1)
+                    }
                   >
                     <Minus size={18} strokeWidth={2.4} />
                   </Button>
-                  <span className={`grid h-9 w-10 place-items-center rounded-md border border-line bg-paper text-sm font-bold text-ink ${changedVariantId === line.variantId ? "cart-quantity-pop" : ""}`}>
+                  <span
+                    aria-live="polite"
+                    className={`grid h-9 w-10 place-items-center rounded-md border border-line bg-paper text-sm font-bold text-ink ${changedVariantId === line.variantId ? "cart-quantity-pop" : ""}`}
+                  >
                     {line.quantity}
                   </span>
                   <Button
                     variant="subtle"
                     className="h-10 w-10 px-0 text-ink"
                     aria-label={`Sumar ${line.productName}`}
-                    disabled={line.stockOnHand != null && line.quantity >= line.stockOnHand}
-                    onClick={() => animateQuantity(line.variantId, line.quantity + 1)}
+                    disabled={
+                      line.stockOnHand != null &&
+                      line.quantity >= line.stockOnHand
+                    }
+                    onClick={() =>
+                      animateQuantity(line.variantId, line.quantity + 1)
+                    }
                   >
                     <Plus size={18} strokeWidth={2.4} />
                   </Button>
@@ -145,7 +205,11 @@ export function CartPageClient() {
               </div>
             ))}
           </div>
-          <ButtonLink href="/catalogo" variant="subtle" className="mt-5 w-full sm:w-fit">
+          <ButtonLink
+            href="/catalogo"
+            variant="subtle"
+            className="mt-5 w-full sm:w-fit"
+          >
             Seguir explorando
           </ButtonLink>
         </section>
@@ -155,23 +219,53 @@ export function CartPageClient() {
             <LockKeyhole className="text-amber" size={20} />
           </div>
           <div className="mt-5 space-y-3 text-sm">
-            <SummaryRow label="Subtotal" value={formatMoney(totals.subtotalCents)} />
-            <SummaryRow label="Descuento" value={`-${formatMoney(totals.discountCents)}`} />
-            <SummaryRow label="Envío" value={formatMoney(totals.shippingCents)} />
+            <SummaryRow
+              label="Subtotal"
+              value={formatMoney(totals.subtotalCents)}
+            />
+            <SummaryRow
+              label="Descuento"
+              value={`-${formatMoney(totals.discountCents)}`}
+            />
+            <SummaryRow
+              label="Envío"
+              value={formatMoney(totals.shippingCents)}
+            />
             <div className="border-t border-line pt-3">
               <div className="flex justify-between text-base text-ink">
                 <span className="font-bold">Total</span>
-                <span className="font-black">{formatMoney(totals.totalCents)}</span>
+                <span className="font-black">
+                  {formatMoney(totals.totalCents)}
+                </span>
               </div>
             </div>
           </div>
           <p className="mt-4 rounded-md bg-mist p-3 text-xs leading-5 text-muted">
-            El envío exacto y los datos de entrega se confirman en el siguiente paso.
+            El envío exacto y los datos de entrega se confirman en el siguiente
+            paso.
           </p>
           <ButtonLink href="/checkout" className="mt-5 h-12 w-full">
             Continuar pedido <ArrowRight size={17} />
           </ButtonLink>
         </aside>
+      </div>
+    </main>
+  );
+}
+
+function CartLoadingState({ label }: { label: string }) {
+  return (
+    <main
+      className="premium-shell mx-auto grid min-h-[70vh] place-items-center px-4 py-16"
+      aria-busy="true"
+    >
+      <div className="w-full max-w-md rounded-md border border-line bg-paper p-8 shadow-soft">
+        <div className="mx-auto h-12 w-12 animate-pulse rounded-md bg-warm" />
+        <div className="mx-auto mt-5 h-9 w-3/4 animate-pulse rounded bg-mist" />
+        <div className="mx-auto mt-4 h-4 w-full animate-pulse rounded bg-mist" />
+        <p className="sr-only" role="status">
+          {label}
+        </p>
       </div>
     </main>
   );
