@@ -12,7 +12,7 @@ Supabase CLI: `2.109.1`
 
 Staging tiene 15/15 migraciones del workdir aplicadas. El dry-run, el push de la migración nueva, `db lint`, la auditoría SQL final, el historial y Auth real terminaron correctamente. No se modificó producción.
 
-Los bloqueos restantes son externos al esquema: Vercel preview no tiene variables, no hay credenciales sandbox disponibles para un pago real, falta validar entrega de correo transaccional y no existe todavía una URL de preview.
+El esquema continúa validado. El bloqueo del cron de Vercel fue resuelto con una configuración aislada y exclusiva de Preview; existe una URL `READY` con health, cron manual, Playwright y Auth remoto verificados. Siguen faltando credenciales TEST de Mercado Pago, Resend/SMTP y el restore drill.
 
 ## Alcance y seguridad
 
@@ -23,7 +23,8 @@ Los bloqueos restantes son externos al esquema: Vercel preview no tiene variable
 - El workdir y el historial Git pasaron el escaneo de secretos.
 - No se ejecutó seed.
 - No se modificó producción.
-- No hubo Git push ni deploy.
+- Hubo push únicamente de `15bdaf1653f8a92372d3b261cb7aa4cbb0bff276` a `preview/validated-release-15bdaf1`; `master` no fue modificado.
+- Los intentos de Preview terminaron en `ERROR` antes de servir tráfico. No hubo deploy a producción.
 - No se usaron pagos reales.
 
 La contraseña de staging que se compartió previamente por chat debe considerarse expuesta y rotarse, aunque no está versionada ni aparece en los archivos auditados.
@@ -217,15 +218,41 @@ Después de aplicar la migración y cerrar los cambios locales:
 | Secret scan worktree + historial   | aprobado                                                 |
 | `git diff --check`                 | aprobado; solo warnings CRLF conocidos sin diff material |
 
-## Preview y pagos sandbox
+## Intento histórico de Preview y pagos sandbox
 
-El proyecto Vercel está enlazado y la CLI autenticada. El target `preview` contiene cero variables. Las nueve variables existentes pertenecen únicamente a `production` y no fueron leídas ni copiadas.
+El proyecto Vercel esperado (`web-proyects/decants.cba`) y el repositorio remoto esperado (`NicolasPatino3534/Decants`) fueron verificados. La rama productiva configurada en Vercel es `master`, por lo que el commit se publicó únicamente en la rama no productiva `preview/validated-release-15bdaf1`. La rama remota apunta exactamente a `15bdaf1653f8a92372d3b261cb7aa4cbb0bff276`.
+
+Se configuraron seis variables limitadas al target `Preview` y a esa rama, sin leer ni copiar valores de producción:
+
+- `NEXT_PUBLIC_SUPABASE_URL`;
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`;
+- `SUPABASE_SERVICE_ROLE_KEY`;
+- `PAYMENT_PROVIDER=mercadopago`;
+- `CRON_SECRET`;
+- `NOTIFICATION_WEBHOOK_SECRET`.
+
+Las tres variables sensibles permanecen cifradas en Vercel y sus valores no se imprimieron. Las claves de Supabase pertenecen al proyecto `decants-staging` (`xsrmgkshxqfbivugnfbd`).
+
+Faltan en Preview:
+
+- `MERCADOPAGO_ACCESS_TOKEN` TEST;
+- `MERCADOPAGO_WEBHOOK_SECRET` TEST;
+- opcionalmente `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` TEST;
+- `RESEND_API_KEY` de prueba;
+- `RESEND_FROM_EMAIL` de un remitente verificado;
+- configuración SMTP de prueba en Supabase Auth para validar entrega real.
 
 El repositorio fija Node.js `22.x` mediante `engines.node`, que tiene precedencia sobre el valor general `24.x` mostrado por Vercel. Además, la URL de callbacks puede derivarse del `VERCEL_URL` HTTPS de un preview si no se define una URL canónica explícita.
 
-No se creó preview porque faltan Supabase staging runtime, credenciales sandbox, Resend, cron y notificaciones. El proveedor esperado por defecto es Mercado Pago, pero no hay token TEST ni secreto de webhook disponibles en preview o en el entorno local auditado.
+El build local y el remoto compilaron las 30 rutas y completaron TypeScript. El primer intento de publicación fue rechazado porque `vercel.json` programa `*/10 * * * *` y el proyecto está en Hobby, que admite como máximo un cron diario. Se probó una configuración exclusiva del worktree temporal y luego la exclusión temporal de `vercel.json`; Vercel siguió aplicando la configuración del proyecto y rechazó la publicación. El repositorio y la rama remota no fueron modificados por esos intentos.
 
-No se ejecutaron pagos reales ni sandbox externos. Los casos aprobado, rechazado, cancelado, duplicado, fuera de orden, idempotencia y liberación de stock permanecen validados solo en la capa SQL/tests hasta disponer de credenciales y URL HTTPS.
+Deployment fallido, sólo como evidencia: `https://decants-d3qt23dc6-web-proyects.vercel.app` (`dpl_CKDqjRn3HDaQuFtQCU58nQQ6Adap`), target `preview`, estado final `ERROR`. No es una URL utilizable y no recibió tráfico de prueba.
+
+No se pudieron ejecutar health checks ni Playwright remoto porque no existe un deployment `READY`. Tampoco se ejecutaron pagos reales ni sandbox externos. Los casos aprobado, rechazado, cancelado, pendiente, duplicado, fuera de orden, idempotencia y liberación de stock permanecen validados sólo en la capa SQL/tests hasta disponer de credenciales TEST y URL HTTPS.
+
+No se ejecutó entrega real de registro, recuperación ni confirmación de pedido: faltan Resend/SMTP de prueba. Auth y autorización contra staging conservan el resultado real 10/10 ya registrado en este informe.
+
+El restore drill no se marcó como aprobado. PostgreSQL 17 está instalado localmente, pero el dump enlazado de Supabase CLI requiere Docker y el password remoto no está cargado en una variable segura del proceso. No se reutilizó la credencial expuesta en el chat ni se creó un proyecto Supabase con costo. Debe restaurarse un backup de staging en un destino descartable antes de planificar producción.
 
 ## Archivos de release y exclusiones
 
@@ -239,12 +266,12 @@ Se excluyen expresamente del release:
 ## Riesgos y próximos pasos
 
 1. Rotar la contraseña de staging previamente compartida por chat.
-2. Cargar en Vercel `preview` las variables clasificadas en `docs/production-readiness.md`, sin copiar valores de producción.
-3. Configurar SMTP/Resend de staging y validar entrega real, SPF/DKIM y redirects autorizados.
-4. Configurar Mercado Pago TEST o Stripe test y ejecutar la matriz externa completa.
-5. Crear el preview no productivo y ejecutar health, headers, CORS, Playwright remoto, Auth, checkout, cron y correo.
-6. Resolver las advertencias de rendimiento de advisors en una migración separada.
-7. Hacer un restore drill antes de planificar producción.
+2. Resolver la frecuencia `*/10` del cron con un plan Vercel compatible o una arquitectura de scheduler separada; no reducirla a diario sin aceptar explícitamente el riesgo de stock reservado.
+3. Cargar sólo credenciales Mercado Pago TEST y Resend/SMTP de prueba en la rama Preview.
+4. Crear un deployment Preview `READY` y entonces ejecutar health, headers, Playwright remoto, Auth, checkout, cron y correo.
+5. Registrar en Mercado Pago TEST el webhook `https://<preview>/api/webhooks/mercadopago` y ejecutar la matriz externa completa.
+6. Ejecutar un restore drill real en un PostgreSQL/Supabase descartable.
+7. Resolver las advertencias de rendimiento de advisors en una migración separada.
 
 ## Confirmaciones
 
@@ -254,11 +281,65 @@ Se excluyen expresamente del release:
 - Auditoría SQL final: aprobada.
 - Auth real: aprobado, 10/10.
 - Pago sandbox externo: no ejecutado.
-- Preview deploy: no creado.
+- Preview deploy: `READY` en el proyecto aislado `decants-cba-preview`.
+- Health y Playwright remoto: ejecutados; health degradado solo por pagos/email y cobertura remota aprobada mediante fixture efímero.
+- Correo real: no ejecutado por falta de Resend/SMTP de prueba.
+- Restore drill: no completado.
 - Producción modificada: no.
-- Git push: no.
+- Git push: sí, exclusivamente a `preview/validated-release-15bdaf1`.
 - Deploy a producción: no.
 
 ## Estado final
 
 **STAGING VALIDADO CON OBSERVACIONES**
+
+Estado separado del entorno web: **PREVIEW PARCIAL — FALTAN CREDENCIALES TEST**.
+# Actualización de Preview — 17 de julio de 2026
+
+## Veredicto web actual
+
+**PREVIEW PARCIAL — FALTAN CREDENCIALES TEST**
+
+Preview READY y protegido: `https://decants-cba-preview-onqmxd50e-web-proyects.vercel.app` (`dpl_B4NsxYPacutGvJdU5xnwNnc2fcB4`).
+
+### Estrategia del scheduler
+
+Se eligió desactivar el scheduler solo en el artifact de Preview y ejecutar validaciones manuales protegidas. `vercel.preview.json` no contiene `crons`; `scripts/prepare-vercel-preview.mjs` construye un artifact temporal desde Git y verifica que el `vercel.json` canónico conserve exactamente `*/10 * * * *`. Esta configuración no es apta para producción.
+
+Alternativas evaluadas:
+
+- Actualizar el plan Vercel: opción directa para producción y sin cambio de código, pero requiere una decisión externa de costo.
+- Supabase Cron/`pg_cron`: opción técnicamente válida con historial de jobs, pero exige migración operacional, monitoreo, rollback y prevención de doble scheduler.
+- Preview sin scheduler automático: opción más segura inmediata porque Vercel Cron solo ejecuta en Production; no cambia esquema ni cadencia productiva.
+
+### Auditoría y prueba real del cron
+
+- Endpoint: `GET /api/cron/release-stock`; falla cerrada sin `CRON_SECRET` o con Bearer incorrecto.
+- Ejecuta en paralelo `release_expired_checkout_reservations(200)` y `release_expired_checkout_security_guards()` mediante `service_role`.
+- Solo libera reservas vencidas, aún no liberadas, con pago pendiente/revisión y pedido no cancelado.
+- Usa locks y `FOR UPDATE SKIP LOCKED`; `stock_released_at`, estados e inventario hacen seguro el reintento.
+- Si una RPC falla devuelve 500; un éxito parcial es recuperable porque ambas operaciones son idempotentes.
+- TTL de checkout: 35 minutos más 10 de gracia; con cron cada diez minutos la liberación normal puede llegar aproximadamente a 55 minutos. Una cadencia diaria no es aceptable.
+
+`scripts/validate-preview-cron.mjs` pasó contra Preview y Supabase staging `xsrmgkshxqfbivugnfbd`: 401 sin secreto, 401 con secreto inválido, dos invocaciones concurrentes seguras, liberación única del pedido pendiente vencido, ningún cambio en pedido futuro ni pagado, un movimiento de devolución y reintento idempotente. Los fixtures fueron eliminados; no se liberaron reservas de otros pedidos.
+
+### Deployment, health y pruebas
+
+- Proyecto aislado: `web-proyects/decants-cba-preview`; `web-proyects/decants.cba` no fue modificado.
+- `/api/health`: HTTP 503/degraded solo por `payments=false` y `email=false`; `database`, `notifications` y `cron` están en true.
+- `verify-preview.mjs`: aprobado admitiendo únicamente esos dos bloqueos externos declarados.
+- Playwright inicial sin catálogo: 60 passed, 160 failed y 10 skipped; todos los fallos dependían de productos con stock ausentes.
+- Con dos productos QA efímeros, 48/66 casos pasaron en la corrida base de Chromium/Firefox/WebKit desktop. Los 18 restantes eran exclusivamente el toolbar `vercel.live` bloqueado por la CSP; las repeticiones focalizadas dejaron aprobados esos 18 casos sin debilitar la CSP.
+- El fixture de catálogo fue eliminado y se verificó conteo cero.
+- Auth remoto real: 1/1 aprobado; login, cuenta y denegación de `/admin` para usuario común. Usuario efímero eliminado.
+- Validación local final: format, lint, typecheck y secret scan aprobados; Vitest 96/96 en 24 archivos.
+
+### Bloqueos externos y riesgos
+
+Variables faltantes: `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`, `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` opcional, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` y SMTP de prueba en Supabase Auth. No se ejecutaron pagos sandbox, pagos reales ni entrega de email. El webhook TEST queda preparado en `https://decants-cba-preview-onqmxd50e-web-proyects.vercel.app/api/webhooks/mercadopago`.
+
+El restore drill sigue pendiente. La contraseña de staging publicada previamente por chat debe rotarse. El primer deployment del proyecto aislado fue clasificado por Vercel como Production por ser el inicial y se eliminó inmediatamente; nunca recibió dominio, datos ni variables productivas.
+
+`origin/master` permanece en `efd452aa168f46be8acaff3072a639f23f6e7028`. No hubo push a master, deploy productivo ni cambios en Supabase producción.
+
+---

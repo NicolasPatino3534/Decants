@@ -1,10 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
+import { previewStorageStatePath } from "./tests/e2e/preview-global-setup";
 
 const port = process.env.PORT ?? "3000";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${port}`;
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
 export default defineConfig({
+  globalSetup: process.env.VERCEL_SHARE_BYPASS
+    ? "./tests/e2e/preview-global-setup.ts"
+    : undefined,
   testDir: "./tests/e2e",
   timeout: 45_000,
   expect: {
@@ -21,6 +25,15 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL,
+    extraHTTPHeaders: process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+      ? {
+          "x-vercel-protection-bypass":
+            process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+        }
+      : undefined,
+    storageState: process.env.VERCEL_SHARE_BYPASS
+      ? previewStorageStatePath
+      : undefined,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

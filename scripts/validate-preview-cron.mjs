@@ -44,6 +44,7 @@ const ids = {
 };
 const stockBeforeRelease = 14;
 const expiredQuantity = 2;
+const protectionHeaders = await createProtectionHeaders(previewBaseUrl);
 
 try {
   await expectUnauthorized();
@@ -71,8 +72,13 @@ try {
 
 async function expectUnauthorized() {
   for (const authorization of [undefined, "Bearer invalid-preview-secret"]) {
-    const response = await fetch(`${previewBaseUrl}/api/cron/release-stock`, {
-      headers: authorization ? { authorization } : undefined,
+    const url = new URL("/api/cron/release-stock", previewBaseUrl);
+    url.searchParams.set("validation", randomUUID());
+    const response = await fetch(url, {
+      headers: {
+        ...protectionHeaders,
+        ...(authorization ? { authorization } : {}),
+      },
       cache: "no-store",
     });
     assert.equal(
@@ -84,11 +90,32 @@ async function expectUnauthorized() {
 }
 
 async function invokeCron() {
-  const response = await fetch(`${previewBaseUrl}/api/cron/release-stock`, {
-    headers: { authorization: `Bearer ${cronSecret}` },
+  const url = new URL("/api/cron/release-stock", previewBaseUrl);
+  url.searchParams.set("validation", randomUUID());
+  const response = await fetch(url, {
+    headers: {
+      ...protectionHeaders,
+      authorization: `Bearer ${cronSecret}`,
+    },
     cache: "no-store",
   });
   return { status: response.status, body: await response.json() };
+}
+
+async function createProtectionHeaders(url) {
+  const automationSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
+  if (automationSecret) {
+    return { "x-vercel-protection-bypass": automationSecret };
+  }
+
+  const shareSecret = process.env.VERCEL_SHARE_BYPASS?.trim();
+  if (!shareSecret) return {};
+  const shareUrl = new URL(url);
+  shareUrl.searchParams.set("_vercel_share", shareSecret);
+  const response = await fetch(shareUrl, { redirect: "manual" });
+  const setCookie = response.headers.get("set-cookie");
+  assert.ok(setCookie, "Vercel share bypass did not establish a cookie.");
+  return { cookie: setCookie.split(";", 1)[0] };
 }
 
 async function createFixtures() {
@@ -99,23 +126,10 @@ async function createFixtures() {
     slug: suffix,
     country: "AR",
   });
-  await insert("perfume_brands", {
-    id: ids.brand,
-    name: `Cron QA ${runId}`,
-    slug: suffix,
-    country: "AR",
-    active: true,
-  });
   await insert("fragrance_families", {
     id: ids.family,
     name: `Cron QA ${runId}`,
     slug: suffix,
-  });
-  await insert("categories", {
-    id: ids.family,
-    name: `Cron QA ${runId}`,
-    slug: suffix,
-    active: true,
   });
   await insert("products", {
     id: ids.product,
@@ -282,7 +296,11 @@ async function cleanup() {
     const result = Array.isArray(value)
       ? await query.in(column, value)
       : await query.eq(column, value);
-    if (result.error) console.error(`Cleanup failed for ${table}.`);
+    if (result.error) {
+      console.error(
+        `Cleanup failed for ${table}: ${result.error.code ?? "unknown"} ${result.error.message}`,
+      );
+    }
   }
 }
 

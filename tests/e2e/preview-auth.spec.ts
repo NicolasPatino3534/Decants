@@ -64,6 +64,9 @@ test.describe("real Preview Auth against staging", () => {
     ).toBeVisible();
 
     await page.goto("/admin");
-    await expect(page).toHaveURL(/\/auth\?next=\/admin/u);
+    await expect(page).toHaveURL(
+      (url) =>
+        url.pathname === "/auth" && url.searchParams.get("next") === "/admin",
+    );
   });
 });

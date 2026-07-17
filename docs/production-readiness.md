@@ -9,10 +9,11 @@ Estado verificado el 17 de julio de 2026:
 - Supabase staging tiene 15/15 migraciones aplicadas y `db lint` sin errores.
 - La auditoría SQL final, RLS y los flujos transaccionales de stock/pagos pasaron sobre PostgreSQL de staging.
 - Auth de staging pasó registro público, confirmación controlada, login, logout, recuperación, aislamiento entre usuarios y permisos administrativos. El bloqueo `429 over_email_send_rate_limit` desapareció al vencer la ventana, sin relajar límites.
-- Vercel preview tiene cero variables configuradas. Las nueve variables existentes en el proyecto están limitadas a producción y no deben copiarse automáticamente.
-- No existe preview deploy ni pago externo sandbox validado.
+- Vercel Preview tiene seis variables de staging limitadas a `preview/validated-release-15bdaf1`; no se leyeron ni copiaron las variables de producción.
+- La rama Preview contiene la preparación aislada del scheduler. El deployment del proyecto exclusivo `decants-cba-preview` está `READY`; el proyecto productivo no fue modificado.
+- Health, cron manual, Playwright y Auth remoto fueron ejecutados. Siguen pendientes pago externo sandbox, correo real y restore drill.
 - El repositorio fija Node.js `22.x` en `package.json`; Vercel muestra `24.x` como valor general, pero `engines.node` tiene precedencia para los despliegues.
-- La validación local final terminó con Vitest 92/92, integración 47/47, migration chain 23/23, Playwright 220/220, build aprobado, cero vulnerabilidades y cero secretos.
+- La validación local final de esta actualización terminó con Vitest 96/96, lint, typecheck, format y secret scan aprobados. La validación Playwright remota cubrió Chromium, Firefox y WebKit desktop.
 
 Stack operativo:
 
@@ -76,7 +77,7 @@ Usar `.env.example` como inventario, generar valores distintos por ambiente y ca
 
 El workflow de GitHub necesita además `VERCEL_TOKEN`, `VERCEL_ORG_ID` y `VERCEL_PROJECT_ID` como secretos del environment `preview`. No son variables runtime de la aplicación.
 
-No reutilizar variables del target `production`. Actualmente no hay ninguna variable en el target `preview`, por lo que el deploy está bloqueado de forma segura.
+No reutilizar variables del target `production`. Para la rama Preview ya están presentes `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `PAYMENT_PROVIDER`, `CRON_SECRET` y `NOTIFICATION_WEBHOOK_SECRET`. Siguen faltando Mercado Pago TEST y Resend/SMTP de prueba; sus valores deben cargarse directamente en los proveedores, sin copiarlos desde producción.
 
 ### Validación segura
 
@@ -254,7 +255,30 @@ Ejecutar sobre staging y luego, sin cargos reales, sobre producción:
 
 Guardar commit, ambiente, navegador, fecha, resultado y evidencia no sensible.
 
-## 11. Checklist de aprobación
+## 11. Resultado histórico del primer intento de Preview del 17 de julio de 2026
+
+| Control                    | Resultado real                                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Commit y rama              | `15bdaf1653f8a92372d3b261cb7aa4cbb0bff276` publicado sólo en `preview/validated-release-15bdaf1`; `master` no cambió |
+| Proyecto Vercel            | `web-proyects/decants.cba`, target `preview`; coincide con el repositorio esperado                                   |
+| Proyecto Supabase          | `decants-staging` (`xsrmgkshxqfbivugnfbd`); las variables de runtime apuntan a staging                               |
+| Variables Preview          | seis presentes y aisladas por rama; producción no fue leída ni copiada                                               |
+| Build                      | aplicación y TypeScript aprobados local y remotamente; 30 rutas generadas                                            |
+| Publicación                | rechazada por cron `*/10` incompatible con Hobby; deployment `dpl_CKDqjRn3HDaQuFtQCU58nQQ6Adap` en `ERROR`           |
+| URL HTTPS                  | no existe URL `READY`; la URL fallida no sirve tráfico                                                               |
+| Health y Playwright remoto | no ejecutados porque el deployment nunca quedó disponible                                                            |
+| Mercado Pago TEST          | no configurado; faltan access token y secreto de webhook TEST                                                        |
+| Email                      | no configurado; faltan Resend y SMTP de prueba                                                                       |
+| Restore drill              | no completado; Supabase CLI exige Docker para el dump enlazado y no se reutilizó una contraseña expuesta por chat    |
+| Producción                 | no modificada; sin push a `master`, sin deploy productivo, sin pagos reales                                          |
+
+El endpoint previsto para Mercado Pago, una vez que exista una URL utilizable, es `https://<preview>/api/webhooks/mercadopago`. No registrarlo contra la URL fallida.
+
+Para desbloquear el Preview se requiere una decisión externa de plataforma: usar un plan que soporte el cron cada 10 minutos o mover el scheduler a un servicio compatible. Reducir el cron a una vez por día no es equivalente funcionalmente y deja riesgo de reservas de stock retenidas. Después deben cargarse credenciales exclusivamente TEST de Mercado Pago y Resend/SMTP, crear un deployment `READY` y ejecutar toda la matriz remota.
+
+Estado: **PREVIEW PARCIAL — BLOQUEOS EXTERNOS**.
+
+## 12. Checklist de aprobación
 
 Todos los ítems son obligatorios salvo que el cliente acepte por escrito un riesgo no bloqueante:
 
@@ -276,3 +300,18 @@ Todos los ítems son obligatorios salvo que el cliente acepte por escrito un rie
 - [ ] Usuario administrador nominal creado y cuenta demo descartada.
 
 Hasta completar esta lista, el estado debe seguir siendo **NO LISTO PARA PRODUCCIÓN**.
+# Actualización operativa de Preview — 17 de julio de 2026
+
+**PREVIEW PARCIAL — FALTAN CREDENCIALES TEST. Producción continúa NO LISTA.**
+
+Preview READY: `https://decants-cba-preview-onqmxd50e-web-proyects.vercel.app`.
+
+El scheduler quedó desactivado únicamente en el artifact de Preview; producción conserva `*/10 * * * *`. Esta excepción es solo de QA y no puede promoverse.
+
+Evidencia: cron manual aprobado con autenticación, expiración, concurrencia, aislamiento e idempotencia; health 503 solo por pagos/email; verify-preview aprobado; Playwright remoto cubierto en Chromium, Firefox y WebKit desktop con fixtures eliminados; Auth real y denegación de admin aprobados; format, lint, typecheck, Vitest 96/96 y secret scan aprobados.
+
+Faltan `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` y SMTP de prueba. Pagos sandbox, correo y restore drill siguen pendientes.
+
+Antes de producción debe actualizarse el plan Vercel o implementarse Supabase Cron como cambio operacional separado. Producción no fue modificada y `origin/master` permanece en `efd452aa168f46be8acaff3072a639f23f6e7028`.
+
+---

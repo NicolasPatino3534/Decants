@@ -23,6 +23,7 @@
     "preview:verify": "node scripts/verify-preview.mjs",
     "preview:prepare": "node scripts/prepare-vercel-preview.mjs",
     "preview:cron:validate": "node scripts/validate-preview-cron.mjs",
+    "preview:catalog-fixture": "node scripts/manage-preview-catalog-fixture.mjs",
     "supabase:link": "supabase link",
     "supabase:migrations": "supabase migration list",
     "supabase:push": "supabase db push",

@@ -389,5 +389,11 @@ async function settleVisualState(page: Page, scanDocument = false) {
 }
 
 function isRelevantConsoleError(message: string) {
-  return !/favicon|ResizeObserver loop/i.test(message);
+  if (/favicon|ResizeObserver loop/i.test(message)) return false;
+  return !(
+    message.includes("vercel.live/_next-live/feedback/feedback.js") &&
+    /content[- ]security[- ]policy|script-src(?:-elem)? directive/i.test(
+      message,
+    )
+  );
 }

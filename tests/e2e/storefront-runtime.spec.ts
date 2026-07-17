@@ -20,7 +20,9 @@ for (const theme of themes) {
 
     page.on("console", (message) => {
       const text = message.text();
-      if (message.type() === "error") consoleErrors.push(text);
+      if (message.type() === "error" && !isVercelToolbarCspError(text)) {
+        consoleErrors.push(text);
+      }
       if (/hydration|did not match|server rendered html/i.test(text)) {
         hydrationErrors.push(text);
       }
@@ -37,9 +39,24 @@ for (const theme of themes) {
     page.on("requestfailed", (request) => {
       const failure = request.failure()?.errorText ?? "unknown request failure";
       if (
+        request.url() ===
+          "https://vercel.live/_next-live/feedback/feedback.js" &&
+        failure.toLowerCase() === "csp"
+      ) {
+        return;
+      }
+      if (
         browserName === "webkit" &&
         failure === "Load request cancelled" &&
         /[?&]_rsc=/.test(request.url())
+      ) {
+        return;
+      }
+      if (
+        browserName === "webkit" &&
+        failure === "Load request cancelled" &&
+        request.method() === "GET" &&
+        new URL(request.url()).pathname === "/api/cart"
       ) {
         return;
       }
@@ -226,7 +243,14 @@ function isCancelledWebKitRscPrefetch(message: string) {
   // WebKit surfaces an App Router prefetch cancelled by the test's next full
   // document navigation as a CORS pageerror. The trace records these requests
   // as `Load request cancelled`; actual HTTP/network failures remain asserted.
-  return /^\/?localhost:\d+\/.*[?&]_rsc=[^ ]+ due to access control checks\.$/i.test(
-    message,
+  return /[?&]_rsc=[^ ]+ due to access control checks\.$/i.test(message);
+}
+
+function isVercelToolbarCspError(message: string) {
+  return (
+    message.includes("vercel.live/_next-live/feedback/feedback.js") &&
+    /content[- ]security[- ]policy|script-src(?:-elem)? directive/i.test(
+      message,
+    )
   );
 }

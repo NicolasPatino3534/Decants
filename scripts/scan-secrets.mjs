@@ -12,7 +12,7 @@ const patterns = [
   {
     name: "private environment variable assignment",
     expression:
-      /^[ \t]*(?:SUPABASE_SERVICE_ROLE_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|MERCADOPAGO_ACCESS_TOKEN|MERCADOPAGO_WEBHOOK_SECRET|RESEND_API_KEY|CRON_SECRET|NOTIFICATION_WEBHOOK_SECRET)[ \t]*=[ \t]*["']?(?![ \t]*(?:["']?$|<|your[_-]|example|change[-_]?me|replace[-_]?me|env\())[^\s#"']+/gimu,
+      /^[ \t]*(?:SUPABASE_SERVICE_ROLE_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|MERCADOPAGO_ACCESS_TOKEN|MERCADOPAGO_WEBHOOK_SECRET|RESEND_API_KEY|CRON_SECRET|NOTIFICATION_WEBHOOK_SECRET|VERCEL_AUTOMATION_BYPASS_SECRET|VERCEL_SHARE_BYPASS)[ \t]*=[ \t]*["']?(?![ \t]*(?:["']?$|<|your[_-]|example|change[-_]?me|replace[-_]?me|env\())[^\s#"']+/gimu,
   },
   {
     name: "private key",
