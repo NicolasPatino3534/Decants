@@ -18,7 +18,10 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "playwright test",
-    "supabase:link": "supabase link --project-ref afervqurczvrrvciviva",
+    "security:secrets": "node scripts/scan-secrets.mjs",
+    "security:secrets:history": "node scripts/scan-secrets.mjs --history",
+    "preview:verify": "node scripts/verify-preview.mjs",
+    "supabase:link": "supabase link",
     "supabase:migrations": "supabase migration list",
     "supabase:push": "supabase db push",
     "supabase:advisors": "supabase db advisors",
@@ -50,9 +53,12 @@
     "playwright-core": "1.61.1",
     "postcss": "8.5.15",
     "prettier": "3.9.5",
-    "supabase": "2.105.0",
+    "supabase": "2.109.1",
     "tailwindcss": "4.3.0",
     "typescript": "6.0.3",
     "vitest": "4.1.8"
+  },
+  "overrides": {
+    "postcss": "8.5.15"
   }
 }

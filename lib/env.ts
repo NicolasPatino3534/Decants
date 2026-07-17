@@ -1,7 +1,7 @@
 export type PaymentProvider = "mercadopago" | "stripe" | "manual" | "invalid";
 
 export const env = {
-  siteUrl: readEnv("NEXT_PUBLIC_SITE_URL", "http://localhost:3000"),
+  siteUrl: readSiteUrl(),
   supabaseUrl: optionalEnv("NEXT_PUBLIC_SUPABASE_URL"),
   supabasePublishableKey:
     optionalEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") ??
@@ -31,6 +31,18 @@ function optionalEnv(key: string) {
 
 function readEnv(key: string, fallback: string) {
   return optionalEnv(key) ?? fallback;
+}
+
+function readSiteUrl() {
+  const configuredUrl = optionalEnv("NEXT_PUBLIC_SITE_URL");
+  if (configuredUrl) return configuredUrl.replace(/\/$/u, "");
+
+  const vercelUrl = optionalEnv("VERCEL_URL");
+  if (vercelUrl) {
+    return `https://${vercelUrl.replace(/^https?:\/\//u, "").replace(/\/$/u, "")}`;
+  }
+
+  return "http://localhost:3000";
 }
 
 function readPaymentProvider(): PaymentProvider {

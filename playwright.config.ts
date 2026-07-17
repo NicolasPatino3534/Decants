@@ -12,6 +12,7 @@ export default defineConfig({
   },
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
+  failOnFlakyTests: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   // Full-page visual checks exercise Next's local image optimizer. A single
   // worker prevents concurrent projects from capturing a progressive image
@@ -71,10 +72,42 @@ export default defineConfig({
       },
     },
     {
+      name: "firefox-tablet",
+      use: {
+        ...devices["Desktop Firefox"],
+        viewport: { width: 768, height: 1024 },
+        hasTouch: true,
+      },
+    },
+    {
+      name: "firefox-mobile",
+      use: {
+        ...devices["Desktop Firefox"],
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+      },
+    },
+    {
       name: "webkit-desktop",
       use: {
         ...devices["Desktop Safari"],
         viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: "webkit-tablet",
+      use: {
+        ...devices["Desktop Safari"],
+        viewport: { width: 768, height: 1024 },
+        hasTouch: true,
+      },
+    },
+    {
+      name: "webkit-mobile",
+      use: {
+        ...devices["Desktop Safari"],
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
       },
     },
   ],

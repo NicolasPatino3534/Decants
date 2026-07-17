@@ -4,6 +4,16 @@
 
 **NO LISTO PARA PRODUCCIÓN** mientras no exista evidencia del entorno real para los puntos marcados como bloqueantes en este documento. Una compilación o un test local exitoso no valida credenciales, firmas de webhook, políticas RLS, backups ni entrega de correo.
 
+Estado verificado el 17 de julio de 2026:
+
+- Supabase staging tiene 15/15 migraciones aplicadas y `db lint` sin errores.
+- La auditoría SQL final, RLS y los flujos transaccionales de stock/pagos pasaron sobre PostgreSQL de staging.
+- Auth de staging pasó registro público, confirmación controlada, login, logout, recuperación, aislamiento entre usuarios y permisos administrativos. El bloqueo `429 over_email_send_rate_limit` desapareció al vencer la ventana, sin relajar límites.
+- Vercel preview tiene cero variables configuradas. Las nueve variables existentes en el proyecto están limitadas a producción y no deben copiarse automáticamente.
+- No existe preview deploy ni pago externo sandbox validado.
+- El repositorio fija Node.js `22.x` en `package.json`; Vercel muestra `24.x` como valor general, pero `engines.node` tiene precedencia para los despliegues.
+- La validación local final terminó con Vitest 92/92, integración 47/47, migration chain 23/23, Playwright 220/220, build aprobado, cero vulnerabilidades y cero secretos.
+
 Stack operativo:
 
 - Next.js App Router sobre Vercel.
@@ -41,23 +51,32 @@ No guardar secretos, payloads completos de pago, cookies ni datos personales en 
 
 Usar `.env.example` como inventario, generar valores distintos por ambiente y cargarlos directamente en el proveedor de despliegue. Nunca enviarlos por chat ni versionarlos.
 
-### Obligatorias para producción
+### Inventario exacto para preview
 
-| Variable                                                                 | Uso y control                                                             |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`                                                   | URL HTTPS canónica, sin path; debe coincidir con callbacks y webhooks     |
-| `NEXT_PUBLIC_SUPABASE_URL`                                               | URL del proyecto Supabase de producción                                   |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` o `NEXT_PUBLIC_SUPABASE_ANON_KEY` | clave pública del proyecto correcto                                       |
-| `SUPABASE_SERVICE_ROLE_KEY`                                              | solo servidor; rotar si alguna vez se expuso                              |
-| `PAYMENT_PROVIDER`                                                       | exactamente `mercadopago` o `stripe`; `manual` no es válido en producción |
-| `CRON_SECRET`                                                            | secreto aleatorio para autorizar la liberación de stock                   |
-| `NOTIFICATION_WEBHOOK_SECRET`                                            | secreto independiente para `/api/notifications/order`                     |
-| `RESEND_API_KEY`                                                         | solo servidor                                                             |
-| `RESEND_FROM_EMAIL`                                                      | remitente de un dominio verificado en Resend                              |
+| Variable                               | Clasificación              | Requisito                                                                                                                            |
+| -------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_SITE_URL`                 | pública                    | Opcional en preview: si falta, el servidor usa el `VERCEL_URL` HTTPS inyectado. Obligatoria como URL canónica estable en producción. |
+| `NEXT_PUBLIC_SUPABASE_URL`             | pública                    | Obligatoria; debe apuntar exclusivamente a Supabase staging.                                                                         |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | pública                    | Obligatoria y preferida.                                                                                                             |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`        | pública, legacy            | Alternativa de compatibilidad; no es necesaria si existe la publishable key.                                                         |
+| `SUPABASE_SERVICE_ROLE_KEY`            | servidor, secreta          | Obligatoria; solo la del staging.                                                                                                    |
+| `PAYMENT_PROVIDER`                     | servidor, no secreta       | Obligatoria; exactamente `mercadopago` o `stripe`.                                                                                   |
+| `MERCADOPAGO_ACCESS_TOKEN`             | servidor, sandbox, secreta | Obligatoria si el proveedor es Mercado Pago; debe ser credencial TEST.                                                               |
+| `MERCADOPAGO_WEBHOOK_SECRET`           | servidor, sandbox, secreta | Obligatoria si el proveedor es Mercado Pago.                                                                                         |
+| `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY`   | pública, sandbox           | Opcional para el checkout redirigido actual; si se carga debe ser TEST.                                                              |
+| `STRIPE_SECRET_KEY`                    | servidor, sandbox, secreta | Obligatoria solo si el proveedor es Stripe; debe ser `sk_test_*`.                                                                    |
+| `STRIPE_WEBHOOK_SECRET`                | servidor, sandbox, secreta | Obligatoria solo si el proveedor es Stripe; debe corresponder al endpoint preview.                                                   |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`   | pública, sandbox           | Opcional para el checkout redirigido actual; si se carga debe ser `pk_test_*`.                                                       |
+| `RESEND_API_KEY`                       | servidor, secreta          | Obligatoria para que health y correo transaccional pasen.                                                                            |
+| `RESEND_FROM_EMAIL`                    | servidor, no secreta       | Obligatoria; remitente de un dominio verificado.                                                                                     |
+| `NOTIFICATION_WEBHOOK_SECRET`          | servidor, secreta          | Obligatoria; autoriza `/api/notifications/order`.                                                                                    |
+| `CRON_SECRET`                          | servidor, secreta          | Obligatoria; autoriza `/api/cron/release-stock`.                                                                                     |
+| `ADMIN_BOOTSTRAP_EMAILS`               | servidor                   | Opcional; no concede roles automáticamente.                                                                                          |
+| `EMAIL_PROVIDER`                       | compatibilidad             | Opcional; el código actual usa Resend directamente.                                                                                  |
 
-Si `PAYMENT_PROVIDER=mercadopago`, también son obligatorios `MERCADOPAGO_ACCESS_TOKEN` y `MERCADOPAGO_WEBHOOK_SECRET`. Si se usa Stripe, son obligatorios `STRIPE_SECRET_KEY` y `STRIPE_WEBHOOK_SECRET`. Las claves `NEXT_PUBLIC_*_PUBLIC_KEY` son públicas y hoy no son necesarias para el checkout redirigido del servidor, pero deben pertenecer al mismo ambiente si se configuran.
+El workflow de GitHub necesita además `VERCEL_TOKEN`, `VERCEL_ORG_ID` y `VERCEL_PROJECT_ID` como secretos del environment `preview`. No son variables runtime de la aplicación.
 
-`EMAIL_PROVIDER` aparece en el ejemplo por compatibilidad, pero el código actual usa Resend directamente. `ADMIN_BOOTSTRAP_EMAILS` no concede roles automáticamente: el primer rol administrativo debe asignarse mediante una operación confiable y auditada en Supabase.
+No reutilizar variables del target `production`. Actualmente no hay ninguna variable en el target `preview`, por lo que el deploy está bloqueado de forma segura.
 
 ### Validación segura
 
@@ -71,7 +90,7 @@ Si `PAYMENT_PROVIDER=mercadopago`, también son obligatorios `MERCADOPAGO_ACCESS
 No aplicar por primera vez las migraciones directamente sobre producción.
 
 1. Crear o refrescar un ambiente de staging sin datos personales.
-2. Revisar el script `supabase:link` de `package.json`: actualmente contiene una referencia de proyecto fija. No ejecutarlo hasta que un responsable confirme por escrito que corresponde al ambiente de la ventana de cambio. Después, vincular y comprobar:
+2. `supabase:link` ya no contiene un project ref fijo. Vincular siempre un workdir aislado al destino autorizado y comprobar el ref antes de cualquier escritura:
 
    ```bash
    npm run supabase:link
@@ -80,14 +99,15 @@ No aplicar por primera vez las migraciones directamente sobre producción.
 
    No asumir el ambiente por el nombre del comando; contrastar el proyecto vinculado con el dashboard antes de `supabase:push`.
 
-3. Aplicar en staging todas las migraciones versionadas, en orden:
+3. El 17 de julio de 2026 staging recibió correctamente `20260714001400_validate_variant_integrity_and_profile_guard.sql`, equivalente temporal de la migración canónica `20260716165809_validate_variant_integrity_and_profile_guard.sql`. Validó dos FK, agregó y validó el check normalizado de cupones y convirtió el guard de perfiles a `SECURITY INVOKER`.
+4. Para futuras migraciones, aplicar en staging todas las pendientes en orden:
 
    ```bash
    npm run supabase:push
    npm run supabase:advisors
    ```
 
-4. Validar en staging:
+5. Validar en staging:
 
    - tablas modernas y de compatibilidad de catálogo;
    - RLS habilitado y políticas efectivas;
@@ -97,8 +117,8 @@ No aplicar por primera vez las migraciones directamente sobre producción.
    - índices y columnas `reservation_expires_at` y `stock_released_at`;
    - bucket `product-images`, límites y políticas esperadas.
 
-5. Crear un backup antes de la ventana productiva y probar una restauración en un proyecto aislado. Confirmar retención, cifrado, responsable y RPO/RTO acordados con el cliente. Un backup no se considera operativo hasta completar un restore drill.
-6. Aplicar las migraciones en producción, guardar la salida y volver a ejecutar advisors.
+6. Crear un backup antes de la ventana productiva y probar una restauración en un proyecto aislado. Confirmar retención, cifrado, responsable y RPO/RTO acordados con el cliente. Un backup no se considera operativo hasta completar un restore drill.
+7. Aplicar las migraciones en producción, guardar la salida y volver a ejecutar advisors.
 
 `supabase/seed.sql` es solo para demo/desarrollo y no debe ejecutarse en producción.
 

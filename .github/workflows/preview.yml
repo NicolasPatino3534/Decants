@@ -1,0 +1,98 @@
+name: Preview
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-preview:
+    name: Build, deploy and verify preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: preview
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify release gates
+        run: |
+          npm run format:check
+          npm run security:secrets
+          npm audit --audit-level=moderate
+          npm run lint
+          npm run typecheck
+          npm run test
+
+      - name: Verify preview deployment credentials
+        shell: bash
+        run: |
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required preview secret: $name"
+              exit 1
+            fi
+          done
+
+      - name: Pull preview configuration
+        run: npx --yes vercel@56.2.1 pull --yes --environment=preview --token="$VERCEL_TOKEN"
+
+      - name: Build preview artifact
+        run: npx --yes vercel@56.2.1 build --token="$VERCEL_TOKEN"
+
+      - name: Deploy preview artifact
+        id: deploy
+        shell: bash
+        run: |
+          url="$(npx --yes vercel@56.2.1 deploy --prebuilt --token="$VERCEL_TOKEN")"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify health, HTTPS, headers and CORS
+        env:
+          PREVIEW_BASE_URL: ${{ steps.deploy.outputs.url }}
+        run: npm run preview:verify
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Run full browser matrix against preview
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.deploy.outputs.url }}
+        run: npm run test:e2e
+
+      - name: Publish preview summary
+        shell: bash
+        run: |
+          echo "## Preview deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Target: preview" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Playwright diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-playwright-diagnostics
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
