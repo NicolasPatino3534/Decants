@@ -300,11 +300,12 @@ Todos los ítems son obligatorios salvo que el cliente acepte por escrito un rie
 - [ ] Usuario administrador nominal creado y cuenta demo descartada.
 
 Hasta completar esta lista, el estado debe seguir siendo **NO LISTO PARA PRODUCCIÓN**.
+
 # Actualización operativa de Preview — 17 de julio de 2026
 
 **PREVIEW PARCIAL — FALTAN CREDENCIALES TEST. Producción continúa NO LISTA.**
 
-Preview READY: `https://decants-cba-preview-onqmxd50e-web-proyects.vercel.app`.
+Preview READY: `https://decants-cba-preview-1geu9vpz0-web-proyects.vercel.app`.
 
 El scheduler quedó desactivado únicamente en el artifact de Preview; producción conserva `*/10 * * * *`. Esta excepción es solo de QA y no puede promoverse.
 

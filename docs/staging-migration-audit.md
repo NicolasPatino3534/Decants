@@ -294,13 +294,14 @@ Se excluyen expresamente del release:
 **STAGING VALIDADO CON OBSERVACIONES**
 
 Estado separado del entorno web: **PREVIEW PARCIAL — FALTAN CREDENCIALES TEST**.
+
 # Actualización de Preview — 17 de julio de 2026
 
 ## Veredicto web actual
 
 **PREVIEW PARCIAL — FALTAN CREDENCIALES TEST**
 
-Preview READY y protegido: `https://decants-cba-preview-onqmxd50e-web-proyects.vercel.app` (`dpl_B4NsxYPacutGvJdU5xnwNnc2fcB4`).
+Preview READY y protegido: `https://decants-cba-preview-1geu9vpz0-web-proyects.vercel.app` (`dpl_58MP4vMFyRjw7CzzLuQ4vHpn98r7`).
 
 ### Estrategia del scheduler
 
@@ -336,7 +337,7 @@ Alternativas evaluadas:
 
 ### Bloqueos externos y riesgos
 
-Variables faltantes: `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`, `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` opcional, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` y SMTP de prueba en Supabase Auth. No se ejecutaron pagos sandbox, pagos reales ni entrega de email. El webhook TEST queda preparado en `https://decants-cba-preview-onqmxd50e-web-proyects.vercel.app/api/webhooks/mercadopago`.
+Variables faltantes: `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`, `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` opcional, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` y SMTP de prueba en Supabase Auth. No se ejecutaron pagos sandbox, pagos reales ni entrega de email. El webhook TEST queda preparado en `https://decants-cba-preview-1geu9vpz0-web-proyects.vercel.app/api/webhooks/mercadopago`.
 
 El restore drill sigue pendiente. La contraseña de staging publicada previamente por chat debe rotarse. El primer deployment del proyecto aislado fue clasificado por Vercel como Production por ser el inicial y se eliminó inmediatamente; nunca recibió dominio, datos ni variables productivas.
 
