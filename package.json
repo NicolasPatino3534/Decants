@@ -21,6 +21,8 @@
     "security:secrets": "node scripts/scan-secrets.mjs",
     "security:secrets:history": "node scripts/scan-secrets.mjs --history",
     "preview:verify": "node scripts/verify-preview.mjs",
+    "preview:prepare": "node scripts/prepare-vercel-preview.mjs",
+    "preview:cron:validate": "node scripts/validate-preview-cron.mjs",
     "supabase:link": "supabase link",
     "supabase:migrations": "supabase migration list",
     "supabase:push": "supabase db push",
